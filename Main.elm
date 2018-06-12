@@ -2,10 +2,10 @@ module Main exposing (..)
 
 import Html
 import Time
+import WebSocket
 import Model exposing (..)
 import View exposing (..)
 import Update exposing (..)
-import Creators exposing (..)
 import Keyboard exposing (..)
 
 
@@ -24,8 +24,13 @@ init =
     ( empty, Cmd.none )
 
 
+empty : Model
+empty =
+    { nodes = [], edges = [], depthNodes = [] }
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Keyboard.downs KeyMsg
+        [ WebSocket.listen "ws://127.0.0.1:8000/" SocketMsg
         ]

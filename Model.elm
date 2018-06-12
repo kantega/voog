@@ -4,10 +4,9 @@ import Keyboard exposing (..)
 
 
 type Msg
-    = GenerateNode
-    | GenerateEdge
-    | GenerateEdgeCallback ( Int, Int )
-    | KeyMsg Keyboard.KeyCode
+    = AddNodes (List (Int, String))
+    | AddEdges (List (Int, Int))
+    | SocketMsg String
 
 
 type alias Model =

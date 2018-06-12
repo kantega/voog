@@ -8,19 +8,19 @@ place : Model -> Placed
 place model =
     let
         placedNodes =
-            placeNodes model.edges model.nodes
+            placeNodes model.edges model.nodes model.depthNodes
     in
         { model | nodes = placedNodes, edges = placeEdges model.edges placedNodes }
 
 
-placeNodes : Edges -> Nodes -> PlacedNodes
-placeNodes edges nodes =
+placeNodes : Edges -> Nodes -> DepthNodes -> PlacedNodes
+placeNodes edges nodes depthNodes =
     let
         sortedNodes =
             List.sortWith (\a b -> compare a.id b.id) nodes
 
         sortedDepthNodes =
-            List.sortWith (\a b -> compare a.id b.id) (calculateDepth edges nodes)
+            List.sortWith (\a b -> compare a.id b.id) depthNodes
     in
         List.map2
             (\n d ->
