@@ -20,7 +20,7 @@ placeNodes edges nodes =
             List.sortWith (\a b -> compare a.id b.id) nodes
 
         sortedDepthNodes =
-            List.sortWith (\a b -> compare a.id b.id) (calculateDepth nodes edges)
+            List.sortWith (\a b -> compare a.id b.id) (calculateDepth edges nodes)
     in
         List.map2
             (\n d ->
@@ -32,6 +32,8 @@ placeNodes edges nodes =
             )
             sortedNodes
             sortedDepthNodes
+            |> List.sortWith (\a b -> compare (outEdges edges a.id) (outEdges edges b.id))
+            |> List.reverse
             |> List.indexedMap setX
 
 

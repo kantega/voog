@@ -3,8 +3,8 @@ module Depth exposing (..)
 import Model exposing (..)
 
 
-calculateDepth : Nodes -> Edges -> DepthNodes
-calculateDepth nodes edges =
+calculateDepth : Edges -> Nodes -> DepthNodes
+calculateDepth edges nodes =
     depthIteration (List.map nodeToDepthNode nodes) edges
 
 
@@ -16,7 +16,7 @@ nodeToDepthNode node =
 outEdges : Edges -> Int -> Int
 outEdges edges id =
     edges
-        |> List.filter (\e -> e.from == id)
+        |> List.filter (\e -> e.from == id && e.from /= e.to)
         |> List.length
 
 
@@ -37,54 +37,55 @@ depthIteration nodes edges =
     in
         case head of
             Just head ->
-                depthIteration (updateChildren edges nodes head 0) edges
+                depthIteration (updateNode edges nodes head { id = -1, parent = -1, depth = -1 }) edges
 
             Nothing ->
                 nodes
 
 
-updateChildren : Edges -> DepthNodes -> DepthNode -> Int -> DepthNodes
-updateChildren edges nodes node depth =
+updateNode : Edges -> DepthNodes -> DepthNode -> DepthNode -> DepthNodes
+updateNode edges nodes node parent =
     let
-        newNodes =
-            setDepth edges node.id depth nodes
+        ( updated, newNodes ) =
+            updateDepth edges nodes node parent
+        newNode = newNodes
+            |> List.filter (\n -> n.id == node.id)
+            |> List.head
     in
-        newNodes
-            |> List.filter (\n -> List.member { from = node.id, to = n.id } edges)
-            |> List.filter (\n -> n.depth < 0)
-            |> depthFold edges (depth + 1) newNodes
+        if updated then
+            case newNode of
+                Just newNode ->
+                    newNodes
+                        |> List.filter (\n -> List.member { from = node.id, to = n.id } edges && n.id /= node.id)
+                        |> depthChildren edges newNodes newNode
+                Nothing ->
+                    newNodes
+        else
+            nodes
 
 
-depthFold : Edges -> Int -> DepthNodes -> DepthNodes -> DepthNodes
-depthFold edges depth nodes foldNodes =
+depthChildren : Edges -> DepthNodes -> DepthNode -> DepthNodes -> DepthNodes
+depthChildren edges nodes parent foldNodes =
     case List.head foldNodes of
         Just head ->
-            depthFold edges depth (updateChildren edges nodes head depth) (List.drop 1 foldNodes)
+            depthChildren edges (updateNode edges nodes head parent) parent (List.drop 1 foldNodes)
 
         Nothing ->
             nodes
 
 
-setDepth : Edges -> Int -> Int -> DepthNodes -> DepthNodes
-setDepth edges id depth nodes =
-    let
-        partition =
-            List.partition (\n -> n.id == id) nodes
-
-        node =
-            List.head (Tuple.first partition)
-
-        others =
-            Tuple.second partition
-    in
-        case node of
-            Just node ->
-                if node.depth < 0 then
-                    { node | depth = depth } :: others
-                else if node.depth > depth then
-                    updateChildren edges ({ node | depth = depth } :: others) node depth
+updateDepth : Edges -> DepthNodes -> DepthNode -> DepthNode -> ( Bool, DepthNodes )
+updateDepth edges nodes node parent =
+    if node.depth < 0 || node.depth > parent.depth + 1 then
+        ( True
+        , List.map
+            (\n ->
+                if n.id == node.id then
+                    { n | depth = parent.depth + 1, parent = parent.id }
                 else
-                    node :: others
-
-            Nothing ->
-                nodes
+                    n
+            )
+            nodes
+        )
+    else
+        ( False, nodes )

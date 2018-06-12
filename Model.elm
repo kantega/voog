@@ -13,12 +13,14 @@ type Msg
 type alias Model =
     { nodes : Nodes
     , edges : Edges
+    , depthNodes : DepthNodes
     }
 
 
 type alias Placed =
     { nodes : PlacedNodes
     , edges : PlacedEdges
+    , depthNodes : DepthNodes
     }
 
 
