@@ -38,4 +38,6 @@ viewNode node =
 
 viewEdge : PlacedEdge -> Html Msg
 viewEdge edge =
-    polyline [ markerEnd "url(#arrow)", fill "none", strokeWidth "3", stroke "#b0b0b0", points ((toString edge.x1) ++ "," ++ (toString edge.y1) ++ " " ++ (toString edge.x2) ++ "," ++ (toString edge.y2)) ] []
+    Svg.path [ markerEnd "url(#arrow)", fill "none", strokeWidth "3", stroke "#b0b0b0",
+        d ("M" ++ (toString edge.x1) ++ " " ++ (toString edge.y1) ++ " Q " ++ (toString edge.cx) ++ " " ++ (toString edge.cy)
+        ++ " " ++ (toString edge.x2) ++ " " ++ (toString edge.y2)) ] []

@@ -85,11 +85,11 @@ setDepth id depth nodes =
 
 placeEdges : Edges -> PlacedNodes -> PlacedEdges
 placeEdges edges placedNodes =
-    List.map (placeEdge placedNodes) edges
+    List.map (placeEdge placedNodes edges) edges
 
 
-placeEdge : PlacedNodes -> Edge -> PlacedEdge
-placeEdge placedNodes edge =
+placeEdge : PlacedNodes -> Edges -> Edge -> PlacedEdge
+placeEdge placedNodes edges edge =
     let
         from =
             List.head (List.filter (\node -> node.id == edge.from) placedNodes)
@@ -103,17 +103,33 @@ placeEdge placedNodes edge =
                     let
                         angle =
                             atan2 (toFloat (to.y - from.y)) (toFloat (to.x - from.x))
+
+                        distance =
+                            sqrt ((toFloat (to.y - from.y)) ^ 2 + (toFloat (to.x - from.x)) ^ 2)
                     in
-                        { x1 = from.x + 50
-                        , y1 = from.y + 50
-                        , x2 = to.x + 50 - round (65 * cos (angle))
-                        , y2 = to.y + 50 - round (65 * sin (angle))
-                        }
+                        if List.member { from = to.id, to = from.id } edges then
+                            { x1 = from.x + 50 + round (50 * cos (angle)) + round (8 * cos (angle + 3.1415 / 2))
+                            , y1 = from.y + 50 + round (50 * sin (angle)) + round (8 * sin (angle + 3.1415 / 2))
+                            , x2 = to.x + 50 - round (60 * cos (angle)) + round (8 * cos (angle + 3.1415 / 2))
+                            , y2 = to.y + 50 - round (60 * sin (angle)) + round (8 * sin (angle + 3.1415 / 2))
+                            , cx = from.x + 50 + round (distance / 2 * cos (angle + 3.1415 / 32)) + round (8 * cos (angle + 3.1415 / 2))
+                            , cy = from.y + 50 + round (distance / 2 * sin (angle + 3.1415 / 32)) + round (8 * sin (angle + 3.1415 / 2))
+                            }
+                        else
+                            { x1 = from.x + 50
+                            , y1 = from.y + 50
+                            , x2 = to.x + 50 - round (60 * cos (angle))
+                            , y2 = to.y + 50 - round (60 * sin (angle))
+                            , cx = from.x + 50
+                            , cy = from.y + 50
+                            }
                 else
                     { x1 = from.x - 12
                     , y1 = from.y + 50
-                    , x2 = from.x - 8
+                    , x2 = from.x - 10
                     , y2 = from.y + 50
+                    , cx = from.x - 12
+                    , cy = from.y + 50
                     }
 
             _ ->
@@ -121,4 +137,6 @@ placeEdge placedNodes edge =
                 , y1 = 0
                 , x2 = 0
                 , y2 = 0
+                , cx = 0
+                , cy = 0
                 }

@@ -63,4 +63,6 @@ type alias PlacedEdge =
     , y1 : Int
     , x2 : Int
     , y2 : Int
+    , cx : Int
+    , cy : Int
     }
