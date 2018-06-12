@@ -26,6 +26,10 @@ type alias PlacedNodes =
     List PlacedNode
 
 
+type alias DepthNodes =
+    List DepthNode
+
+
 type alias PlacedEdges =
     List PlacedEdge
 
@@ -47,6 +51,13 @@ type alias Node =
 type alias Edge =
     { from : Int
     , to : Int
+    }
+
+
+type alias DepthNode =
+    { id : Int
+    , parent : Int
+    , depth : Int
     }
 
 
