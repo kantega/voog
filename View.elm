@@ -105,7 +105,7 @@ viewNode node placedNode =
         , cy (toString (placedNode.y + 50))
         , r "50"
         , fill "#f0f0f0"
-        , stroke "#b0b0b0"
+        , stroke (if Dict.get "error" node.info == Just "True" then "#f44336" else "#b0b0b0" )
         , strokeWidth (getStrokeWidth node.selected)
         ]
         []
@@ -142,7 +142,7 @@ viewEdge edge placedEdge =
     in
         [ Svg.path
             [ onClick (ClickEdge ( edge.from, edge.to ))
-            , id "abc"
+            , id ((toString (Tuple.first edge.id)) ++ "_"  ++ (toString (Tuple.second edge.id)))
             , markerEnd marker
             , fill "none"
             , strokeWidth "3"
@@ -166,11 +166,12 @@ viewEdge edge placedEdge =
         , Svg.text_
             [ fill "#808080"
             , fontSize "20"
+            , fontFamily "sans-serif"
             , textAnchor "middle"
             , dy "-5"
             ]
             [ Svg.textPath
-                [ xlinkHref "#abc"
+                [ xlinkHref ("#" ++ (toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
                 , startOffset "50%"
                 ]
                 [ Svg.text (Maybe.withDefault "" (Dict.get "speed" edge.info))

@@ -6,23 +6,43 @@ import Depth exposing (..)
 import Place exposing (..)
 
 
-addNodes : Model -> List ( String, Dict.Dict String String ) -> Model
-addNodes model nodes =
+addNodes : Model -> Bool -> List ( String, Dict.Dict String String ) -> Model
+addNodes model update nodes =
     case nodes of
         ( id, info ) :: rest ->
             case String.toInt id of
                 Ok id ->
-                    let
-                        node =
-                            { id = id, name = Dict.get "name" info, info = info, selected = False }
-                    in
-                        if not (List.any (\n -> n.id == id) model.nodes) then
-                            addNodes { model | nodes = node :: model.nodes } rest
-                        else
-                            addNodes model rest
+                    if not update || not (List.any (\n -> n.id == id) model.nodes) then
+                        let
+                            node =
+                                { id = id, name = Dict.get "name" info, info = info, selected = False }
+                        in
+                            if not (List.any (\n -> n.id == id) model.nodes) then
+                                addNodes { model | nodes = node :: model.nodes } update rest
+                            else
+                                addNodes model update rest
+                    else
+                        addNodes
+                            { model
+                                | nodes =
+                                    List.map
+                                        (\n ->
+                                            if n.id == id then
+                                                let
+                                                    union =
+                                                        Dict.union info n.info
+                                                in
+                                                    { n | name = Dict.get "name" union, info = union }
+                                            else
+                                                n
+                                        )
+                                        model.nodes
+                            }
+                            update
+                            rest
 
                 _ ->
-                    addNodes model rest
+                    addNodes model update rest
 
         _ ->
             place
@@ -44,18 +64,34 @@ removeNodes model nodes =
         place { model | nodes = newNodes, edges = newEdges, depthNodes = calculateDepth newEdges newNodes }
 
 
-addEdges : Model -> List ( ( Int, Int ), Dict.Dict String String ) -> Model
-addEdges model edges =
+addEdges : Model -> Bool -> List ( ( Int, Int ), Dict.Dict String String ) -> Model
+addEdges model update edges =
     case edges of
         ( ( from, to ), info ) :: rest ->
-            let
-                edge =
-                    { id = ( from, to ), from = from, to = to, selected = False, info = info }
-            in
-                if not (List.any (\e -> e.id == ( from, to )) model.edges) then
-                    addEdges { model | edges = edge :: model.edges } rest
-                else
-                    addEdges model rest
+            if not update || not (List.any (\e -> e.id == ( from, to )) model.edges) then
+                let
+                    edge =
+                        { id = ( from, to ), from = from, to = to, selected = False, info = info }
+                in
+                    if not (List.any (\e -> e.id == ( from, to )) model.edges) then
+                        addEdges { model | edges = edge :: model.edges } update rest
+                    else
+                        addEdges model update rest
+            else
+                addEdges
+                    { model
+                        | edges =
+                            List.map
+                                (\e ->
+                                    if e.id == ( from, to ) then
+                                        { e | info = Dict.union info e.info }
+                                    else
+                                        e
+                                )
+                                model.edges
+                    }
+                    update
+                    rest
 
         _ ->
             place
