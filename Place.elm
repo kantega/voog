@@ -77,8 +77,8 @@ placeEdge placedNodes edges edge =
                             }
                         else
                             Just { id = edge.id
-                            , x1 = from.x + 50
-                            , y1 = from.y + 50
+                            , x1 = from.x + 50 + round (60 * cos (angle))
+                            , y1 = from.y + 50 + round (60 * sin (angle))
                             , x2 = to.x + 50 - round (60 * cos (angle))
                             , y2 = to.y + 50 - round (60 * sin (angle))
                             , cx = from.x + 50

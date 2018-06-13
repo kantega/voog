@@ -28,16 +28,36 @@ handleCommunication model msg =
                             ( model, Cmd.none )
 
                 "addEdges" ->
-                    case decodeString (maybe (field "edges" (list (map2 (,) (index 0 int) (index 1 int))))) msg of
+                    case decodeString (maybe (field "edges" (dict (dict string)))) msg of
                         Ok (Just edges) ->
-                            ( addEdges model edges , Cmd.none )
+                            let
+                                parsedEdges =
+                                    (List.filterMap
+                                        (\( k, v ) ->
+                                            let
+                                                key =
+                                                    decodeString (maybe (map2 (,) (index 0 int) (index 1 int))) k
+                                            in
+                                                case key of
+                                                    Ok (Just key) ->
+                                                        Just ( key, v )
+
+                                                    _ ->
+                                                        Nothing
+                                        )
+                                        (Dict.toList edges)
+                                    )
+                            in
+                                ( addEdges model parsedEdges , Cmd.none )
+
                         _ ->
                             ( model, Cmd.none )
 
                 "removeEdges" ->
                     case decodeString (maybe (field "edges" (list (map2 (,) (index 0 int) (index 1 int))))) msg of
                         Ok (Just edges) ->
-                            ( removeEdges model edges , Cmd.none )
+                            ( removeEdges model edges, Cmd.none )
+
                         _ ->
                             ( model, Cmd.none )
 

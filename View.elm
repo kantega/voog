@@ -13,16 +13,16 @@ import Action exposing (..)
 view : Model -> Html Msg
 view model =
     div []
-    [div [class "sidebar"] [],
-     svg [ width "1200", height "800", viewBox "0 0 1200 800" ]
-        ((defs model)
-            :: (List.append
-                    (List.map2 viewEdge model.edges model.placedEdges)
-                    (List.foldr List.append [] (List.map2 viewNode model.nodes model.placedNodes))
-               )
-        )
-    , Html.text "ff"
-    ]
+        [ div [ class "sidebar" ] []
+        , svg [ width "1200", height "800", viewBox "0 0 1200 800" ]
+            ((defs model)
+                :: (List.append
+                        (List.foldr List.append [] (List.map2 viewNode model.nodes model.placedNodes))
+                        (List.foldr List.append [] (List.map2 viewEdge model.edges model.placedEdges))
+
+                   )
+            )
+        ]
 
 
 defs : Model -> Html Msg
@@ -30,7 +30,10 @@ defs model =
     let
         imageNodes =
             List.filter (\n -> Dict.member "image" n.info) model.nodes
-        imageIds = List.map (\n -> n.id) imageNodes
+
+        imageIds =
+            List.map (\n -> n.id) imageNodes
+
         placedImageNodes =
             List.filter (\n -> List.member n.id imageIds) model.placedNodes
     in
@@ -131,14 +134,15 @@ getStrokeColor selected =
         ( "url(#arrow)", "#b0b0b0" )
 
 
-viewEdge : Edge -> PlacedEdge -> Html Msg
+viewEdge : Edge -> PlacedEdge -> List (Html Msg)
 viewEdge edge placedEdge =
     let
         ( marker, strokeColor ) =
             getStrokeColor edge.selected
     in
-        Svg.path
+        [ Svg.path
             [ onClick (ClickEdge ( edge.from, edge.to ))
+            , id "abc"
             , markerEnd marker
             , fill "none"
             , strokeWidth "3"
@@ -159,3 +163,17 @@ viewEdge edge placedEdge =
                 )
             ]
             []
+        , Svg.text_
+            [ fill "#808080"
+            , fontSize "20"
+            , textAnchor "middle"
+            , dy "-5"
+            ]
+            [ Svg.textPath
+                [ xlinkHref "#abc"
+                , startOffset "50%"
+                ]
+                [ Svg.text (Maybe.withDefault "" (Dict.get "speed" edge.info))
+                ]
+            ]
+        ]

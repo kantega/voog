@@ -6,7 +6,7 @@ import Depth exposing (..)
 import Place exposing (..)
 
 
-addNodes : Model -> List (String, (Dict.Dict String String)) -> Model
+addNodes : Model -> List ( String, Dict.Dict String String ) -> Model
 addNodes model nodes =
     case nodes of
         ( id, info ) :: rest ->
@@ -44,13 +44,13 @@ removeNodes model nodes =
         place { model | nodes = newNodes, edges = newEdges, depthNodes = calculateDepth newEdges newNodes }
 
 
-addEdges : Model -> List ( Int, Int ) -> Model
+addEdges : Model -> List ( ( Int, Int ), Dict.Dict String String ) -> Model
 addEdges model edges =
     case edges of
-        ( from, to ) :: rest ->
+        ( ( from, to ), info ) :: rest ->
             let
                 edge =
-                    { id = ( from, to ), from = from, to = to, selected = False, info = Dict.empty }
+                    { id = ( from, to ), from = from, to = to, selected = False, info = info }
             in
                 if not (List.any (\e -> e.id == ( from, to )) model.edges) then
                     addEdges { model | edges = edge :: model.edges } rest
