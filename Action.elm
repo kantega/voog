@@ -119,9 +119,10 @@ toggleNode model id =
                     if n.id == id then
                         { n | selected = not n.selected }
                     else
-                        n
+                        { n | selected = False }
                 )
                 model.nodes
+        , edges = List.map (\e -> { e | selected = False }) model.edges
     }
 
 
@@ -134,7 +135,8 @@ toggleEdge model id =
                     if e.id == id then
                         { e | selected = not e.selected }
                     else
-                        e
+                        { e | selected = False }
                 )
                 model.edges
+        , nodes = List.map (\n -> { n | selected = False }) model.nodes
     }

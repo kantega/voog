@@ -13,16 +13,68 @@ import Action exposing (..)
 view : Model -> Html Msg
 view model =
     div []
-        [ div [ class "sidebar" ] []
-        , svg [ width "1200", height "800", viewBox "0 0 1200 800" ]
-            ((defs model)
-                :: (List.append
-                        (List.foldr List.append [] (List.map2 viewNode model.nodes model.placedNodes))
-                        (List.foldr List.append [] (List.map2 viewEdge model.edges model.placedEdges))
+        ((popup model)
+            :: [ svg [ width "1200", height "800", viewBox "0 0 1200 800" ]
+                    ((defs model)
+                        :: (List.append
+                                (List.foldr List.append [] (List.map2 viewNode model.nodes model.placedNodes))
+                                (List.foldr List.append [] (List.map2 viewEdge model.edges model.placedEdges))
+                           )
+                    )
+               ]
+        )
 
-                   )
-            )
-        ]
+popup : Model -> Html Msg
+popup model =
+    case List.head (List.filter (\n -> n.selected) model.nodes) of
+          Just node ->
+              case List.head (List.filter (\n -> n.id == node.id) model.placedNodes) of
+                  Just placedNode ->
+                      div
+                          [ Svg.Attributes.style
+                              ("position: absolute; left: "
+                                  ++ (toString (placedNode.x + 110))
+                                  ++ "px; top: "
+                                  ++ (toString (placedNode.y + 10))
+                                  ++ "px; background-color: #808080; color: #fff; padding: 10px 15px; font-family: sans-serif; border-radius: 5px;"
+                              )
+                          ]
+                          ((p [Svg.Attributes.style "margin-top: 5px;"] [ Html.text "Info" ])
+                              :: (List.map
+                                      (\( k, v ) -> p [ Svg.Attributes.style "margin: 5px 0;" ] [ Html.text (k ++ ": " ++ v) ])
+                                      (Dict.toList node.info)
+                                 )
+                          )
+
+                  _ ->
+                      div [] []
+
+          _ ->
+              case List.head (List.filter (\e -> e.selected) model.edges) of
+                  Just edge ->
+                      case List.head (List.filter (\e -> e.id == edge.id) model.placedEdges) of
+                          Just placeEdge ->
+                              div
+                                  [ Svg.Attributes.style
+                                      ("position: absolute; left: "
+                                          ++ (toString ((toFloat (placeEdge.x1 + placeEdge.x2)) / 2))
+                                          ++ "px; top: "
+                                          ++ (toString ((toFloat (placeEdge.y1 + placeEdge.y2)) / 2))
+                                          ++ "px; background-color: #808080; color: #fff; padding: 5px 10px; font-family: sans-serif; border-radius: 5px;"
+                                      )
+                                  ]
+                                  ((p [Svg.Attributes.style "margin-top: 0;"] [ Html.text "Info" ])
+                                      :: (List.map
+                                              (\( k, v ) -> p [ Svg.Attributes.style "margin: 5px 0;" ] [ Html.text (k ++ ": " ++ v) ])
+                                              (Dict.toList edge.info)
+                                         )
+                                  )
+
+                          _ ->
+                              div [] []
+
+                  _ ->
+                      div [] []
 
 
 defs : Model -> Html Msg
