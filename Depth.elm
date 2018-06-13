@@ -58,7 +58,7 @@ updateNode edges nodes node parent =
             case newNode of
                 Just newNode ->
                     newNodes
-                        |> List.filter (\n -> List.member { from = node.id, to = n.id } edges && n.id /= node.id)
+                        |> List.filter (\n -> List.member ( node.id, n.id ) (List.map (\e -> e.id) edges) && n.id /= node.id)
                         |> depthChildren edges newNodes newNode
 
                 Nothing ->
@@ -79,7 +79,7 @@ depthChildren edges nodes parent foldNodes =
 
 updateDepth : Edges -> DepthNodes -> DepthNode -> DepthNode -> ( Bool, DepthNodes )
 updateDepth edges nodes node parent =
-    if node.depth < 0 || node.depth > parent.depth + 1 then
+    if node.parent == -1 || node.depth > parent.depth + 1 then
         ( True
         , List.map
             (\n ->

@@ -17,5 +17,11 @@ update msg model =
         AddEdges edges ->
             ( addEdges model edges, Cmd.none )
 
+        ClickNode id ->
+            ( toggleNode model id, Cmd.none )
+
+        ClickEdge id ->
+            ( toggleEdge model id, Cmd.none )
+
         SocketMsg msg ->
             handleCommunication model msg

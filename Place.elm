@@ -4,13 +4,14 @@ import Model exposing (..)
 import Depth exposing (..)
 
 
-place : Model -> Placed
+place : Model -> Model
 place model =
     let
         placedNodes =
             placeNodes model.edges model.nodes model.depthNodes
+                |> List.sortWith (\a b -> compare a.id b.id)
     in
-        { model | nodes = placedNodes, edges = placeEdges model.edges placedNodes }
+        { model | placedNodes = placedNodes, placedEdges = placeEdges model.edges placedNodes }
 
 
 placeNodes : Edges -> Nodes -> DepthNodes -> PlacedNodes
@@ -25,7 +26,6 @@ placeNodes edges nodes depthNodes =
         List.map2
             (\n d ->
                 { id = n.id
-                , name = n.name
                 , x = 0
                 , y = d.depth * 120
                 }
@@ -44,10 +44,10 @@ setX index node =
 
 placeEdges : Edges -> PlacedNodes -> PlacedEdges
 placeEdges edges placedNodes =
-    List.map (placeEdge placedNodes edges) edges
+    List.filterMap (placeEdge placedNodes edges) edges
 
 
-placeEdge : PlacedNodes -> Edges -> Edge -> PlacedEdge
+placeEdge : PlacedNodes -> Edges -> Edge -> Maybe PlacedEdge
 placeEdge placedNodes edges edge =
     let
         from =
@@ -66,8 +66,9 @@ placeEdge placedNodes edges edge =
                         distance =
                             sqrt ((toFloat (to.y - from.y)) ^ 2 + (toFloat (to.x - from.x)) ^ 2)
                     in
-                        if List.member { from = to.id, to = from.id } edges then
-                            { x1 = from.x + 50 + round (50 * cos (angle)) + round (8 * cos (angle + 3.1415 / 2))
+                        if List.any (\e -> e.id == ( to.id, from.id )) edges then
+                           Just  { id = edge.id
+                            , x1 = from.x + 50 + round (50 * cos (angle)) + round (8 * cos (angle + 3.1415 / 2))
                             , y1 = from.y + 50 + round (50 * sin (angle)) + round (8 * sin (angle + 3.1415 / 2))
                             , x2 = to.x + 50 - round (60 * cos (angle)) + round (8 * cos (angle + 3.1415 / 2))
                             , y2 = to.y + 50 - round (60 * sin (angle)) + round (8 * sin (angle + 3.1415 / 2))
@@ -75,7 +76,8 @@ placeEdge placedNodes edges edge =
                             , cy = from.y + 50 + round (distance / 2 * sin (angle + 3.1415 / 32)) + round (8 * sin (angle + 3.1415 / 2))
                             }
                         else
-                            { x1 = from.x + 50
+                            Just { id = edge.id
+                            , x1 = from.x + 50
                             , y1 = from.y + 50
                             , x2 = to.x + 50 - round (60 * cos (angle))
                             , y2 = to.y + 50 - round (60 * sin (angle))
@@ -83,7 +85,8 @@ placeEdge placedNodes edges edge =
                             , cy = from.y + 50
                             }
                 else
-                    { x1 = from.x - 12
+                    Just { id = edge.id
+                    , x1 = from.x - 12
                     , y1 = from.y + 50
                     , x2 = from.x - 10
                     , y2 = from.y + 50
@@ -92,10 +95,4 @@ placeEdge placedNodes edges edge =
                     }
 
             _ ->
-                { x1 = 0
-                , y1 = 0
-                , x2 = 0
-                , y2 = 0
-                , cx = 0
-                , cy = 0
-                }
+                Nothing

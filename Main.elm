@@ -26,7 +26,7 @@ init =
 
 empty : Model
 empty =
-    { nodes = [], edges = [], depthNodes = [] }
+    { nodes = [], edges = [], depthNodes = [], placedNodes = [], placedEdges = [] }
 
 
 subscriptions : Model -> Sub Msg

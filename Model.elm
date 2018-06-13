@@ -6,6 +6,8 @@ import Keyboard exposing (..)
 type Msg
     = AddNodes (List ( Int, String ))
     | AddEdges (List ( Int, Int ))
+    | ClickNode Int
+    | ClickEdge (Int, Int)
     | SocketMsg String
 
 
@@ -13,13 +15,8 @@ type alias Model =
     { nodes : Nodes
     , edges : Edges
     , depthNodes : DepthNodes
-    }
-
-
-type alias Placed =
-    { nodes : PlacedNodes
-    , edges : PlacedEdges
-    , depthNodes : DepthNodes
+    , placedNodes : PlacedNodes
+    , placedEdges : PlacedEdges
     }
 
 
@@ -46,12 +43,20 @@ type alias Edges =
 type alias Node =
     { id : Int
     , name : String
+    , selected : Bool
+    , info : Info
     }
 
 
+type alias Info =
+    List ( String, String )
+
+
 type alias Edge =
-    { from : Int
-    , to : Int
+    { id: (Int, Int)
+    , from: Int
+    , to: Int
+    , selected : Bool
     }
 
 
@@ -64,14 +69,14 @@ type alias DepthNode =
 
 type alias PlacedNode =
     { id : Int
-    , name : String
     , x : Int
     , y : Int
     }
 
 
 type alias PlacedEdge =
-    { x1 : Int
+    { id: (Int, Int)
+    , x1 : Int
     , y1 : Int
     , x2 : Int
     , y2 : Int
