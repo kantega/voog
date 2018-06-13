@@ -11,12 +11,6 @@ import Action exposing (..)
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        AddNodes nodes ->
-            ( addNodes model nodes, Cmd.none )
-
-        AddEdges edges ->
-            ( addEdges model edges, Cmd.none )
-
         ClickNode id ->
             ( toggleNode model id, Cmd.none )
 

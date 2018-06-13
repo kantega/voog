@@ -1,12 +1,11 @@
 module Model exposing (..)
 
+import Dict
 import Keyboard exposing (..)
 
 
 type Msg
-    = AddNodes (List ( Int, String ))
-    | AddEdges (List ( Int, Int ))
-    | ClickNode Int
+    = ClickNode Int
     | ClickEdge (Int, Int)
     | SocketMsg String
 
@@ -42,14 +41,14 @@ type alias Edges =
 
 type alias Node =
     { id : Int
-    , name : String
+    , name : Maybe String
     , selected : Bool
     , info : Info
     }
 
 
 type alias Info =
-    List ( String, String )
+    Dict.Dict String String
 
 
 type alias Edge =
@@ -57,6 +56,7 @@ type alias Edge =
     , from: Int
     , to: Int
     , selected : Bool
+    , info : Info
     }
 
 

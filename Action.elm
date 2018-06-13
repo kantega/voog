@@ -1,21 +1,35 @@
 module Action exposing (..)
 
+import Dict
 import Model exposing (..)
 import Depth exposing (..)
 import Place exposing (..)
 
 
-addNodes : Model -> List ( Int, String ) -> Model
+addNodes : Model -> List (String, (Dict.Dict String String)) -> Model
 addNodes model nodes =
     case nodes of
-        ( id, name ) :: rest ->
-            if not (List.any (\n -> n.id == id) model.nodes) then
-                addNodes { model | nodes = { id = id, name = name, selected = False, info = [] } :: model.nodes } rest
-            else
-                addNodes model rest
+        ( id, info ) :: rest ->
+            case String.toInt id of
+                Ok id ->
+                    let
+                        node =
+                            { id = id, name = Dict.get "name" info, info = info, selected = False }
+                    in
+                        if not (List.any (\n -> n.id == id) model.nodes) then
+                            addNodes { model | nodes = node :: model.nodes } rest
+                        else
+                            addNodes model rest
+
+                _ ->
+                    addNodes model rest
 
         _ ->
-            place { model | depthNodes = calculateDepth model.edges model.nodes }
+            place
+                { model
+                    | depthNodes = calculateDepth model.edges model.nodes
+                    , nodes = List.sortWith (\a b -> compare a.id b.id) model.nodes
+                }
 
 
 removeNodes : Model -> List Int -> Model
@@ -36,7 +50,7 @@ addEdges model edges =
         ( from, to ) :: rest ->
             let
                 edge =
-                    { id = ( from, to ), from = from, to = to, selected = False }
+                    { id = ( from, to ), from = from, to = to, selected = False, info = Dict.empty }
             in
                 if not (List.any (\e -> e.id == ( from, to )) model.edges) then
                     addEdges { model | edges = edge :: model.edges } rest
@@ -44,7 +58,11 @@ addEdges model edges =
                     addEdges model rest
 
         _ ->
-            place { model | depthNodes = calculateDepth model.edges model.nodes }
+            place
+                { model
+                    | depthNodes = calculateDepth model.edges model.nodes
+                    , edges = List.sortWith (\a b -> compare a.id b.id) model.edges
+                }
 
 
 removeEdges : Model -> List ( Int, Int ) -> Model

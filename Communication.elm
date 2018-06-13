@@ -1,5 +1,6 @@
 module Communication exposing (..)
 
+import Dict
 import Json.Decode exposing (..)
 import Model exposing (..)
 import Action exposing (..)
@@ -11,9 +12,9 @@ handleCommunication model msg =
         Ok (Just command) ->
             case command of
                 "addNodes" ->
-                    case decodeString (maybe (field "nodes" (keyValuePairs string))) msg of
+                    case decodeString (maybe (field "nodes" (dict (dict string)))) msg of
                         Ok (Just rawNodes) ->
-                            ( addNodes model (List.filterMap validateIntStringPair rawNodes), Cmd.none )
+                            ( addNodes model (Dict.toList rawNodes), Cmd.none )
 
                         _ ->
                             ( model, Cmd.none )
@@ -45,13 +46,3 @@ handleCommunication model msg =
 
         _ ->
             ( model, Cmd.none )
-
-
-validateIntStringPair : ( String, String ) -> Maybe ( Int, String )
-validateIntStringPair ( int, str ) =
-    case (String.toInt int) of
-        Ok int ->
-            Just ( int, str )
-
-        _ ->
-            Nothing

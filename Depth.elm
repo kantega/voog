@@ -6,6 +6,7 @@ import Model exposing (..)
 calculateDepth : Edges -> Nodes -> DepthNodes
 calculateDepth edges nodes =
     depthIteration (List.map nodeToDepthNode nodes) edges
+        |> List.sortWith (\a b -> compare a.id b.id)
 
 
 nodeToDepthNode : Node -> DepthNode

@@ -1,5 +1,6 @@
 module View exposing (..)
 
+import Dict
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Html exposing (..)
@@ -11,37 +12,70 @@ import Action exposing (..)
 
 view : Model -> Html Msg
 view model =
-    svg [ width "1200", height "800", viewBox "0 0 1200 800" ]
-        (arrowHead
+    div []
+    [div [class "sidebar"] [],
+     svg [ width "1200", height "800", viewBox "0 0 1200 800" ]
+        ((defs model)
             :: (List.append
                     (List.map2 viewEdge model.edges model.placedEdges)
                     (List.foldr List.append [] (List.map2 viewNode model.nodes model.placedNodes))
                )
         )
+    , Html.text "ff"
+    ]
 
 
-arrowHead : Html Msg
-arrowHead =
-    Svg.defs []
-        [ Svg.marker
-            [ id "arrow"
-            , orient "auto"
-            , markerWidth "3"
-            , markerHeight "6"
-            , refX "0.1"
-            , refY "3"
-            ]
-            [ Svg.path [ d "M0,0 V6 L3,3 Z", fill "#b0b0b0" ] [] ]
-        , Svg.marker
-            [ id "selectedArrow"
-            , orient "auto"
-            , markerWidth "3"
-            , markerHeight "6"
-            , refX "0.1"
-            , refY "3"
-            ]
-            [ Svg.path [ d "M0,0 V6 L3,3 Z", fill "#808080" ] [] ]
-        ]
+defs : Model -> Html Msg
+defs model =
+    let
+        imageNodes =
+            List.filter (\n -> Dict.member "image" n.info) model.nodes
+        imageIds = List.map (\n -> n.id) imageNodes
+        placedImageNodes =
+            List.filter (\n -> List.member n.id imageIds) model.placedNodes
+    in
+        Svg.defs []
+            (List.append
+                ([ Svg.marker
+                    [ id "arrow"
+                    , orient "auto"
+                    , markerWidth "3"
+                    , markerHeight "6"
+                    , refX "0.1"
+                    , refY "3"
+                    ]
+                    [ Svg.path [ d "M0,0 V6 L3,3 Z", fill "#b0b0b0" ] [] ]
+                 , Svg.marker
+                    [ id "selectedArrow"
+                    , orient "auto"
+                    , markerWidth "3"
+                    , markerHeight "6"
+                    , refX "0.1"
+                    , refY "3"
+                    ]
+                    [ Svg.path [ d "M0,0 V6 L3,3 Z", fill "#808080" ] [] ]
+                 ]
+                )
+                (List.map2
+                    (\node placedNode ->
+                        Svg.pattern
+                            [ id ("img" ++ (toString node.id))
+                            , patternUnits "userSpaceOnUse"
+                            , x (toString (placedNode.x + 10))
+                            , y (toString (placedNode.y + 10))
+                            , width "40"
+                            , height "40"
+                            ]
+                            [ Svg.image
+                                [ xlinkHref (Maybe.withDefault "" (Dict.get "image" node.info))
+                                ]
+                                []
+                            ]
+                    )
+                    imageNodes
+                    placedImageNodes
+                )
+            )
 
 
 getStrokeWidth : Bool -> String
@@ -50,6 +84,14 @@ getStrokeWidth selected =
         "3"
     else
         "0"
+
+
+getTextX : Node -> PlacedNode -> String
+getTextX node placedNode =
+    if Dict.member "image" node.info then
+        toString (placedNode.x + 55)
+    else
+        toString (placedNode.x + 25)
 
 
 viewNode : Node -> PlacedNode -> List (Svg Msg)
@@ -64,14 +106,20 @@ viewNode node placedNode =
         , strokeWidth (getStrokeWidth node.selected)
         ]
         []
+    , circle
+        [ cx (toString (placedNode.x + 30))
+        , cy (toString (placedNode.y + 30))
+        , r "20"
+        , fill ("url(#img" ++ (toString node.id) ++ ")")
+        ]
+        []
     , Svg.text_
-        [ x (toString (placedNode.x + 25))
-        , y (toString (placedNode.y + 35))
-        , fill "#808080"
-        , fontSize "20"
+        [ x (getTextX node placedNode)
+        , y (toString (placedNode.y + 36))
+        , fill "#b0b0b0"
         , fontFamily "sans-serif"
         ]
-        [ Svg.text node.name ]
+        [ Svg.text (Maybe.withDefault "" node.name) ]
     ]
 
 
