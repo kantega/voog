@@ -81,14 +81,6 @@ defs model =
             )
 
 
-getStrokeWidth : Bool -> String
-getStrokeWidth selected =
-    if selected then
-        "3"
-    else
-        "0"
-
-
 getTextX : Node -> PlacedNode -> String
 getTextX node placedNode =
     if Dict.member "image" node.info then
@@ -105,8 +97,13 @@ viewNode node placedNode =
         , cy (toString (placedNode.y + 50))
         , r "50"
         , fill "#f0f0f0"
-        , stroke (if Dict.get "error" node.info == Just "True" then "#f44336" else "#b0b0b0" )
-        , strokeWidth (getStrokeWidth node.selected)
+        , stroke "#f44336"
+        , strokeWidth
+            (if Dict.get "error" node.info == Just "True" then
+                "3"
+             else
+                "0"
+            )
         ]
         []
     , circle
@@ -142,7 +139,7 @@ viewEdge edge placedEdge =
     in
         [ Svg.path
             [ onClick (ClickEdge ( edge.from, edge.to ))
-            , id ((toString (Tuple.first edge.id)) ++ "_"  ++ (toString (Tuple.second edge.id)))
+            , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
             , markerEnd marker
             , fill "none"
             , strokeWidth "3"
