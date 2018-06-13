@@ -49,6 +49,7 @@ addEdges model edges =
 removeEdges : Model -> List ( Int, Int ) -> Model
 removeEdges model edges =
     let
-        newEdges = List.filter (\e -> not (List.member (e.from, e.to) edges)) model.edges
+        newEdges =
+            List.filter (\e -> not (List.member ( e.from, e.to ) edges)) model.edges
     in
         { model | edges = newEdges, depthNodes = calculateDepth newEdges model.nodes }

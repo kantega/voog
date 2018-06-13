@@ -4,8 +4,8 @@ import Keyboard exposing (..)
 
 
 type Msg
-    = AddNodes (List (Int, String))
-    | AddEdges (List (Int, Int))
+    = AddNodes (List ( Int, String ))
+    | AddEdges (List ( Int, Int ))
     | SocketMsg String
 
 

@@ -48,9 +48,11 @@ updateNode edges nodes node parent =
     let
         ( updated, newNodes ) =
             updateDepth edges nodes node parent
-        newNode = newNodes
-            |> List.filter (\n -> n.id == node.id)
-            |> List.head
+
+        newNode =
+            newNodes
+                |> List.filter (\n -> n.id == node.id)
+                |> List.head
     in
         if updated then
             case newNode of
@@ -58,6 +60,7 @@ updateNode edges nodes node parent =
                     newNodes
                         |> List.filter (\n -> List.member { from = node.id, to = n.id } edges && n.id /= node.id)
                         |> depthChildren edges newNodes newNode
+
                 Nothing ->
                     newNodes
         else
