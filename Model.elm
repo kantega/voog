@@ -42,6 +42,7 @@ type alias Edges =
 type alias Node =
     { id : Int
     , name : Maybe String
+    , typ : Maybe String
     , selected : Bool
     , info : Info
     }

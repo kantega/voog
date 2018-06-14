@@ -15,7 +15,12 @@ addNodes model update nodes =
                     if not update || not (List.any (\n -> n.id == id) model.nodes) then
                         let
                             node =
-                                { id = id, name = Dict.get "name" info, info = info, selected = False }
+                                { id = id
+                                , name = Dict.get "name" info
+                                , typ = Dict.get "type" info
+                                , info = info
+                                , selected = False
+                                }
                         in
                             if not (List.any (\n -> n.id == id) model.nodes) then
                                 addNodes { model | nodes = node :: model.nodes } update rest
@@ -32,7 +37,11 @@ addNodes model update nodes =
                                                     union =
                                                         Dict.union info n.info
                                                 in
-                                                    { n | name = Dict.get "name" union, info = union }
+                                                    { n
+                                                        | name = Dict.get "name" union
+                                                        , typ = Dict.get "type" union
+                                                        , info = union
+                                                    }
                                             else
                                                 n
                                         )

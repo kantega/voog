@@ -24,57 +24,58 @@ view model =
                ]
         )
 
+
 popup : Model -> Html Msg
 popup model =
     case List.head (List.filter (\n -> n.selected) model.nodes) of
-          Just node ->
-              case List.head (List.filter (\n -> n.id == node.id) model.placedNodes) of
-                  Just placedNode ->
-                      div
-                          [ Svg.Attributes.style
-                              ("position: absolute; left: "
-                                  ++ (toString (placedNode.x + 110))
-                                  ++ "px; top: "
-                                  ++ (toString (placedNode.y + 10))
-                                  ++ "px; background-color: #808080; color: #fff; padding: 10px 15px; font-family: sans-serif; border-radius: 5px;"
-                              )
-                          ]
-                          ((p [Svg.Attributes.style "margin-top: 5px;"] [ Html.text "Info" ])
-                              :: (List.map
-                                      (\( k, v ) -> p [ Svg.Attributes.style "margin: 5px 0;" ] [ Html.text (k ++ ": " ++ v) ])
-                                      (Dict.toList node.info)
-                                 )
-                          )
+        Just node ->
+            case List.head (List.filter (\n -> n.id == node.id) model.placedNodes) of
+                Just placedNode ->
+                    div
+                        [ Svg.Attributes.style
+                            ("position: absolute; left: "
+                                ++ (toString (placedNode.x + 110))
+                                ++ "px; top: "
+                                ++ (toString (placedNode.y + 10))
+                                ++ "px; background-color: #808080; color: #fff; padding: 10px 15px; font-family: sans-serif; border-radius: 5px;"
+                            )
+                        ]
+                        ((p [ Svg.Attributes.style "margin-top: 5px;" ] [ Html.text "Info" ])
+                            :: (List.map
+                                    (\( k, v ) -> p [ Svg.Attributes.style "margin: 5px 0;" ] [ Html.text (k ++ ": " ++ v) ])
+                                    (Dict.toList node.info)
+                               )
+                        )
 
-                  _ ->
-                      div [] []
+                _ ->
+                    div [] []
 
-          _ ->
-              case List.head (List.filter (\e -> e.selected) model.edges) of
-                  Just edge ->
-                      case List.head (List.filter (\e -> e.id == edge.id) model.placedEdges) of
-                          Just placeEdge ->
-                              div
-                                  [ Svg.Attributes.style
-                                      ("position: absolute; left: "
-                                          ++ (toString ((toFloat (placeEdge.x1 + placeEdge.x2)) / 2))
-                                          ++ "px; top: "
-                                          ++ (toString ((toFloat (placeEdge.y1 + placeEdge.y2)) / 2))
-                                          ++ "px; background-color: #808080; color: #fff; padding: 5px 10px; font-family: sans-serif; border-radius: 5px;"
-                                      )
-                                  ]
-                                  ((p [Svg.Attributes.style "margin-top: 0;"] [ Html.text "Info" ])
-                                      :: (List.map
-                                              (\( k, v ) -> p [ Svg.Attributes.style "margin: 5px 0;" ] [ Html.text (k ++ ": " ++ v) ])
-                                              (Dict.toList edge.info)
-                                         )
-                                  )
+        _ ->
+            case List.head (List.filter (\e -> e.selected) model.edges) of
+                Just edge ->
+                    case List.head (List.filter (\e -> e.id == edge.id) model.placedEdges) of
+                        Just placeEdge ->
+                            div
+                                [ Svg.Attributes.style
+                                    ("position: absolute; left: "
+                                        ++ (toString ((toFloat (placeEdge.x1 + placeEdge.x2)) / 2))
+                                        ++ "px; top: "
+                                        ++ (toString ((toFloat (placeEdge.y1 + placeEdge.y2)) / 2))
+                                        ++ "px; background-color: #808080; color: #fff; padding: 5px 10px; font-family: sans-serif; border-radius: 5px;"
+                                    )
+                                ]
+                                ((p [ Svg.Attributes.style "margin-top: 0;" ] [ Html.text "Info" ])
+                                    :: (List.map
+                                            (\( k, v ) -> p [ Svg.Attributes.style "margin: 5px 0;" ] [ Html.text (k ++ ": " ++ v) ])
+                                            (Dict.toList edge.info)
+                                       )
+                                )
 
-                          _ ->
-                              div [] []
+                        _ ->
+                            div [] []
 
-                  _ ->
-                      div [] []
+                _ ->
+                    div [] []
 
 
 defs : Model -> Html Msg
@@ -141,22 +142,43 @@ getTextX node placedNode =
         toString (placedNode.x + 25)
 
 
+getStrokeWidth : Node -> String
+getStrokeWidth node =
+    (if Dict.get "error" node.info == Just "True" then
+        "3"
+     else
+        "0"
+    )
+
+
 viewNode : Node -> PlacedNode -> List (Svg Msg)
 viewNode node placedNode =
-    [ circle
-        [ onClick (ClickNode node.id)
-        , cx (toString (placedNode.x + 50))
-        , cy (toString (placedNode.y + 50))
-        , r "50"
-        , fill "#f0f0f0"
-        , stroke "#f44336"
-        , strokeWidth
-            (if Dict.get "error" node.info == Just "True" then
-                "3"
-             else
-                "0"
-            )
-        ]
+    [ (case node.typ of
+        Just "rect" ->
+            rect
+                [ onClick (ClickNode node.id)
+                , x (toString placedNode.x)
+                , y (toString placedNode.y)
+                , width "100"
+                , height "100"
+                , rx "15"
+                , ry "15"
+                , fill "#f0f0f0"
+                , stroke "#f44336"
+                , strokeWidth (getStrokeWidth node)
+                ]
+
+        _ ->
+            circle
+                [ onClick (ClickNode node.id)
+                , cx (toString (placedNode.x + 50))
+                , cy (toString (placedNode.y + 50))
+                , r "50"
+                , fill "#f0f0f0"
+                , stroke "#f44336"
+                , strokeWidth (getStrokeWidth node)
+                ]
+      )
         []
     , circle
         [ cx (toString (placedNode.x + 30))
