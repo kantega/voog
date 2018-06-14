@@ -8,6 +8,7 @@ import Html.Events exposing (..)
 import Model exposing (..)
 import Place exposing (..)
 import Action exposing (..)
+import Attributes exposing (..)
 
 
 view : Model -> Html Msg
@@ -17,8 +18,8 @@ view model =
             :: [ svg [ width "1200", height "800", viewBox "0 0 1200 800" ]
                     ((defs model)
                         :: (List.append
-                                (List.foldr List.append [] (List.map2 viewNode model.nodes model.placedNodes))
-                                (List.foldr List.append [] (List.map2 viewEdge model.edges model.placedEdges))
+                                (List.foldr List.append [] (List.filterMap viewNode model.nodes))
+                                (List.foldr List.append [] (List.filterMap viewEdge model.edges))
                            )
                     )
                ]
@@ -29,14 +30,14 @@ popup : Model -> Html Msg
 popup model =
     case List.head (List.filter (\n -> n.selected) model.nodes) of
         Just node ->
-            case List.head (List.filter (\n -> n.id == node.id) model.placedNodes) of
-                Just placedNode ->
+            case node.position of
+                Just { x, y } ->
                     div
                         [ Svg.Attributes.style
                             ("position: absolute; left: "
-                                ++ (toString (placedNode.x + 110))
+                                ++ (toString (x + 110))
                                 ++ "px; top: "
-                                ++ (toString (placedNode.y + 10))
+                                ++ (toString (y + 10))
                                 ++ "px; background-color: #808080; color: #fff; padding: 10px 15px; font-family: sans-serif; border-radius: 5px;"
                             )
                         ]
@@ -53,14 +54,14 @@ popup model =
         _ ->
             case List.head (List.filter (\e -> e.selected) model.edges) of
                 Just edge ->
-                    case List.head (List.filter (\e -> e.id == edge.id) model.placedEdges) of
-                        Just placeEdge ->
+                    case edge.position of
+                        Just (Straight line) ->
                             div
                                 [ Svg.Attributes.style
                                     ("position: absolute; left: "
-                                        ++ (toString ((toFloat (placeEdge.x1 + placeEdge.x2)) / 2))
+                                        ++ (toString ((toFloat (line.from.x + line.to.x)) / 2))
                                         ++ "px; top: "
-                                        ++ (toString ((toFloat (placeEdge.y1 + placeEdge.y2)) / 2))
+                                        ++ (toString ((toFloat (line.from.y + line.to.y)) / 2))
                                         ++ "px; background-color: #808080; color: #fff; padding: 5px 10px; font-family: sans-serif; border-radius: 5px;"
                                     )
                                 ]
@@ -88,7 +89,7 @@ defs model =
             List.map (\n -> n.id) imageNodes
 
         placedImageNodes =
-            List.filter (\n -> List.member n.id imageIds) model.placedNodes
+            List.filter (\n -> List.member n.id imageIds) model.nodes
     in
         Svg.defs []
             (List.append
@@ -112,34 +113,40 @@ defs model =
                     [ Svg.path [ d "M0,0 V6 L3,3 Z", fill "#808080" ] [] ]
                  ]
                 )
-                (List.map2
-                    (\node placedNode ->
-                        Svg.pattern
-                            [ id ("img" ++ (toString node.id))
-                            , patternUnits "userSpaceOnUse"
-                            , x (toString (placedNode.x + 10))
-                            , y (toString (placedNode.y + 10))
-                            , width "40"
-                            , height "40"
-                            ]
-                            [ Svg.image
-                                [ xlinkHref (Maybe.withDefault "" (Dict.get "image" node.info))
-                                ]
-                                []
-                            ]
+                (List.filterMap
+                    (\node ->
+                        case node.position of
+                            Just { x, y } ->
+                                Just
+                                    (Svg.pattern
+                                        [ id ("img" ++ (toString node.id))
+                                        , patternUnits "userSpaceOnUse"
+                                        , Svg.Attributes.x (toString (x + 10))
+                                        , Svg.Attributes.y (toString (y + 10))
+                                        , width "40"
+                                        , height "40"
+                                        ]
+                                        [ Svg.image
+                                            [ xlinkHref (Maybe.withDefault "" (Dict.get "image" node.info))
+                                            ]
+                                            []
+                                        ]
+                                    )
+
+                            Nothing ->
+                                Nothing
                     )
                     imageNodes
-                    placedImageNodes
                 )
             )
 
 
-getTextX : Node -> PlacedNode -> String
-getTextX node placedNode =
+getTextX : Node -> Int -> String
+getTextX node x =
     if Dict.member "image" node.info then
-        toString (placedNode.x + 55)
+        toString (x + 55)
     else
-        toString (placedNode.x + 25)
+        toString (x + 25)
 
 
 getStrokeWidth : Node -> String
@@ -151,50 +158,56 @@ getStrokeWidth node =
     )
 
 
-viewNode : Node -> PlacedNode -> List (Svg Msg)
-viewNode node placedNode =
-    [ (case node.typ of
-        Just "rect" ->
-            rect
-                [ onClick (ClickNode node.id)
-                , x (toString placedNode.x)
-                , y (toString placedNode.y)
-                , width "100"
-                , height "100"
-                , rx "15"
-                , ry "15"
-                , fill "#f0f0f0"
-                , stroke "#f44336"
-                , strokeWidth (getStrokeWidth node)
+viewNode : Node -> Maybe (List (Svg Msg))
+viewNode node =
+    case node.position of
+        Just { x, y } ->
+            Just
+                [ (case getAttribute "type" node of
+                    Just "rect" ->
+                        rect
+                            [ onClick (ClickNode node.id)
+                            , Svg.Attributes.x (toString x)
+                            , Svg.Attributes.y (toString y)
+                            , width "100"
+                            , height "100"
+                            , rx "15"
+                            , ry "15"
+                            , fill "#f0f0f0"
+                            , stroke "#f44336"
+                            , strokeWidth (getStrokeWidth node)
+                            ]
+
+                    _ ->
+                        circle
+                            [ onClick (ClickNode node.id)
+                            , cx (toString (x + 50))
+                            , cy (toString (y + 50))
+                            , r "50"
+                            , fill "#f0f0f0"
+                            , stroke "#f44336"
+                            , strokeWidth (getStrokeWidth node)
+                            ]
+                  )
+                    []
+                , circle
+                    [ cx (toString (x + 30))
+                    , cy (toString (y + 30))
+                    , r "20"
+                    , fill ("url(#img" ++ (toString node.id) ++ ")")
+                    ]
+                    []
+                , Svg.text_
+                    [ Svg.Attributes.x (getTextX node x)
+                    , Svg.Attributes.y (toString (y + 36))
+                    , fill "#b0b0b0"
+                    , fontFamily "sans-serif"
+                    ]
+                    [ Svg.text (Maybe.withDefault "" (getAttribute "name" node)) ]
                 ]
 
         _ ->
-            circle
-                [ onClick (ClickNode node.id)
-                , cx (toString (placedNode.x + 50))
-                , cy (toString (placedNode.y + 50))
-                , r "50"
-                , fill "#f0f0f0"
-                , stroke "#f44336"
-                , strokeWidth (getStrokeWidth node)
-                ]
-      )
-        []
-    , circle
-        [ cx (toString (placedNode.x + 30))
-        , cy (toString (placedNode.y + 30))
-        , r "20"
-        , fill ("url(#img" ++ (toString node.id) ++ ")")
-        ]
-        []
-    , Svg.text_
-        [ x (getTextX node placedNode)
-        , y (toString (placedNode.y + 36))
-        , fill "#b0b0b0"
-        , fontFamily "sans-serif"
-        ]
-        [ Svg.text (Maybe.withDefault "" node.name) ]
-    ]
+            Nothing
 
 
 getStrokeColor : Bool -> ( String, String )
@@ -205,47 +218,69 @@ getStrokeColor selected =
         ( "url(#arrow)", "#b0b0b0" )
 
 
-viewEdge : Edge -> PlacedEdge -> List (Html Msg)
-viewEdge edge placedEdge =
-    let
-        ( marker, strokeColor ) =
-            getStrokeColor edge.selected
-    in
-        [ Svg.path
-            [ onClick (ClickEdge ( edge.from, edge.to ))
-            , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-            , markerEnd marker
-            , fill "none"
-            , strokeWidth "3"
-            , stroke strokeColor
-            , d
-                ("M"
-                    ++ (toString placedEdge.x1)
-                    ++ " "
-                    ++ (toString placedEdge.y1)
-                    ++ " Q "
-                    ++ (toString placedEdge.cx)
-                    ++ " "
-                    ++ (toString placedEdge.cy)
-                    ++ " "
-                    ++ (toString placedEdge.x2)
-                    ++ " "
-                    ++ (toString placedEdge.y2)
-                )
-            ]
-            []
-        , Svg.text_
-            [ fill "#808080"
-            , fontSize "20"
-            , fontFamily "sans-serif"
-            , textAnchor "middle"
-            , dy "-5"
-            ]
-            [ Svg.textPath
-                [ xlinkHref ("#" ++ (toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                , startOffset "50%"
-                ]
-                [ Svg.text (Maybe.withDefault "" (Dict.get "speed" edge.info))
-                ]
-            ]
-        ]
+path : Line -> String
+path position =
+    case position of
+        Straight line ->
+            "M"
+                ++ (toString line.from.x)
+                ++ " "
+                ++ (toString line.from.y)
+                ++ " "
+                ++ (toString line.to.x)
+                ++ " "
+                ++ (toString line.to.y)
+
+        Curved line ->
+            "M"
+                ++ (toString line.from.x)
+                ++ " "
+                ++ (toString line.from.y)
+                ++ " Q "
+                ++ (toString line.via.x)
+                ++ " "
+                ++ (toString line.via.y)
+                ++ " "
+                ++ (toString line.to.x)
+                ++ " "
+                ++ (toString line.to.y)
+
+
+viewEdge : Edge -> Maybe (List (Html Msg))
+viewEdge edge =
+    case edge.position of
+        Just position ->
+            let
+                ( marker, strokeColor ) =
+                    getStrokeColor edge.selected
+            in
+                Just
+                    ([ Svg.path
+                        [ onClick (ClickEdge ( edge.from, edge.to ))
+                        , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
+                        , markerEnd marker
+                        , fill "none"
+                        , strokeWidth "3"
+                        , stroke strokeColor
+                        , d (path position)
+                        ]
+                        []
+                     , Svg.text_
+                        [ fill "#808080"
+                        , fontSize "20"
+                        , fontFamily "sans-serif"
+                        , textAnchor "middle"
+                        , dy "-5"
+                        ]
+                        [ Svg.textPath
+                            [ xlinkHref ("#" ++ (toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
+                            , startOffset "50%"
+                            ]
+                            [ Svg.text (Maybe.withDefault "" (getAttribute "speed" edge))
+                            ]
+                        ]
+                     ]
+                    )
+
+        _ ->
+            Nothing

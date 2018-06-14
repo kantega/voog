@@ -16,10 +16,11 @@ addNodes model update nodes =
                         let
                             node =
                                 { id = id
-                                , name = Dict.get "name" info
-                                , typ = Dict.get "type" info
                                 , info = info
                                 , selected = False
+                                , parent = -1
+                                , depth = -1
+                                , position = Nothing
                                 }
                         in
                             if not (List.any (\n -> n.id == id) model.nodes) then
@@ -37,11 +38,7 @@ addNodes model update nodes =
                                                     union =
                                                         Dict.union info n.info
                                                 in
-                                                    { n
-                                                        | name = Dict.get "name" union
-                                                        , typ = Dict.get "type" union
-                                                        , info = union
-                                                    }
+                                                    { n | info = union }
                                             else
                                                 n
                                         )
@@ -55,10 +52,7 @@ addNodes model update nodes =
 
         _ ->
             place
-                { model
-                    | depthNodes = calculateDepth model.edges model.nodes
-                    , nodes = List.sortWith (\a b -> compare a.id b.id) model.nodes
-                }
+                { model | nodes = calculateDepth model.edges model.nodes }
 
 
 removeNodes : Model -> List Int -> Model
@@ -69,8 +63,11 @@ removeNodes model nodes =
 
         newEdges =
             List.filter (\e -> (not (List.member e.from nodes)) && (not (List.member e.to nodes))) model.edges
+
+        depthNodes =
+            calculateDepth newEdges newNodes
     in
-        place { model | nodes = newNodes, edges = newEdges, depthNodes = calculateDepth newEdges newNodes }
+        place { model | nodes = depthNodes, edges = newEdges }
 
 
 addEdges : Model -> Bool -> List ( ( Int, Int ), Dict.Dict String String ) -> Model
@@ -80,7 +77,7 @@ addEdges model update edges =
             if not update || not (List.any (\e -> e.id == ( from, to )) model.edges) then
                 let
                     edge =
-                        { id = ( from, to ), from = from, to = to, selected = False, info = info }
+                        { id = ( from, to ), from = from, to = to, selected = False, info = info, position = Nothing }
                 in
                     if not (List.any (\e -> e.id == ( from, to )) model.edges) then
                         addEdges { model | edges = edge :: model.edges } update rest
@@ -104,10 +101,7 @@ addEdges model update edges =
 
         _ ->
             place
-                { model
-                    | depthNodes = calculateDepth model.edges model.nodes
-                    , edges = List.sortWith (\a b -> compare a.id b.id) model.edges
-                }
+                { model | nodes = calculateDepth model.edges model.nodes }
 
 
 removeEdges : Model -> List ( Int, Int ) -> Model
@@ -116,7 +110,7 @@ removeEdges model edges =
         newEdges =
             List.filter (\e -> not (List.member e.id edges)) model.edges
     in
-        place { model | edges = newEdges, depthNodes = calculateDepth newEdges model.nodes }
+        place { model | edges = newEdges, nodes = calculateDepth newEdges model.nodes }
 
 
 toggleNode : Model -> Int -> Model

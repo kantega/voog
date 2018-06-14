@@ -6,29 +6,14 @@ import Keyboard exposing (..)
 
 type Msg
     = ClickNode Int
-    | ClickEdge (Int, Int)
+    | ClickEdge ( Int, Int )
     | SocketMsg String
 
 
 type alias Model =
     { nodes : Nodes
     , edges : Edges
-    , depthNodes : DepthNodes
-    , placedNodes : PlacedNodes
-    , placedEdges : PlacedEdges
     }
-
-
-type alias PlacedNodes =
-    List PlacedNode
-
-
-type alias DepthNodes =
-    List DepthNode
-
-
-type alias PlacedEdges =
-    List PlacedEdge
 
 
 type alias Nodes =
@@ -40,11 +25,19 @@ type alias Edges =
 
 
 type alias Node =
+    InfoElement NodeCore
+
+
+type alias InfoNode =
+    InfoElement NodeCore
+
+
+type alias NodeCore =
     { id : Int
-    , name : Maybe String
-    , typ : Maybe String
     , selected : Bool
-    , info : Info
+    , position : Maybe Point
+    , parent : Int
+    , depth : Int
     }
 
 
@@ -52,35 +45,39 @@ type alias Info =
     Dict.Dict String String
 
 
+type alias InfoElement a =
+    { a | info : Info }
+
+
 type alias Edge =
-    { id: (Int, Int)
-    , from: Int
-    , to: Int
-    , selected : Bool
-    , info : Info
+    InfoElement
+        { id : ( Int, Int )
+        , from : Int
+        , to : Int
+        , selected : Bool
+        , position : Maybe Line
+        }
+
+
+type Line
+    = Straight StraightLine
+    | Curved CurvedLine
+
+
+type alias StraightLine =
+    { from : Point
+    , to : Point
     }
 
 
-type alias DepthNode =
-    { id : Int
-    , parent : Int
-    , depth : Int
+type alias CurvedLine =
+    { from : Point
+    , to : Point
+    , via : Point
     }
 
 
-type alias PlacedNode =
-    { id : Int
-    , x : Int
+type alias Point =
+    { x : Int
     , y : Int
-    }
-
-
-type alias PlacedEdge =
-    { id: (Int, Int)
-    , x1 : Int
-    , y1 : Int
-    , x2 : Int
-    , y2 : Int
-    , cx : Int
-    , cy : Int
     }
