@@ -62,7 +62,7 @@ removeCyclesInConnectedGraph graph nodes visited =
                             |> List.map
                                 (\e ->
                                     if List.member e.to parentIds then
-                                        reversedEdge e
+                                        reverse e
                                     else
                                         e
                                 )

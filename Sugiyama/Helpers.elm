@@ -8,13 +8,18 @@ toBasic graph =
     { nodes = List.map (\n -> n.id) graph.nodes, edges = List.map (\{ from, to } -> ( from, to )) graph.edges }
 
 
-reversedEdge : Edge -> Edge
-reversedEdge edge =
+reverse : Edge -> Edge
+reverse ({ from, to, reversed } as edge) =
     { edge
-        | to = edge.from
-        , from = edge.to
-        , reversed = not edge.reversed
+        | to = from
+        , from = to
+        , reversed = not reversed
     }
+
+
+reverseAll : Graph -> Graph
+reverseAll ({ edges } as graph) =
+    { graph | edges = List.map reverse edges }
 
 
 getChildren : Graph -> Node -> Nodes

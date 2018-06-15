@@ -6,11 +6,13 @@ import Sugiyama.Helpers exposing (..)
 
 layer : Graph -> Graph
 layer graph =
-    layerIteration graph []
+    graph
+        |> layerDown []
+        |> layerUp
 
 
-layerIteration : Graph -> List Int -> Graph
-layerIteration graph visited =
+layerDown : List Int -> Graph -> Graph
+layerDown visited graph =
     let
         root =
             graph.nodes
@@ -18,6 +20,9 @@ layerIteration graph visited =
                 |> List.sortWith (\a b -> compare (childrenChainLength graph a) (childrenChainLength graph b))
                 |> List.reverse
                 |> List.head
+
+        _ =
+            Debug.log "r" root
     in
         case root of
             Just root ->
@@ -26,17 +31,17 @@ layerIteration graph visited =
                         setNodeDepth graph root.id 0
 
                     ( newVisited, new2Graph ) =
-                        layerIterationInner newGraph [ { root | y = Just 0 } ] visited
+                        layerDownIteration newGraph [ { root | y = Just 0 } ] visited
                 in
-                    layerIteration new2Graph newVisited
+                    layerDown newVisited new2Graph
 
             Nothing ->
                 graph
 
 
-layerIterationInner : Graph -> Nodes -> List Int -> ( List Int, Graph )
-layerIterationInner graph nodes visited =
-    case List.head nodes of
+layerDownIteration : Graph -> Nodes -> List Int -> ( List Int, Graph )
+layerDownIteration graph iterationNodes visited =
+    case List.head iterationNodes of
         Just head ->
             let
                 newVisited =
@@ -57,12 +62,12 @@ layerIterationInner graph nodes visited =
                     updatedNodes
                         |> List.filter (\( b, n ) -> b)
                         |> List.map (\( b, n ) -> n)
-                        |> List.append (List.drop 1 nodes)
+                        |> List.append (List.drop 1 iterationNodes)
 
                 newGraph =
                     { graph | nodes = newNodes }
             in
-                layerIterationInner newGraph nextNodes newVisited
+                layerDownIteration newGraph nextNodes newVisited
 
         Nothing ->
             ( visited, graph )
@@ -84,3 +89,45 @@ updateChild parent children node =
                 ( False, node )
     else
         ( False, node )
+
+
+layerUp : Graph -> Graph
+layerUp graph =
+    let
+        layers =
+            graph.nodes
+                |> List.map (\n -> Maybe.withDefault 0 n.y)
+                |> List.maximum
+                |> Maybe.withDefault 0
+    in
+        layerUpIteration (layers - 1) graph
+
+
+layerUpIteration : Int -> Graph -> Graph
+layerUpIteration layer ({ nodes } as graph) =
+    if layer < 0 then
+        graph
+    else
+        let
+            newGraph =
+                { graph | nodes = List.map (updateParent graph) nodes }
+        in
+            layerUpIteration (layer - 1) newGraph
+
+
+updateParent : Graph -> Node -> Node
+updateParent graph node =
+    let
+        children =
+            getChildren graph node
+
+        minChildLayer =
+            children
+                |> List.map (\n -> Maybe.withDefault -1 n.y)
+                |> List.minimum
+                |> Maybe.withDefault 0
+    in
+        if Maybe.withDefault -1 node.y < minChildLayer - 1 then
+            { node | y = Just (minChildLayer - 1) }
+        else
+            node
