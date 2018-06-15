@@ -3,11 +3,9 @@ module Sugiyama.Helpers exposing (..)
 import Sugiyama.Model exposing (..)
 
 
-edgeIn : Edge -> Edges -> Bool
-edgeIn { from, to } edges =
-    edges
-        |> List.map (\{ from, to } -> ( from, to ))
-        |> List.member ( from, to )
+toBasic : Graph -> BasicGraph
+toBasic graph =
+    { nodes = List.map (\n -> n.id) graph.nodes, edges = List.map (\{ from, to } -> ( from, to )) graph.edges }
 
 
 reversedEdge : Edge -> Edge
@@ -41,6 +39,34 @@ getParents graph node =
         List.filter (\n -> List.member n.id ids) graph.nodes
 
 
-toBasic : Graph -> BasicGraph
-toBasic graph =
-    { nodes = List.map (\n -> n.id) graph.nodes, edges = List.map (\{ from, to } -> ( from, to )) graph.edges }
+childrenChainLength : Graph -> Node -> Int
+childrenChainLength graph node =
+    childrenChainLengthInner graph node []
+
+
+childrenChainLengthInner : Graph -> Node -> List Int -> Int
+childrenChainLengthInner graph node visited =
+    let
+        newVisited =
+            node.id :: visited
+
+        children =
+            getChildren graph node
+                |> List.filter (\n -> not (List.member n.id newVisited))
+    in
+        1 + (Maybe.withDefault -1 (List.maximum (List.map (\c -> childrenChainLengthInner graph c newVisited) children)))
+
+
+setNodeDepth : Graph -> Int -> Int -> Graph
+setNodeDepth graph id depth =
+    { graph
+        | nodes =
+            List.map
+                (\n ->
+                    if n.id == id then
+                        { n | y = Just depth }
+                    else
+                        n
+                )
+                graph.nodes
+    }

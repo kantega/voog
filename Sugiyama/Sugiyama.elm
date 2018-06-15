@@ -1,16 +1,17 @@
 module Sugiyama.Sugiyama exposing (..)
 
+import Sugiyama.Layering exposing (..)
 import Sugiyama.Model exposing (..)
 import Sugiyama.CycleRemoval exposing (..)
 import Sugiyama.Helpers exposing (..)
 
 
-sugiyama : BasicGraph -> BasicGraph
+sugiyama : BasicGraph -> Graph
 sugiyama graph =
     graph
         |> initialize
         |> removeCycles
-        |> toBasic
+        |> layer
 
 
 initialize : BasicGraph -> Graph

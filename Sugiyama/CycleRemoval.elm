@@ -80,21 +80,3 @@ removeCyclesInConnectedGraph graph nodes visited =
 
         Nothing ->
             ( visited, graph )
-
-
-childrenChainLength : Graph -> Node -> Int
-childrenChainLength graph node =
-    childrenChainLengthInner graph node []
-
-
-childrenChainLengthInner : Graph -> Node -> List Int -> Int
-childrenChainLengthInner graph node visited =
-    let
-        newVisited =
-            node.id :: visited
-
-        children =
-            getChildren graph node
-                |> List.filter (\n -> List.member n.id newVisited)
-    in
-        1 + (Maybe.withDefault -1 (List.maximum (List.map (\c -> childrenChainLengthInner graph c newVisited) children)))
