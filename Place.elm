@@ -28,8 +28,8 @@ setPos : Int -> Node -> Node
 setPos index node =
     let
         p =
-            { x = index * 120
-            , y = node.depth * 120
+            { x = index * 150
+            , y = node.depth * 150
             }
     in
         { node
