@@ -7,6 +7,7 @@ import Model exposing (..)
 import View exposing (..)
 import Update exposing (..)
 import Keyboard exposing (..)
+import Sugiyama.Sugiyama exposing (..)
 
 
 main : Program Never Model Msg

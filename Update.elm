@@ -4,7 +4,6 @@ import Random
 import Char exposing (..)
 import Model exposing (..)
 import Communication exposing (..)
-import Depth exposing (..)
 import Action exposing (..)
 
 

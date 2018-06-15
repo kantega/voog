@@ -2,7 +2,7 @@ module Action exposing (..)
 
 import Dict
 import Model exposing (..)
-import Depth exposing (..)
+import Sugiyama.Sugiyama exposing (sugiyama)
 import Place exposing (..)
 
 
@@ -143,3 +143,29 @@ toggleEdge model id =
                 model.edges
         , nodes = List.map (\n -> { n | selected = False }) model.nodes
     }
+
+
+calculateDepth : Edges -> Nodes -> Nodes
+calculateDepth edges nodes =
+    let
+        basicEdges =
+            List.map (\e -> ( e.from, e.to )) edges
+
+        basicNodes =
+            List.map (\n -> n.id) nodes
+
+        graph =
+            sugiyama { nodes = basicNodes, edges = basicEdges }
+
+        sortedSugiyama =
+            List.sortWith (\a b -> compare a.id b.id) graph.nodes
+
+        sortedNodes =
+            List.sortWith (\a b -> compare a.id b.id) nodes
+    in
+        List.map2
+            (\{ y } n ->
+                { n | depth = Maybe.withDefault 0 y }
+            )
+            sortedSugiyama
+            sortedNodes

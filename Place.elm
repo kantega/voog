@@ -1,7 +1,6 @@
 module Place exposing (..)
 
 import Model exposing (..)
-import Depth exposing (..)
 
 
 place : Model -> Model
@@ -14,6 +13,20 @@ place model =
             | nodes = placedNodes
             , edges = placeEdges model.edges placedNodes
         }
+
+
+outEdges : Edges -> Int -> Int
+outEdges edges id =
+    edges
+        |> List.filter (\e -> e.from == id && e.from /= e.to)
+        |> List.length
+
+
+inEdges : Edges -> Int -> Int
+inEdges edges id =
+    edges
+        |> List.filter (\e -> e.to == id && e.to /= e.from)
+        |> List.length
 
 
 placeNodes : Edges -> Nodes -> Nodes

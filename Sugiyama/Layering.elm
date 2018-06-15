@@ -20,9 +20,6 @@ layerDown visited graph =
                 |> List.sortWith (\a b -> compare (childrenChainLength graph a) (childrenChainLength graph b))
                 |> List.reverse
                 |> List.head
-
-        _ =
-            Debug.log "r" root
     in
         case root of
             Just root ->
@@ -125,7 +122,7 @@ updateParent graph node =
             children
                 |> List.map (\n -> Maybe.withDefault -1 n.y)
                 |> List.minimum
-                |> Maybe.withDefault 0
+                |> Maybe.withDefault 1
     in
         if Maybe.withDefault -1 node.y < minChildLayer - 1 then
             { node | y = Just (minChildLayer - 1) }
