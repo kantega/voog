@@ -2,6 +2,9 @@ module Place exposing (..)
 
 import Model exposing (..)
 
+nodeRadius = 15
+arrowDistance = 5
+arrowWidth = 1
 
 place : Model -> Model
 place model =
@@ -38,15 +41,19 @@ placeNodes edges nodes =
 
 
 setPos : Int -> Node -> Node
-setPos index node =
+setPos index ({position} as node) =
     let
         p =
-            { x = index * 150
-            , y = node.depth * 150
-            }
+            case position of
+                Just position ->
+                    Just { x = position.x * 50
+                    , y = position.y * 50
+                    }
+                Nothing ->
+                    position
     in
         { node
-            | position = Just p
+            | position = p
         }
 
 
@@ -79,18 +86,18 @@ placeEdge nodes edges edge =
                                 if List.any (\e -> e.id == ( toNode.id, fromNode.id )) edges then
                                     let
                                         f =
-                                            { x = from.x + 50 + round (50 * cos (angle)) + round (8 * cos (angle + 3.1415 / 2))
-                                            , y = from.y + 50 + round (50 * sin (angle)) + round (8 * sin (angle + 3.1415 / 2))
+                                            { x = from.x + nodeRadius + round (nodeRadius * cos (angle)) + round (8 * cos (angle + 3.1415 / 2))
+                                            , y = from.y + nodeRadius + round (nodeRadius * sin (angle)) + round (8 * sin (angle + 3.1415 / 2))
                                             }
 
                                         t =
-                                            { x = to.x + 50 - round (60 * cos (angle)) + round (8 * cos (angle + 3.1415 / 2))
-                                            , y = to.y + 50 - round (60 * sin (angle)) + round (8 * sin (angle + 3.1415 / 2))
+                                            { x = to.x + nodeRadius - round ((nodeRadius + arrowDistance) * cos (angle)) + round (8 * cos (angle + 3.1415 / 2))
+                                            , y = to.y + nodeRadius - round ((nodeRadius + arrowDistance) * sin (angle)) + round (8 * sin (angle + 3.1415 / 2))
                                             }
 
                                         v =
-                                            { x = from.x + 50 + round (distance / 2 * cos (angle + 3.1415 / 32)) + round (8 * cos (angle + 3.1415 / 2))
-                                            , y = from.y + 50 + round (distance / 2 * sin (angle + 3.1415 / 32)) + round (8 * sin (angle + 3.1415 / 2))
+                                            { x = from.x + nodeRadius + round (distance / 2 * cos (angle + 3.1415 / 32)) + round (8 * cos (angle + 3.1415 / 2))
+                                            , y = from.y + nodeRadius + round (distance / 2 * sin (angle + 3.1415 / 32)) + round (8 * sin (angle + 3.1415 / 2))
                                             }
                                     in
                                         Just
@@ -103,13 +110,13 @@ placeEdge nodes edges edge =
                                 else
                                     let
                                         f =
-                                            { x = from.x + 50 + round (60 * cos (angle))
-                                            , y = from.y + 50 + round (60 * sin (angle))
+                                            { x = from.x + nodeRadius + round ((nodeRadius + arrowDistance) * cos (angle))
+                                            , y = from.y + nodeRadius + round ((nodeRadius + arrowDistance) * sin (angle))
                                             }
 
                                         t =
-                                            { x = to.x + 50 - round (60 * cos (angle))
-                                            , y = to.y + 50 - round (60 * sin (angle))
+                                            { x = to.x + nodeRadius - round ((nodeRadius + arrowDistance) * cos (angle))
+                                            , y = to.y + nodeRadius - round ((nodeRadius + arrowDistance) * sin (angle))
                                             }
                                     in
                                         Just
@@ -121,13 +128,13 @@ placeEdge nodes edges edge =
                         else
                             let
                                 f =
-                                    { x = from.x - 12
-                                    , y = from.y + 50
+                                    { x = from.x - arrowDistance - 2
+                                    , y = from.y + nodeRadius
                                     }
 
                                 t =
-                                    { x = from.x - 10
-                                    , y = from.y + 50
+                                    { x = from.x - arrowDistance
+                                    , y = from.y + nodeRadius
                                     }
                             in
                                 Just

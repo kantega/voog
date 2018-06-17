@@ -36,8 +36,6 @@ type alias NodeCore =
     { id : Int
     , selected : Bool
     , position : Maybe Point
-    , parent : Int
-    , depth : Int
     }
 
 

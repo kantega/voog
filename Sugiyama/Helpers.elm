@@ -22,6 +22,13 @@ reverseAll ({ edges } as graph) =
     { graph | edges = List.map reverse edges }
 
 
+getNode : Graph -> Int -> Maybe Node
+getNode { nodes } id =
+    nodes
+        |> List.filter (\n -> n.id == id)
+        |> List.head
+
+
 getChildren : Graph -> Node -> Nodes
 getChildren graph node =
     let

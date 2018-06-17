@@ -1,5 +1,7 @@
 module Sugiyama.Sugiyama exposing (..)
 
+import Sugiyama.InitialPlacement exposing (..)
+import Sugiyama.DummyNodes exposing (..)
 import Sugiyama.Layering exposing (..)
 import Sugiyama.Model exposing (..)
 import Sugiyama.CycleRemoval exposing (..)
@@ -12,6 +14,8 @@ sugiyama graph =
         |> initialize
         |> removeCycles
         |> layer
+        |> addDummies
+        |> setInitialPosition
 
 
 initialize : BasicGraph -> Graph

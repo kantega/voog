@@ -15,7 +15,7 @@ view : Model -> Html Msg
 view model =
     div []
         ((popup model)
-            :: [ svg [ width "1200", height "800", viewBox "0 0 1200 800" ]
+            :: [ svg [ width "3000", height "800", viewBox "0 0 3000 800" ]
                     ((defs model)
                         :: (List.append
                                 (List.foldr List.append [] (List.filterMap viewNode model.nodes))
@@ -144,9 +144,9 @@ defs model =
 getTextX : Node -> Int -> String
 getTextX node x =
     if Dict.member "image" node.info then
-        toString (x + 55)
+        (toString (x + (round (toFloat nodeRadius / 1))))
     else
-        toString (x + 25)
+        (toString (x + (round (toFloat nodeRadius / 1))))
 
 
 getStrokeWidth : Node -> String
@@ -181,9 +181,9 @@ viewNode node =
                     _ ->
                         circle
                             [ onClick (ClickNode node.id)
-                            , cx (toString (x + 50))
-                            , cy (toString (y + 50))
-                            , r "50"
+                            , cx (toString (x + nodeRadius))
+                            , cy (toString (y + nodeRadius))
+                            , r (toString nodeRadius)
                             , fill "#f0f0f0"
                             , stroke "#f44336"
                             , strokeWidth (getStrokeWidth node)
@@ -199,7 +199,7 @@ viewNode node =
                     []
                 , Svg.text_
                     [ Svg.Attributes.x (getTextX node x)
-                    , Svg.Attributes.y (toString (y + 36))
+                    , Svg.Attributes.y (toString (y + (round (toFloat nodeRadius / 1))))
                     , fill "#b0b0b0"
                     , fontFamily "sans-serif"
                     ]
@@ -260,7 +260,7 @@ viewEdge edge =
                         , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
                         , markerEnd marker
                         , fill "none"
-                        , strokeWidth "3"
+                        , strokeWidth (toString arrowWidth)
                         , stroke strokeColor
                         , d (path position)
                         ]

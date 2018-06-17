@@ -18,8 +18,6 @@ addNodes model update nodes =
                                 { id = id
                                 , info = info
                                 , selected = False
-                                , parent = -1
-                                , depth = -1
                                 , position = Nothing
                                 }
                         in
@@ -51,8 +49,12 @@ addNodes model update nodes =
                     addNodes model update rest
 
         _ ->
-            place
-                { model | nodes = calculateDepth model.edges model.nodes }
+            let
+                ( newNodes, newEdges ) =
+                    calculateDepth model.edges model.nodes
+            in
+                place
+                    { model | nodes = newNodes, edges = newEdges }
 
 
 removeNodes : Model -> List Int -> Model
@@ -64,10 +66,10 @@ removeNodes model nodes =
         newEdges =
             List.filter (\e -> (not (List.member e.from nodes)) && (not (List.member e.to nodes))) model.edges
 
-        depthNodes =
+        ( new2Nodes, new2Edges ) =
             calculateDepth newEdges newNodes
     in
-        place { model | nodes = depthNodes, edges = newEdges }
+        place { model | nodes = new2Nodes, edges = new2Edges }
 
 
 addEdges : Model -> Bool -> List ( ( Int, Int ), Dict.Dict String String ) -> Model
@@ -100,8 +102,12 @@ addEdges model update edges =
                     rest
 
         _ ->
-            place
-                { model | nodes = calculateDepth model.edges model.nodes }
+            let
+                ( newNodes, newEdges ) =
+                    calculateDepth model.edges model.nodes
+            in
+                place
+                    { model | nodes = newNodes, edges = newEdges }
 
 
 removeEdges : Model -> List ( Int, Int ) -> Model
@@ -109,8 +115,11 @@ removeEdges model edges =
     let
         newEdges =
             List.filter (\e -> not (List.member e.id edges)) model.edges
+
+        ( newNodes, new2Edges ) =
+            calculateDepth newEdges model.nodes
     in
-        place { model | edges = newEdges, nodes = calculateDepth newEdges model.nodes }
+        place { model | edges = new2Edges, nodes = newNodes }
 
 
 toggleNode : Model -> Int -> Model
@@ -145,7 +154,7 @@ toggleEdge model id =
     }
 
 
-calculateDepth : Edges -> Nodes -> Nodes
+calculateDepth : Edges -> Nodes -> ( Nodes, Edges )
 calculateDepth edges nodes =
     let
         basicEdges =
@@ -162,10 +171,62 @@ calculateDepth edges nodes =
 
         sortedNodes =
             List.sortWith (\a b -> compare a.id b.id) nodes
-    in
-        List.map2
-            (\{ y } n ->
-                { n | depth = Maybe.withDefault 0 y }
-            )
+
+        mergedNodes =
+            List.map2
+                (\{ x, y } n ->
+                    let
+                        position = Just {x = Maybe.withDefault 0 x, y = Maybe.withDefault 0 y}
+                    in
+                        { n | position = position }
+                )
+                sortedSugiyama
+                sortedNodes
+
+        newNodes =
             sortedSugiyama
-            sortedNodes
+                |> List.drop (List.length sortedNodes)
+                |> List.map
+                    (\{ id, y } ->
+                        { id = id
+                        , position = Nothing
+                        , selected = False
+                        , info = Dict.fromList [ ( "dummy", "True" ) ]
+                        }
+                    )
+
+        sortedSugiyamaEdges =
+            List.sortWith (\a b -> compare ( a.from, a.to ) ( b.from, b.to )) graph.edges
+
+        sortedEdges =
+            List.sortWith (\a b -> compare a.id b.id) edges
+
+        mergedEdges =
+            List.map2
+                (\{ from, to } e ->
+                    { e | id = ( from, to ), from = from, to = to }
+                )
+                sortedSugiyamaEdges
+                sortedEdges
+
+        newEdges =
+            sortedSugiyamaEdges
+                |> List.drop (List.length sortedEdges)
+                |> List.map
+                    (\{ from, to } ->
+                        { id = ( from, to )
+                        , position = Nothing
+                        , selected = False
+                        , info = Dict.fromList [ ( "dummy", "True" ) ]
+                        , from = from
+                        , to = to
+                        }
+                    )
+
+        new2Edges =
+            List.append mergedEdges newEdges
+
+        new2Nodes =
+            List.append mergedNodes newNodes
+    in
+        ( new2Nodes, new2Edges )
