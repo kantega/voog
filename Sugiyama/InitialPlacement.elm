@@ -31,19 +31,16 @@ setInitialPosition ({ nodes, edges } as graph) =
 
 setInitialPositionForLayer : List Int -> Graph -> Graph
 setInitialPositionForLayer layers ({ nodes } as graph) =
-    case List.head layers of
-        Just layer ->
+    case layers of
+        layer :: rest ->
             let
                 ids =
                     nodesInLayer graph layer
                         |> List.map (\n -> n.id)
-
-                nextLayers =
-                    List.drop 1 layers
             in
-                setInitialPositionForLayer nextLayers { graph | nodes = setInitialPositionIteration 0 ids nodes }
+                setInitialPositionForLayer rest { graph | nodes = setInitialPositionIteration 0 ids nodes }
 
-        Nothing ->
+        _ ->
             graph
 
 

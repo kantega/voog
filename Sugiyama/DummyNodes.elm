@@ -12,18 +12,15 @@ addDummies ({ edges } as graph) =
 
 addDummiesIteration : Graph -> Edges -> Graph
 addDummiesIteration graph iterationEdges =
-    case List.head iterationEdges of
-        Just edge ->
+    case iterationEdges of
+        edge :: rest ->
             let
                 newGraph =
                     addDummy graph edge
-
-                newIterationEdges =
-                    List.drop 1 iterationEdges
             in
-                addDummiesIteration newGraph newIterationEdges
+                addDummiesIteration newGraph rest
 
-        Nothing ->
+        _ ->
             graph
 
 
@@ -65,17 +62,13 @@ addDummy ({ nodes, edges } as graph) ({ from, to } as edge) =
                                     dummyNodes =
                                         createDummyNodes id missingLayers
 
+                                    ids =
+                                        List.append
+                                            (fromNode.id :: (List.range id (id + List.length missingLayers - 1)))
+                                            [ toNode.id ]
+
                                     dummyEdges =
-                                        { from = fromNode.id
-                                        , to = id
-                                        , reversed = direction
-                                        }
-                                            :: ({ from = id + List.length dummyNodes - 1
-                                                , to = toNode.id
-                                                , reversed = direction
-                                                }
-                                                    :: createDummyEdges id (List.drop 1 missingLayers) direction
-                                               )
+                                        createDummyEdges ids direction
 
                                     newNodes =
                                         List.append nodes dummyNodes
@@ -101,8 +94,8 @@ addDummy ({ nodes, edges } as graph) ({ from, to } as edge) =
 
 createDummyNodes : Int -> List Int -> Nodes
 createDummyNodes id missingLayers =
-    case List.head missingLayers of
-        Just layer ->
+    case missingLayers of
+        layer :: rest ->
             let
                 node =
                     { id = id
@@ -110,31 +103,25 @@ createDummyNodes id missingLayers =
                     , y = Just layer
                     , dummy = True
                     }
-
-                rest =
-                    List.drop 1 missingLayers
             in
-                node :: (createDummyNodes (id + 1) rest)
+                node :: createDummyNodes (id + 1) rest
 
         _ ->
             []
 
 
-createDummyEdges : Int -> List Int -> Bool -> Edges
-createDummyEdges id missingLayers reversed =
-    case List.head missingLayers of
-        Just layer ->
+createDummyEdges : List Int -> Bool -> Edges
+createDummyEdges ids reversed =
+    case ids of
+        from :: to :: rest ->
             let
                 edge =
-                    { from = id
-                    , to = id + 1
+                    { from = from
+                    , to = to
                     , reversed = reversed
                     }
-
-                rest =
-                    List.drop 1 missingLayers
             in
-                edge :: (createDummyEdges (id + 1) rest reversed)
+                edge :: createDummyEdges (to :: rest) reversed
 
         _ ->
             []

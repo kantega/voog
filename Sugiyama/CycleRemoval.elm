@@ -33,14 +33,10 @@ removeCyclesIteration graph visited =
 
 removeCyclesInConnectedGraph : Graph -> Nodes -> List Int -> ( List Int, Graph )
 removeCyclesInConnectedGraph graph nodes visited =
-    case List.head nodes of
-        Just head ->
+    case nodes of
+        head :: rest ->
             if List.member head.id visited then
-                let
-                    newNodes =
-                        List.drop 1 nodes
-                in
-                    removeCyclesInConnectedGraph graph newNodes visited
+                removeCyclesInConnectedGraph graph rest visited
             else
                 let
                     newVisited =
@@ -74,9 +70,9 @@ removeCyclesInConnectedGraph graph nodes visited =
                         { graph | edges = newEdges }
 
                     newNodes =
-                        List.append newChildren (List.drop 1 nodes)
+                        List.append newChildren rest
                 in
                     removeCyclesInConnectedGraph newGraph newNodes newVisited
 
-        Nothing ->
+        _ ->
             ( visited, graph )

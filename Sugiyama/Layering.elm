@@ -38,8 +38,8 @@ layerDown visited graph =
 
 layerDownIteration : Graph -> Nodes -> List Int -> ( List Int, Graph )
 layerDownIteration graph iterationNodes visited =
-    case List.head iterationNodes of
-        Just head ->
+    case iterationNodes of
+        head :: rest ->
             let
                 newVisited =
                     head.id :: visited
@@ -59,14 +59,14 @@ layerDownIteration graph iterationNodes visited =
                     updatedNodes
                         |> List.filter (\( b, n ) -> b)
                         |> List.map (\( b, n ) -> n)
-                        |> List.append (List.drop 1 iterationNodes)
+                        |> List.append rest
 
                 newGraph =
                     { graph | nodes = newNodes }
             in
                 layerDownIteration newGraph nextNodes newVisited
 
-        Nothing ->
+        _ ->
             ( visited, graph )
 
 
