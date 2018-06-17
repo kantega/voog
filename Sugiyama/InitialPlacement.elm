@@ -1,6 +1,7 @@
 module Sugiyama.InitialPlacement exposing (..)
 
 import Sugiyama.Model exposing (..)
+import Sugiyama.Helpers exposing (..)
 
 
 nodesInLayer : Graph -> Int -> Nodes
@@ -11,7 +12,7 @@ nodesInLayer { nodes } layer =
 
 
 setInitialPosition : Graph -> Graph
-setInitialPosition ({ nodes } as graph) =
+setInitialPosition ({ nodes, edges } as graph) =
     let
         layers =
             nodes
@@ -19,8 +20,13 @@ setInitialPosition ({ nodes } as graph) =
                 |> List.maximum
                 |> Maybe.withDefault -1
                 |> List.range 0
+
+        sortedNodes =
+            nodes
+                |> List.sortWith (\a b -> compare (outEdges edges a.id) (outEdges edges b.id))
+                |> List.reverse
     in
-        setInitialPositionForLayer layers graph
+        setInitialPositionForLayer layers { graph | nodes = sortedNodes }
 
 
 setInitialPositionForLayer : List Int -> Graph -> Graph

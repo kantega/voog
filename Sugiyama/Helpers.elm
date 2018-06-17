@@ -17,6 +17,20 @@ reverse ({ from, to, reversed } as edge) =
     }
 
 
+outEdges : Edges -> Int -> Int
+outEdges edges id =
+    edges
+        |> List.filter (\e -> e.from == id && e.from /= e.to)
+        |> List.length
+
+
+inEdges : Edges -> Int -> Int
+inEdges edges id =
+    edges
+        |> List.filter (\e -> e.to == id && e.to /= e.from)
+        |> List.length
+
+
 reverseAll : Graph -> Graph
 reverseAll ({ edges } as graph) =
     { graph | edges = List.map reverse edges }

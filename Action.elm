@@ -176,7 +176,8 @@ calculateDepth edges nodes =
             List.map2
                 (\{ x, y } n ->
                     let
-                        position = Just {x = Maybe.withDefault 0 x, y = Maybe.withDefault 0 y}
+                        position =
+                            Just { x = Maybe.withDefault 0 x, y = Maybe.withDefault 0 y }
                     in
                         { n | position = position }
                 )
@@ -187,12 +188,21 @@ calculateDepth edges nodes =
             sortedSugiyama
                 |> List.drop (List.length sortedNodes)
                 |> List.map
-                    (\{ id, y } ->
-                        { id = id
-                        , position = Nothing
-                        , selected = False
-                        , info = Dict.fromList [ ( "dummy", "True" ) ]
-                        }
+                    (\{ id, x, y } ->
+                        let
+                            position =
+                                case ( x, y ) of
+                                    ( Just x, Just y ) ->
+                                        Just { x = x, y = y }
+
+                                    _ ->
+                                        Nothing
+                        in
+                            { id = id
+                            , position = position
+                            , selected = False
+                            , info = Dict.fromList [ ( "dummy", "True" ) ]
+                            }
                     )
 
         sortedSugiyamaEdges =
