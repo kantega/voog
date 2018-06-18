@@ -1,5 +1,6 @@
 module Sugiyama.Sugiyama exposing (..)
 
+import Sugiyama.CrossReduction exposing (..)
 import Sugiyama.InitialPlacement exposing (..)
 import Sugiyama.DummyNodes exposing (..)
 import Sugiyama.Layering exposing (..)
@@ -16,6 +17,7 @@ sugiyama graph =
         |> layer
         |> addDummies
         |> setInitialPosition
+        |> reduceCrossing
 
 
 initialize : BasicGraph -> Graph
