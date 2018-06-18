@@ -60,12 +60,17 @@ type alias Edge =
 type Line
     = Straight StraightLine
     | Curved CurvedLine
+    | Multi MultiLine
 
 
 type alias StraightLine =
     { from : Point
     , to : Point
     }
+
+
+type alias MultiLine =
+    List Point
 
 
 type alias CurvedLine =

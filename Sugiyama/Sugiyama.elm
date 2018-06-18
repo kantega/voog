@@ -27,6 +27,6 @@ initialize { nodes, edges } =
             List.map (\n -> { id = n, dummy = False, x = Nothing, y = Nothing }) nodes
 
         newEdges =
-            List.map (\( from, to ) -> { from = from, to = to, reversed = False }) edges
+            List.map (\( from, to ) -> { from = from, to = to, reversed = False, num = Nothing, id = (from, to) }) edges
     in
         { nodes = newNodes, edges = newEdges }

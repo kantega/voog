@@ -15,7 +15,7 @@ view : Model -> Html Msg
 view model =
     div []
         ((popup model)
-            :: [ svg [ width "3000", height "800", viewBox "0 0 3000 800" ]
+            :: [ svg [ width "3000", height "3000", viewBox "0 0 3000 3000" ]
                     ((defs model)
                         :: (List.append
                                 (List.foldr List.append [] (List.filterMap viewNode model.nodes))
@@ -244,6 +244,27 @@ path position =
                 ++ (toString line.to.x)
                 ++ " "
                 ++ (toString line.to.y)
+
+        Multi line ->
+            lineToString line True
+
+
+
+lineToString : List Point -> Bool -> String
+lineToString line first =
+    let
+        char =
+            if first then
+                "M"
+            else
+                "L"
+    in
+        case line of
+            head :: rest ->
+                char ++ " " ++ (toString (head.x)) ++ " " ++ (toString (head.y)) ++ lineToString rest False
+
+            _ ->
+                ""
 
 
 viewEdge : Edge -> Maybe (List (Html Msg))

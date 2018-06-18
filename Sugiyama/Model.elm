@@ -46,7 +46,9 @@ type alias Node =
 
 
 type alias Edge =
-    { from : Int
+    { id : (Int, Int)
+    , num : Maybe Int
+    , from : Int
     , to : Int
     , reversed : Bool
     }

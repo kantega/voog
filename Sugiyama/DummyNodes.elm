@@ -68,7 +68,7 @@ addDummy ({ nodes, edges } as graph) ({ from, to } as edge) =
                                             [ toNode.id ]
 
                                     dummyEdges =
-                                        createDummyEdges ids direction
+                                        createDummyEdges (fromNode.id, toNode.id) 0 ids direction
 
                                     newNodes =
                                         List.append nodes dummyNodes
@@ -110,18 +110,20 @@ createDummyNodes id missingLayers =
             []
 
 
-createDummyEdges : List Int -> Bool -> Edges
-createDummyEdges ids reversed =
+createDummyEdges : (Int, Int) -> Int -> List Int -> Bool -> Edges
+createDummyEdges originalId num ids reversed =
     case ids of
         from :: to :: rest ->
             let
                 edge =
-                    { from = from
+                    { id = originalId
+                    , num = Just num
+                    , from = from
                     , to = to
                     , reversed = reversed
                     }
             in
-                edge :: createDummyEdges (to :: rest) reversed
+                edge :: createDummyEdges originalId (num + 1) (to :: rest) reversed
 
         _ ->
             []

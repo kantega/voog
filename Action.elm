@@ -3,6 +3,7 @@ module Action exposing (..)
 import Dict
 import Model exposing (..)
 import Sugiyama.Sugiyama exposing (sugiyama)
+import Sugiyama.Model
 import Place exposing (..)
 
 
@@ -184,59 +185,75 @@ calculateDepth edges nodes =
                 sortedSugiyama
                 sortedNodes
 
-        newNodes =
-            sortedSugiyama
-                |> List.drop (List.length sortedNodes)
-                |> List.map
-                    (\{ id, x, y } ->
-                        let
-                            position =
-                                case ( x, y ) of
-                                    ( Just x, Just y ) ->
-                                        Just { x = x, y = y }
-
-                                    _ ->
-                                        Nothing
-                        in
-                            { id = id
-                            , position = position
-                            , selected = False
-                            , info = Dict.fromList [ ( "dummy", "True" ) ]
-                            }
-                    )
-
-        sortedSugiyamaEdges =
-            List.sortWith (\a b -> compare ( a.from, a.to ) ( b.from, b.to )) graph.edges
-
-        sortedEdges =
-            List.sortWith (\a b -> compare a.id b.id) edges
-
         mergedEdges =
-            List.map2
-                (\{ from, to } e ->
-                    { e | id = ( from, to ), from = from, to = to }
-                )
-                sortedSugiyamaEdges
-                sortedEdges
-
-        newEdges =
-            sortedSugiyamaEdges
-                |> List.drop (List.length sortedEdges)
-                |> List.map
-                    (\{ from, to } ->
-                        { id = ( from, to )
-                        , position = Nothing
-                        , selected = False
-                        , info = Dict.fromList [ ( "dummy", "True" ) ]
-                        , from = from
-                        , to = to
-                        }
-                    )
-
-        new2Edges =
-            List.append mergedEdges newEdges
-
-        new2Nodes =
-            List.append mergedNodes newNodes
+            List.map (mergeEdge graph) edges
     in
-        ( new2Nodes, new2Edges )
+        ( mergedNodes, mergedEdges )
+
+
+mergeEdge : Sugiyama.Model.Graph -> Edge -> Edge
+mergeEdge { nodes, edges } edge =
+    let
+        parts =
+            edges
+                |> List.filter (\e -> e.id == edge.id || e.id == (Tuple.second edge.id, Tuple.first edge.id) && e.reversed)
+                |> List.filterMap
+                    (\e ->
+                        case e.num of
+                            Just num ->
+                                Just { e | num = num }
+
+                            _ ->
+                                Nothing
+                    )
+                |> List.sortWith (\a b -> compare a.num b.num)
+    in
+        if List.length parts < 2 then
+            edge
+        else
+            let
+                endNodeIds =
+                    List.map (\e -> e.to) parts
+
+                nodeIds =
+                    parts
+                        |> List.map (\e -> e.from)
+                        |> List.head
+                        |> List.singleton
+                        |> List.filterMap identity
+                        |> (\a -> List.append a endNodeIds)
+
+                points =
+                    List.map (getNodePosition nodes) nodeIds
+
+                reversed =
+                    not (List.member edge.id (List.map (\e -> e.id) parts))
+
+                correctPoints =
+                    if reversed then
+                        List.reverse points
+                    else
+                        points
+            in
+                { edge | position = Just (Multi correctPoints) }
+
+
+getNodePosition : Sugiyama.Model.Nodes -> Int -> Point
+getNodePosition nodes id =
+    let
+        node =
+            nodes
+                |> List.filter (\n -> n.id == id)
+                |> List.head
+    in
+        case node of
+            Just node ->
+                case ( node.x, node.y ) of
+                    ( Just x, Just y ) ->
+                        { x = x, y = y }
+
+                    _ ->
+                        { x = -1, y = -1 }
+
+            Nothing ->
+                { x = -1, y = -1 }
