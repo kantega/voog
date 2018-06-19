@@ -7,8 +7,8 @@ import Sugiyama.Model
 import Place exposing (..)
 
 
-addNodes : Model -> Bool -> List ( String, Dict.Dict String String ) -> Model
-addNodes model update nodes =
+addNodes : Model -> Bool -> List ( String, Dict.Dict String String ) -> Bool -> Model
+addNodes model update nodes recalculate =
     case nodes of
         ( id, info ) :: rest ->
             case String.toInt id of
@@ -23,9 +23,9 @@ addNodes model update nodes =
                                 }
                         in
                             if not (List.any (\n -> n.id == id) model.nodes) then
-                                addNodes { model | nodes = node :: model.nodes } update rest
+                                addNodes { model | nodes = node :: model.nodes } update rest True
                             else
-                                addNodes model update rest
+                                addNodes model update rest recalculate
                     else
                         addNodes
                             { model
@@ -45,17 +45,21 @@ addNodes model update nodes =
                             }
                             update
                             rest
+                            recalculate
 
                 _ ->
-                    addNodes model update rest
+                    addNodes model update rest recalculate
 
         _ ->
-            let
-                ( newNodes, newEdges ) =
-                    calculateDepth model.edges model.nodes
-            in
-                place
-                    { model | nodes = newNodes, edges = newEdges }
+            if recalculate then
+                let
+                    ( newNodes, newEdges ) =
+                        calculateDepth model.edges model.nodes
+                in
+                    place
+                        { model | nodes = newNodes, edges = newEdges }
+            else
+                model
 
 
 removeNodes : Model -> List Int -> Model
@@ -73,8 +77,8 @@ removeNodes model nodes =
         place { model | nodes = new2Nodes, edges = new2Edges }
 
 
-addEdges : Model -> Bool -> List ( ( Int, Int ), Dict.Dict String String ) -> Model
-addEdges model update edges =
+addEdges : Model -> Bool -> List ( ( Int, Int ), Dict.Dict String String ) -> Bool -> Model
+addEdges model update edges recalculate =
     case edges of
         ( ( from, to ), info ) :: rest ->
             if not update || not (List.any (\e -> e.id == ( from, to )) model.edges) then
@@ -83,9 +87,9 @@ addEdges model update edges =
                         { id = ( from, to ), from = from, to = to, selected = False, info = info, position = Nothing }
                 in
                     if not (List.any (\e -> e.id == ( from, to )) model.edges) then
-                        addEdges { model | edges = edge :: model.edges } update rest
+                        addEdges { model | edges = edge :: model.edges } update rest True
                     else
-                        addEdges model update rest
+                        addEdges model update rest recalculate
             else
                 addEdges
                     { model
@@ -101,14 +105,18 @@ addEdges model update edges =
                     }
                     update
                     rest
+                    recalculate
 
         _ ->
-            let
-                ( newNodes, newEdges ) =
-                    calculateDepth model.edges model.nodes
-            in
-                place
-                    { model | nodes = newNodes, edges = newEdges }
+            if recalculate then
+                let
+                    ( newNodes, newEdges ) =
+                        calculateDepth model.edges model.nodes
+                in
+                    place
+                        { model | nodes = newNodes, edges = newEdges }
+            else
+                model
 
 
 removeEdges : Model -> List ( Int, Int ) -> Model
@@ -228,9 +236,9 @@ mergeEdge { nodes, edges } edge =
 
                 reversed =
                     parts
-                        |> List.map (\n -> {reversed = n.reversed})
+                        |> List.map (\n -> { reversed = n.reversed })
                         |> List.head
-                        |> Maybe.withDefault {reversed = False}
+                        |> Maybe.withDefault { reversed = False }
                         |> (\e -> e.reversed)
 
                 correctPoints =

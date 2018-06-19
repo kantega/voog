@@ -23,7 +23,7 @@ handleCommunication model msg =
                     "addNodes" ->
                         case decodeString (maybe (field "nodes" (dict (dict string)))) msg of
                             Ok (Just rawNodes) ->
-                                ( addNodes model update (Dict.toList rawNodes), Cmd.none )
+                                ( addNodes model update (Dict.toList rawNodes) False, Cmd.none )
 
                             _ ->
                                 ( model, Cmd.none )
@@ -57,7 +57,7 @@ handleCommunication model msg =
                                             (Dict.toList edges)
                                         )
                                 in
-                                    ( addEdges model update parsedEdges, Cmd.none )
+                                    ( addEdges model update parsedEdges False, Cmd.none )
 
                             _ ->
                                 ( model, Cmd.none )
