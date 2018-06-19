@@ -7,6 +7,7 @@ import Sugiyama.Layering exposing (..)
 import Sugiyama.Model exposing (..)
 import Sugiyama.CycleRemoval exposing (..)
 import Sugiyama.Helpers exposing (..)
+import Sugiyama.Placement exposing (..)
 
 
 sugiyama : BasicGraph -> Graph
@@ -19,6 +20,7 @@ sugiyama graph =
         |> setInitialPosition
         |> (reduceCrossing Up)
         |> (reduceCrossing Down)
+        |> setPosition
 
 
 initialize : BasicGraph -> Graph

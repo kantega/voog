@@ -2,6 +2,7 @@ module Sugiyama.CrossReduction exposing (..)
 
 import Dict exposing (..)
 import Sugiyama.Model exposing (..)
+import Sugiyama.Helpers exposing (..)
 
 
 reduceCrossing : Direction -> Graph -> Graph
@@ -145,18 +146,3 @@ edgeCrossing xDict xDictOther a b =
 
             _ ->
                 False
-
-
-getXDict : Graph -> Int -> Dict Int (Maybe Int)
-getXDict { nodes } layer =
-    nodes
-        |> List.filter (\n -> n.y == Just layer)
-        |> List.map (\n -> ( n.id, n.x ))
-        |> Dict.fromList
-
-
-getLayerDict : Graph -> Dict Int (Maybe Int)
-getLayerDict { nodes } =
-    nodes
-        |> List.map (\n -> ( n.id, n.y ))
-        |> Dict.fromList

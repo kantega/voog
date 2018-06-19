@@ -15,7 +15,7 @@ view : Model -> Html Msg
 view model =
     div []
         ((popup model)
-            :: [ svg [ width "3000", height "3000", viewBox "0 0 3000 3000" ]
+            :: [ svg [ width "30000", height "30000", viewBox "0 0 30000 30000" ]
                     ((defs model)
                         :: (List.append
                                 (List.foldr List.append [] (List.filterMap viewNode model.nodes))

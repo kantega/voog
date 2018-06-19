@@ -1,5 +1,6 @@
 module Sugiyama.Helpers exposing (..)
 
+import Dict exposing (..)
 import Sugiyama.Model exposing (..)
 
 
@@ -96,3 +97,17 @@ setNodeDepth graph id depth =
                 )
                 graph.nodes
     }
+
+getXDict : Graph -> Int -> Dict Int (Maybe Int)
+getXDict { nodes } layer =
+    nodes
+        |> List.filter (\n -> n.y == Just layer)
+        |> List.map (\n -> ( n.id, n.x ))
+        |> Dict.fromList
+
+
+getLayerDict : Graph -> Dict Int (Maybe Int)
+getLayerDict { nodes } =
+    nodes
+        |> List.map (\n -> ( n.id, n.y ))
+        |> Dict.fromList
