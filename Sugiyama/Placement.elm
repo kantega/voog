@@ -18,21 +18,21 @@ setPosition ({ nodes } as graph) =
                 |> Maybe.withDefault Nothing
                 |> Maybe.withDefault 0
 
-        layerDict =
-            getLayerDict graph
+        layerPos =
+            getLayerPos graph
     in
         graph
-            |> setLayerPosition layerDict (wideLayer - 1) Up
-            |> setLayerPosition layerDict (wideLayer + 1) Down
+            |> setLayerPosition layerPos (wideLayer - 1) Up
+            |> setLayerPosition layerPos (wideLayer + 1) Down
 
 
 setLayerPosition : Dict Int (Maybe Int) -> Int -> Direction -> Graph -> Graph
-setLayerPosition layerDict layer direction ({ nodes, edges } as graph) =
+setLayerPosition layerPos layer direction ({ nodes, edges } as graph) =
     let
-        xDict =
-            getXDict graph layer
+        xPos =
+            getXPos graph layer
     in
-        if Dict.size xDict == 0 then
+        if Dict.size xPos == 0 then
             graph
         else
             let
@@ -44,103 +44,88 @@ setLayerPosition layerDict layer direction ({ nodes, edges } as graph) =
                         Up ->
                             ( layer, layer + 1, layer - 1 )
 
-                xDictOther =
-                    getXDict graph otherLayer
+                xPosOther =
+                    getXPos graph otherLayer
 
                 layerEdges =
-                    List.filter (\e -> Dict.get e.from layerDict == Just (Just (edgeLayer))) edges
+                    List.filter (\e -> Dict.get e.from layerPos == Just (Just (edgeLayer))) edges
 
-                newXDict =
-                    setSubLayerPosition xDict xDictOther layerEdges layer 0
+                newXPos =
+                    setSubLayerPosition xPos xPosOther layerEdges layer 0
 
                 newNodes =
                     List.map
-                        (\n -> { n | x = Maybe.withDefault n.x (Dict.get n.id newXDict) })
+                        (\n -> { n | x = Maybe.withDefault n.x (Dict.get n.id newXPos) })
                         nodes
             in
-                setLayerPosition layerDict nextLayer direction { graph | nodes = newNodes }
+                setLayerPosition layerPos nextLayer direction { graph | nodes = newNodes }
 
 
 setSubLayerPosition : Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Edges -> Int -> Int -> Dict Int (Maybe Int)
-setSubLayerPosition xDict xDictOther edges layer pos =
+setSubLayerPosition xPos xPosOther edges layer pos =
     let
-        rightIdsA =
-            xDict
-                |> Dict.toList
-                |> List.filter (\( id, x ) -> Maybe.withDefault -1 x >= pos)
-                |> List.map (\( id, x ) -> id)
-        rightIdsB =
-            xDict
-                |> Dict.toList
-                |> List.filter (\( id, x ) -> Maybe.withDefault -1 x >= pos + 1)
-                |> List.map (\( id, x ) -> id)
+        ( offset, newPos, newXPos ) = bestCut edges xPos xPosOther pos
     in
-        if List.length rightIdsA == 0 then
-            xDict
+        if offset == getTotalOffset edges xPos xPosOther then
+            xPos
+        else
+            setSubLayerPosition newXPos xPosOther edges layer (pos + 1)
+
+
+bestCut : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int -> (Int, Int, Dict Int (Maybe Int))
+bestCut edges xPos xPosOther pos =
+    let
+        testXPos =
+            xPos
+                |> Dict.toList
+                |> List.map
+                    (\( id, x ) ->
+                        if Maybe.withDefault -1 x >= pos then
+                            ( id, Just ((Maybe.withDefault -1 x) + 1) )
+                        else
+                            ( id, x )
+                    )
+                |> Dict.fromList
+
+        offset =
+            getTotalOffset edges testXPos xPosOther
+    in
+        if testXPos == xPos then
+            ( offset, pos, testXPos )
         else
             let
-                testXDictA =
-                    xDict
-                        |> Dict.toList
-                        |> List.map
-                            (\( id, x ) ->
-                                if List.member id rightIdsA then
-                                    ( id, Just ((Maybe.withDefault -1 x) + 1) )
-                                else
-                                    ( id, x )
-                            )
-                        |> Dict.fromList
-
-                testXDictB =
-                    xDict
-                        |> Dict.toList
-                        |> List.map
-                            (\( id, x ) ->
-                                if List.member id rightIdsB then
-                                    ( id, Just ((Maybe.withDefault -1 x) + 1) )
-                                else
-                                    ( id, x )
-                            )
-                        |> Dict.fromList
-
-                newXDict =
-                    if totalOffset edges xDict xDictOther > totalOffset edges testXDictA xDictOther then
-                        if totalOffset edges testXDictA xDictOther > totalOffset edges testXDictB xDictOther then
-                            testXDictB
-                        else
-                            testXDictA
-                    else
-                        if totalOffset edges xDict xDictOther > totalOffset edges testXDictB xDictOther then
-                            testXDictB
-                        else
-                            xDict
+                ( nextOffset, nextPos, nextXPos ) =
+                    bestCut edges xPos xPosOther (pos + 1)
             in
-                setSubLayerPosition newXDict xDictOther edges layer (pos + 1)
+                if offset > nextOffset then
+                    ( nextOffset, nextPos, nextXPos )
+                else
+                    ( offset, pos, testXPos )
 
 
-totalOffset : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int
-totalOffset edges xDict xDictOther =
+getTotalOffset : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int
+getTotalOffset edges xPos xPosOther =
     let
         union =
-            Dict.union xDict xDictOther
+            Dict.union xPos xPosOther
     in
         edges
-            |> List.map (offset union)
+            |> List.map (getOffset union)
             |> List.sum
 
 
-offset : Dict Int (Maybe Int) -> Edge -> Int
-offset xDict edge =
+getOffset : Dict Int (Maybe Int) -> Edge -> Int
+getOffset xPos edge =
     let
         x =
-            Dict.get edge.from xDict
+            Dict.get edge.from xPos
 
         y =
-            Dict.get edge.to xDict
+            Dict.get edge.to xPos
     in
         case ( x, y ) of
             ( Just (Just x), Just (Just y) ) ->
-                abs (x - y)
+                (x - y) ^ 2
 
             _ ->
                 0

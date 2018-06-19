@@ -98,16 +98,16 @@ setNodeDepth graph id depth =
                 graph.nodes
     }
 
-getXDict : Graph -> Int -> Dict Int (Maybe Int)
-getXDict { nodes } layer =
+getXPos : Graph -> Int -> Dict Int (Maybe Int)
+getXPos { nodes } layer =
     nodes
         |> List.filter (\n -> n.y == Just layer)
         |> List.map (\n -> ( n.id, n.x ))
         |> Dict.fromList
 
 
-getLayerDict : Graph -> Dict Int (Maybe Int)
-getLayerDict { nodes } =
+getLayerPos : Graph -> Dict Int (Maybe Int)
+getLayerPos { nodes } =
     nodes
         |> List.map (\n -> ( n.id, n.y ))
         |> Dict.fromList
