@@ -235,8 +235,9 @@ mergeEdge { nodes, edges } edge =
                     List.map (getNodePosition nodes) nodeIds
 
                 reversed =
-                    parts
-                        |> List.map (\n -> { reversed = n.reversed })
+                    edges
+                        |> List.filter (\e -> e.id == edge.id)
+                        |> List.map (\e -> { reversed = e.reversed })
                         |> List.head
                         |> Maybe.withDefault { reversed = False }
                         |> (\e -> e.reversed)

@@ -38,8 +38,8 @@ addDummy ({ nodes, edges } as graph) ({ from, to } as edge) =
                 case ( fromNode.y, toNode.y ) of
                     ( Just y1, Just y2 ) ->
                         let
-                            direction =
-                                y1 < y2
+                            reversed =
+                                y1 > y2
 
                             ( p1, p2 ) =
                                 if y1 > y2 then
@@ -68,7 +68,7 @@ addDummy ({ nodes, edges } as graph) ({ from, to } as edge) =
                                             [ toNode.id ]
 
                                     dummyEdges =
-                                        createDummyEdges edge.id 0 ids direction
+                                        createDummyEdges edge.id 0 ids reversed
 
                                     newNodes =
                                         List.append nodes dummyNodes
