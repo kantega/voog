@@ -4,22 +4,24 @@ import Model exposing (..)
 
 
 nodeRadius =
-    15
+    45
 
+distance =
+    4 * nodeRadius
 
 arrowDistance =
-    5
+    10
 
 
 arrowWidth =
-    1
+    2
 
 
 place : Model -> Model
 place model =
     let
         placedNodes =
-            placeNodes model.edges model.nodes
+            placeNodes model.nodes
     in
         { model
             | nodes = placedNodes
@@ -41,23 +43,21 @@ inEdges edges id =
         |> List.length
 
 
-placeNodes : Edges -> Nodes -> Nodes
-placeNodes edges nodes =
+placeNodes : Nodes -> Nodes
+placeNodes nodes =
     nodes
-        |> List.sortWith (\a b -> compare (outEdges edges a.id) (outEdges edges b.id))
-        |> List.reverse
-        |> List.indexedMap setPos
+        |> List.map setPos
 
 
-setPos : Int -> Node -> Node
-setPos index ({ position } as node) =
+setPos : Node -> Node
+setPos ({ position } as node) =
     let
         p =
             case position of
                 Just position ->
                     Just
-                        { x = position.x * 50
-                        , y = position.y * 50
+                        { x = position.x * distance
+                        , y = position.y * distance
                         }
 
                 Nothing ->
@@ -80,7 +80,7 @@ placeEdge nodes edges edge =
             Just
                 (Multi
                     (line
-                        |> List.map (\{ x, y } -> { x = 50 * x + nodeRadius, y = 50 * y + nodeRadius })
+                        |> List.map (\{ x, y } -> { x = distance * x + nodeRadius, y = distance * y + nodeRadius })
                     )
                 )
 

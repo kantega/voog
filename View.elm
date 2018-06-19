@@ -120,14 +120,15 @@ defs model =
                                 Just
                                     (Svg.pattern
                                         [ id ("img" ++ (toString node.id))
-                                        , patternUnits "userSpaceOnUse"
-                                        , Svg.Attributes.x (toString (x + 10))
-                                        , Svg.Attributes.y (toString (y + 10))
-                                        , width "40"
-                                        , height "40"
+                                        , height "100%"
+                                        , width "100%"
+                                        , patternContentUnits "objectBoundingBox"
                                         ]
                                         [ Svg.image
                                             [ xlinkHref (Maybe.withDefault "" (Dict.get "image" node.info))
+                                            , preserveAspectRatio "xMidYMid slice"
+                                            , width "1"
+                                            , height "1"
                                             ]
                                             []
                                         ]
@@ -139,14 +140,6 @@ defs model =
                     imageNodes
                 )
             )
-
-
-getTextX : Node -> Int -> String
-getTextX node x =
-    if Dict.member "image" node.info then
-        (toString (x + (round (toFloat nodeRadius / 1))))
-    else
-        (toString (x + (round (toFloat nodeRadius / 1))))
 
 
 getStrokeWidth : Node -> String
@@ -191,17 +184,19 @@ viewNode node =
                   )
                     []
                 , circle
-                    [ cx (toString (x + 30))
+                    [ cx (toString (x + nodeRadius))
                     , cy (toString (y + 30))
-                    , r "20"
+                    , r "25"
                     , fill ("url(#img" ++ (toString node.id) ++ ")")
                     ]
                     []
                 , Svg.text_
-                    [ Svg.Attributes.x (getTextX node x)
-                    , Svg.Attributes.y (toString (y + (round (toFloat nodeRadius / 1))))
+                    [ Svg.Attributes.x (toString (x + nodeRadius))
+                    , Svg.Attributes.y (toString (y + round (nodeRadius * 1.4)))
                     , fill "#b0b0b0"
                     , fontFamily "sans-serif"
+                    , textAnchor "middle"
+                    , alignmentBaseline "hanging"
                     ]
                     [ Svg.text (Maybe.withDefault "" (getAttribute "name" node)) ]
                 ]
@@ -247,7 +242,6 @@ path position =
 
         Multi line ->
             lineToString line True
-
 
 
 lineToString : List Point -> Bool -> String
