@@ -196,7 +196,7 @@ mergeEdge { nodes, edges } edge =
     let
         parts =
             edges
-                |> List.filter (\e -> e.id == edge.id || e.id == (Tuple.second edge.id, Tuple.first edge.id) && e.reversed)
+                |> List.filter (\e -> e.id == edge.id)
                 |> List.filterMap
                     (\e ->
                         case e.num of
@@ -227,7 +227,11 @@ mergeEdge { nodes, edges } edge =
                     List.map (getNodePosition nodes) nodeIds
 
                 reversed =
-                    not (List.member edge.id (List.map (\e -> e.id) parts))
+                    parts
+                        |> List.map (\n -> {reversed = n.reversed})
+                        |> List.head
+                        |> Maybe.withDefault {reversed = False}
+                        |> (\e -> e.reversed)
 
                 correctPoints =
                     if reversed then

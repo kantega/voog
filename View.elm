@@ -261,7 +261,7 @@ lineToString line first =
     in
         case line of
             head :: rest ->
-                char ++ " " ++ (toString (head.x)) ++ " " ++ (toString (head.y)) ++ lineToString rest False
+                char ++ " " ++ (toString (head.x)) ++ " " ++ (toString (head.y)) ++ " " ++ lineToString rest False
 
             _ ->
                 ""

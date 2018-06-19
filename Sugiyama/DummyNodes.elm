@@ -68,7 +68,7 @@ addDummy ({ nodes, edges } as graph) ({ from, to } as edge) =
                                             [ toNode.id ]
 
                                     dummyEdges =
-                                        createDummyEdges (fromNode.id, toNode.id) 0 ids direction
+                                        createDummyEdges edge.id 0 ids direction
 
                                     newNodes =
                                         List.append nodes dummyNodes

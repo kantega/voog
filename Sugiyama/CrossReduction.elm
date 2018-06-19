@@ -4,30 +4,46 @@ import Dict exposing (..)
 import Sugiyama.Model exposing (..)
 
 
-reduceCrossing : Graph -> Graph
-reduceCrossing graph =
+reduceCrossing : Direction -> Graph -> Graph
+reduceCrossing direction graph =
     let
         layerDict =
             getLayerDict graph
+        startLayer =
+            case direction of
+                Down ->
+                    1
+                Up ->
+                    0
     in
-        reduceCrossingAtLayer graph layerDict 0
+        reduceCrossingAtLayer graph direction layerDict startLayer
 
 
-reduceCrossingAtLayer : Graph -> Dict Int (Maybe Int) -> Int -> Graph
-reduceCrossingAtLayer ({ edges } as graph) layerDict layer =
+reduceCrossingAtLayer : Graph -> Direction -> Dict Int (Maybe Int) -> Int -> Graph
+reduceCrossingAtLayer ({ edges } as graph) direction layerDict layer =
     let
+        (edgeLayer, otherLayer) =
+            case direction of
+                Down ->
+                    (layer - 1, layer - 1)
+                Up ->
+                    (layer, layer + 1)
         layerEdges =
-            List.filter (\e -> Dict.get e.from layerDict == Just (Just (layer))) edges
+            List.filter (\e -> Dict.get e.from layerDict == Just (Just (edgeLayer))) edges
     in
         if List.length layerEdges == 0 then
             graph
         else
             let
                 newGraph =
-                    reduceCrossingAtLayer graph layerDict (layer + 1)
+                    case direction of
+                        Down ->
+                            graph
+                        Up ->
+                            reduceCrossingAtLayer graph direction layerDict (layer + 1)
 
-                xDictBelow =
-                    getXDict newGraph (layer + 1)
+                xDictOther =
+                    getXDict newGraph otherLayer
 
                 xDict =
                     getXDict newGraph layer
@@ -40,32 +56,36 @@ reduceCrossingAtLayer ({ edges } as graph) layerDict layer =
                         |> Maybe.withDefault 0
 
                 newXDict =
-                    tryFlipLayer layerEdges xDict xDictBelow 0 maxX 10
+                    tryFlipLayer layerEdges xDict xDictOther 0 maxX 10
 
                 newNodes =
                     List.map
                         (\n -> { n | x = Maybe.withDefault n.x (Dict.get n.id newXDict) })
                         newGraph.nodes
             in
-                { graph | nodes = newNodes }
+                case direction of
+                    Down ->
+                        reduceCrossingAtLayer { graph | nodes = newNodes } direction layerDict (layer + 1)
+                    Up ->
+                        { graph | nodes = newNodes }
 
 
 tryFlipLayer : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int -> Int -> Int -> Dict Int (Maybe Int)
-tryFlipLayer edges xDict xDictBelow pos maxX iteration =
+tryFlipLayer edges xDict xDictOther pos maxX iteration =
     if iteration == 0 then
         xDict
     else if pos < maxX then
         let
             newXDict =
-                tryFlip edges xDict xDictBelow pos (pos + 1)
+                tryFlip edges xDict xDictOther pos (pos + 1)
         in
-            tryFlipLayer edges newXDict xDictBelow (pos + 1) maxX iteration
+            tryFlipLayer edges newXDict xDictOther (pos + 1) maxX iteration
     else
-        tryFlipLayer edges xDict xDictBelow 0 maxX (iteration - 1)
+        tryFlipLayer edges xDict xDictOther 0 maxX (iteration - 1)
 
 
 tryFlip : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int -> Int -> Dict Int (Maybe Int)
-tryFlip edges xDict xDictBelow x1 x2 =
+tryFlip edges xDict xDictOther x1 x2 =
     let
         newXDict =
             xDict
@@ -81,40 +101,43 @@ tryFlip edges xDict xDictBelow x1 x2 =
                     )
                 |> Dict.fromList
     in
-        if crossings edges xDict xDictBelow > crossings edges newXDict xDictBelow then
+        if crossings edges xDict xDictOther > crossings edges newXDict xDictOther then
             newXDict
         else
             xDict
 
 
 crossings : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int
-crossings edges xDict xDictBelow =
+crossings edges xDict xDictOther =
     edges
-        |> List.map (edgeCrossings xDict xDictBelow edges)
+        |> List.map (edgeCrossings xDict xDictOther edges)
         |> List.sum
 
 
 edgeCrossings : Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Edges -> Edge -> Int
-edgeCrossings xDict xDictBelow edges edge =
+edgeCrossings xDict xDictOther edges edge =
     edges
-        |> List.filter (edgeCrossing xDict xDictBelow edge)
+        |> List.filter (edgeCrossing xDict xDictOther edge)
         |> List.length
 
 
 edgeCrossing : Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Edge -> Edge -> Bool
-edgeCrossing xDict xDictBelow a b =
+edgeCrossing xDict xDictOther a b =
     let
+        union =
+            Dict.union xDict xDictOther
+
         a1 =
-            Dict.get a.from xDict
+            Dict.get a.from union
 
         a2 =
-            Dict.get a.to xDictBelow
+            Dict.get a.to union
 
         b1 =
-            Dict.get b.from xDict
+            Dict.get b.from union
 
         b2 =
-            Dict.get b.to xDictBelow
+            Dict.get b.to union
     in
         case ( a1, a2, b1, b2 ) of
             ( Just (Just a1), Just (Just a2), Just (Just b1), Just (Just b2) ) ->
