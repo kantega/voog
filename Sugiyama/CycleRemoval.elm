@@ -25,7 +25,7 @@ removeCycles ({ edges } as graph) =
 
 findFlipEdges : Graph -> List ( Int, Int )
 findFlipEdges ({ nodes, edges } as graph) =
-    if List.length nodes == 2 then
+    if List.length nodes <= 1 then
         []
     else
         let
