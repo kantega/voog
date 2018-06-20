@@ -5,74 +5,75 @@ import Sugiyama.Helpers exposing (..)
 
 
 removeCycles : Graph -> Graph
-removeCycles graph =
-    removeCyclesIteration graph []
-
-
-removeCyclesIteration : Graph -> List Int -> Graph
-removeCyclesIteration graph visited =
+removeCycles ({ edges } as graph) =
     let
-        root =
-            graph.nodes
-                |> List.filter (\n -> not (List.member n.id visited))
-                |> List.sortWith (\a b -> compare (childrenChainLength graph a) (childrenChainLength graph b))
-                |> List.reverse
-                |> List.head
+        flipEdges =
+            findFlipEdges graph
+
+        newEdges =
+            List.map
+                (\e ->
+                    if List.member e.id flipEdges then
+                        reverse e
+                    else
+                        e
+                )
+                edges
     in
-        case root of
-            Just root ->
+        { graph | edges = newEdges }
+
+
+findFlipEdges : Graph -> List ( Int, Int )
+findFlipEdges ({ nodes, edges } as graph) =
+    if List.length nodes == 2 then
+        []
+    else
+        let
+            sinks =
+                nodes
+                    |> List.filter (\n -> List.length (getChildren graph n.id) == 0)
+                    |> List.map (\n -> n.id)
+
+            sources =
+                nodes
+                    |> List.filter (\n -> List.length (getParents graph n.id) == 0)
+                    |> List.map (\n -> n.id)
+
+            removeNodes =
+                List.append sinks sources
+        in
+            if List.length removeNodes > 0 then
                 let
-                    ( newVisited, newGraph ) =
-                        removeCyclesInConnectedGraph graph [ root ] visited
+                    newNodes =
+                        List.filter
+                            (\n -> not (List.member n.id removeNodes))
+                            nodes
                 in
-                    removeCyclesIteration newGraph newVisited
-
-            Nothing ->
-                graph
-
-
-removeCyclesInConnectedGraph : Graph -> Nodes -> List Int -> ( List Int, Graph )
-removeCyclesInConnectedGraph graph nodes visited =
-    case nodes of
-        head :: rest ->
-            if List.member head.id visited then
-                removeCyclesInConnectedGraph graph rest visited
+                    findFlipEdges { graph | nodes = newNodes }
             else
                 let
-                    newVisited =
-                        head.id :: visited
-
-                    children =
-                        getChildren graph head
-                            |> List.filter (\n -> not (List.member n.id newVisited))
-
-                    parents =
-                        getParents graph head
-                            |> List.filter (\n -> not (List.member n.id newVisited))
-
-                    parentIds =
-                        List.map (\n -> n.id) parents
-
-                    newEdges =
-                        graph.edges
-                            |> List.map
-                                (\e ->
-                                    if e.to == head.id && List.member e.from parentIds then
-                                        reverse e
-                                    else
-                                        e
-                                )
-
-                    newChildren =
-                        List.append children parents
-
-                    newGraph =
-                        { graph | edges = newEdges }
-
-                    newNodes =
-                        List.append newChildren rest
+                    max =
+                        nodes
+                            |> List.map (\n -> ( n.id, List.length (getChildren graph n.id), List.length (getParents graph n.id) ))
+                            |> List.sortWith (\( n1, c1, p1 ) ( n2, c2, p2 ) -> compare (c1 - p1) (c2 - p2))
+                            |> List.reverse
+                            |> List.head
                 in
-                    removeCyclesInConnectedGraph newGraph newNodes newVisited
+                    case max of
+                        Just ( nodeId, c, p ) ->
+                            let
+                                flipEdges =
+                                    edges
+                                        |> List.filter (\e -> e.to == nodeId)
+                                        |> List.map (\e -> e.id)
 
-        _ ->
-            ( visited, graph )
+                                newNodes =
+                                    List.filter (\n -> n.id /= nodeId) nodes
+
+                                newEdges =
+                                    List.filter (\e -> e.from /= nodeId && e.to /= nodeId) edges
+                            in
+                                List.append flipEdges (findFlipEdges { graph | nodes = newNodes, edges = newEdges })
+
+                        _ ->
+                            []

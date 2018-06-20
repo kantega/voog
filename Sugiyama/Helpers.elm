@@ -44,23 +44,23 @@ getNode { nodes } id =
         |> List.head
 
 
-getChildren : Graph -> Node -> Nodes
-getChildren graph node =
+getChildren : Graph -> Int -> Nodes
+getChildren graph nodeId =
     let
         ids =
             graph.edges
-                |> List.filter (\{ from, to } -> from == node.id)
+                |> List.filter (\{ from, to } -> from == nodeId)
                 |> List.map (\{ from, to } -> to)
     in
         List.filter (\n -> List.member n.id ids) graph.nodes
 
 
-getParents : Graph -> Node -> Nodes
-getParents graph node =
+getParents : Graph -> Int -> Nodes
+getParents graph nodeId =
     let
         ids =
             graph.edges
-                |> List.filter (\{ from, to } -> to == node.id)
+                |> List.filter (\{ from, to } -> to == nodeId)
                 |> List.map (\{ from, to } -> from)
     in
         List.filter (\n -> List.member n.id ids) graph.nodes
@@ -78,7 +78,7 @@ childrenChainLengthInner graph node visited =
             node.id :: visited
 
         children =
-            getChildren graph node
+            getChildren graph node.id
                 |> List.filter (\n -> not (List.member n.id newVisited))
     in
         1 + (Maybe.withDefault -1 (List.maximum (List.map (\c -> childrenChainLengthInner graph c newVisited) children)))

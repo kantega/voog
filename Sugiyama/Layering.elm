@@ -45,7 +45,7 @@ layerDownIteration graph iterationNodes visited =
                     head.id :: visited
 
                 childrenIds =
-                    getChildren graph head
+                    getChildren graph head.id
                         |> List.map (\n -> n.id)
 
                 updatedNodes =
@@ -116,7 +116,7 @@ updateParent : Graph -> Node -> Node
 updateParent graph node =
     let
         children =
-            getChildren graph node
+            getChildren graph node.id
 
         minChildLayer =
             children
