@@ -33,14 +33,14 @@ makePositive ({ nodes } as graph) =
         minVal =
             nodes
                 |> List.sortWith (\a b -> compare (Maybe.withDefault -1 a.x) (Maybe.withDefault -1 b.x))
-                |> List.map (\n -> n.y)
+                |> List.map (\n -> n.x)
                 |> List.head
                 |> Maybe.withDefault Nothing
                 |> Maybe.withDefault 0
 
         newNodes =
             List.map
-                (\n -> { n | x = Just (Maybe.withDefault -1 n.x + minVal) })
+                (\n -> { n | x = Just (Maybe.withDefault -1 n.x - minVal) })
                 nodes
     in
         { graph | nodes = newNodes }
