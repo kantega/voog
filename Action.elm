@@ -217,7 +217,7 @@ mergeEdge { nodes, edges } edge =
                 |> List.sortWith (\a b -> compare a.num b.num)
     in
         if List.length parts < 2 then
-            edge
+            { edge | position = Nothing }
         else
             let
                 endNodeIds =
