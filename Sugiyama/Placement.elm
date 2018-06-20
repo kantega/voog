@@ -24,6 +24,26 @@ setPosition ({ nodes } as graph) =
         graph
             |> setLayerPosition layerPos (wideLayer - 1) Up
             |> setLayerPosition layerPos (wideLayer + 1) Down
+            |> makePositive
+
+
+makePositive : Graph -> Graph
+makePositive ({ nodes } as graph) =
+    let
+        minVal =
+            nodes
+                |> List.sortWith (\a b -> compare (Maybe.withDefault -1 a.x) (Maybe.withDefault -1 b.x))
+                |> List.map (\n -> n.y)
+                |> List.head
+                |> Maybe.withDefault Nothing
+                |> Maybe.withDefault 0
+
+        newNodes =
+            List.map
+                (\n -> { n | x = Just (Maybe.withDefault -1 n.x + minVal) })
+                nodes
+    in
+        { graph | nodes = newNodes }
 
 
 setLayerPosition : Dict Int (Maybe Int) -> Int -> Direction -> Graph -> Graph
@@ -50,8 +70,17 @@ setLayerPosition layerPos layer direction ({ nodes, edges } as graph) =
                 layerEdges =
                     List.filter (\e -> Dict.get e.from layerPos == Just (Just (edgeLayer))) edges
 
+                moveAmount =
+                    round ((toFloat (Dict.size xPos)) / 2 + 1)
+
+                movedXPos =
+                    xPos
+                        |> Dict.toList
+                        |> List.map (\( id, x ) -> ( id, Just (Maybe.withDefault -1 x - moveAmount) ))
+                        |> Dict.fromList
+
                 newXPos =
-                    setSubLayerPosition xPos xPosOther layerEdges layer 0
+                    setSubLayerPosition movedXPos xPosOther layerEdges layer (-moveAmount)
 
                 newNodes =
                     List.map
@@ -64,7 +93,8 @@ setLayerPosition layerPos layer direction ({ nodes, edges } as graph) =
 setSubLayerPosition : Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Edges -> Int -> Int -> Dict Int (Maybe Int)
 setSubLayerPosition xPos xPosOther edges layer pos =
     let
-        ( offset, newPos, newXPos ) = bestCut edges xPos xPosOther pos
+        ( offset, newPos, newXPos ) =
+            bestCut edges xPos xPosOther pos
     in
         if offset == getTotalOffset edges xPos xPosOther then
             xPos
@@ -72,7 +102,7 @@ setSubLayerPosition xPos xPosOther edges layer pos =
             setSubLayerPosition newXPos xPosOther edges layer (pos + 1)
 
 
-bestCut : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int -> (Int, Int, Dict Int (Maybe Int))
+bestCut : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int -> ( Int, Int, Dict Int (Maybe Int) )
 bestCut edges xPos xPosOther pos =
     let
         testXPos =
