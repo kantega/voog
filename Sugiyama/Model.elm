@@ -1,5 +1,7 @@
 module Sugiyama.Model exposing (..)
 
+import Dict
+
 
 type alias BasicGraph =
     { nodes : BasicNodes
@@ -52,6 +54,10 @@ type alias Edge =
     , to : Int
     , reversed : Bool
     }
+
+
+type alias CrossEdges =
+    Dict.Dict ( Int, Int, Int ) ( Dict.Dict Int Int )
 
 
 type Direction
