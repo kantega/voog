@@ -98,6 +98,7 @@ setNodeDepth graph id depth =
                 graph.nodes
     }
 
+
 getXPos : Graph -> Int -> Dict Int (Maybe Int)
 getXPos { nodes } layer =
     nodes

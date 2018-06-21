@@ -50,8 +50,7 @@ suite =
             , Benchmark.benchmark "layer" (\_ -> layer cyclesRemoved)
             , Benchmark.benchmark "addDummies" (\_ -> addDummies layered)
             , Benchmark.benchmark "setInitialPosition" (\_ -> setInitialPosition dummiesAdded)
-            , Benchmark.benchmark "reduceCrossing Up" (\_ -> reduceCrossing Up initialPositioned)
-            , Benchmark.benchmark "reducedCrossing Down" (\_ -> reduceCrossing Down reducedCrossingUp)
+            , Benchmark.benchmark "reduceCrossing" (\_ -> reduceCrossing initialPositioned)
             , Benchmark.benchmark "setPosition" (\_ -> setPosition reducedCrossingDown)
             ]
 

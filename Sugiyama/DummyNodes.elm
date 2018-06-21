@@ -107,7 +107,7 @@ createDummyNodes id missingLayers =
             []
 
 
-createDummyEdges : (Int, Int) -> Int -> List Int -> Bool -> Edges
+createDummyEdges : ( Int, Int ) -> Int -> List Int -> Bool -> Edges
 createDummyEdges originalId num ids reversed =
     case ids of
         from :: to :: rest ->

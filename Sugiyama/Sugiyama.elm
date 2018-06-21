@@ -18,8 +18,7 @@ sugiyama graph =
         |> layer
         |> addDummies
         |> setInitialPosition
-        |> (reduceCrossing Up)
-        |> (reduceCrossing Down)
+        |> reduceCrossing
         |> setPosition
 
 
