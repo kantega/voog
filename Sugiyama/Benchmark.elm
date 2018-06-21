@@ -35,14 +35,11 @@ suite =
         initialPositioned =
             setInitialPosition dummiesAdded
 
-        reducedCrossingUp =
-            reduceCrossing Up initialPositioned
-
-        reducedCrossingDown =
-            reduceCrossing Down reducedCrossingUp
+        reducedCrossing =
+            reduceCrossing initialPositioned
 
         positioned =
-            setPosition reducedCrossingDown
+            setPosition reducedCrossing
     in
         Benchmark.describe "Sugiyama"
             [ Benchmark.benchmark "initialize" (\_ -> initialize graph)
@@ -51,7 +48,7 @@ suite =
             , Benchmark.benchmark "addDummies" (\_ -> addDummies layered)
             , Benchmark.benchmark "setInitialPosition" (\_ -> setInitialPosition dummiesAdded)
             , Benchmark.benchmark "reduceCrossing" (\_ -> reduceCrossing initialPositioned)
-            , Benchmark.benchmark "setPosition" (\_ -> setPosition reducedCrossingDown)
+            , Benchmark.benchmark "setPosition" (\_ -> setPosition reducedCrossing)
             ]
 
 
