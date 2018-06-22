@@ -9,6 +9,7 @@ type Msg
     = ClickNode Int
     | ClickEdge ( Int, Int )
     | SocketMsg String
+    | Tick
     | WindowSize Window.Size
     | MouseMove Point
     | MouseUp Point
@@ -53,6 +54,7 @@ type alias SystemEdge a =
         | id : ( Int, Int )
         , selected : Bool
         , position : Maybe Line
+        , dashOffset : Float
     }
 
 
@@ -73,8 +75,10 @@ type alias InputEdge =
     , to : Int
     , info : Info
     , label : Maybe String
-    , width : Maybe Int
+    , width : Maybe Float
     , color : Maybe String
+    , speed : Maybe Float
+    , dashColor : Maybe String
     }
 
 

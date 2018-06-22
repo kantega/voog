@@ -37,6 +37,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ WebSocket.listen "ws://127.0.0.1:8000/" SocketMsg
+        , Time.every (30 * Time.millisecond) (always Tick)
         , Window.resizes WindowSize
         , Mouse.moves MouseMove
         , Mouse.ups MouseUp

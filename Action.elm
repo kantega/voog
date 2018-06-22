@@ -124,12 +124,15 @@ addEdges model edges recalculate =
                         { id = ( edge.from, edge.to )
                         , selected = False
                         , position = Nothing
+                        , dashOffset = 0
                         , from = edge.from
                         , to = edge.to
                         , info = edge.info
                         , label = edge.label
                         , width = edge.width
                         , color = edge.color
+                        , speed = edge.speed
+                        , dashColor = edge.dashColor
                         }
                             :: model.edges
                 in
@@ -141,12 +144,14 @@ addEdges model edges recalculate =
 
                     newEdges =
                         case List.head oldEdge of
-                            Just oldNode ->
-                                { oldNode
-                                    | info = updateInfo oldNode.info edge.info
-                                    , label = updateVal oldNode.label edge.label
-                                    , width = updateVal oldNode.width edge.width
-                                    , color = updateVal oldNode.color edge.color
+                            Just oldEdge ->
+                                { oldEdge
+                                    | info = updateInfo oldEdge.info edge.info
+                                    , label = updateVal oldEdge.label edge.label
+                                    , width = updateVal oldEdge.width edge.width
+                                    , color = updateVal oldEdge.color edge.color
+                                    , speed = updateVal oldEdge.speed edge.speed
+                                    , dashColor = updateVal oldEdge.dashColor edge.dashColor
                                 }
                                     :: oldEdges
 

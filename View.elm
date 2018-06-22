@@ -39,8 +39,8 @@ view model =
                         ]
                         ((defs model)
                             :: (List.append
-                                    (List.foldr List.append [] (List.filterMap (viewNode ( xx, yy )) model.nodes))
                                     (List.foldr List.append [] (List.filterMap (viewEdge ( xx, yy )) model.edges))
+                                    (List.foldr List.append [] (List.filterMap (viewNode ( xx, yy )) model.nodes))
                                )
                         )
                    ]
@@ -115,6 +115,11 @@ defs model =
                     , refY "3"
                     ]
                     [ Svg.path [ d "M0,0 V6 L3,3 Z", fill "#808080" ] [] ]
+                 , Svg.filter
+                    [ id "solid", x "0", y "0", width "1", height "1" ]
+                    [ feFlood [ floodColor "#ffffff" ] []
+                    , feComposite [ Svg.Attributes.in_ "SourceGraphic" ] []
+                    ]
                  ]
                 )
                 (List.filterMap
@@ -209,14 +214,6 @@ viewNode ( xx, yy ) node =
             Nothing
 
 
-getStrokeColor : Bool -> ( String, String )
-getStrokeColor selected =
-    if selected then
-        ( "url(#selectedArrow)", "#808080" )
-    else
-        ( "url(#arrow)", "#b0b0b0" )
-
-
 path : Line -> ( Int, Int ) -> String
 path position ( xx, yy ) =
     case position of
@@ -275,38 +272,50 @@ viewEdge : ( Int, Int ) -> Edge -> Maybe (List (Html Msg))
 viewEdge ( xx, yy ) edge =
     case edge.position of
         Just position ->
-            let
-                ( marker, strokeColor ) =
-                    getStrokeColor edge.selected
-            in
-                Just
-                    ([ Svg.path
-                        [ onClick (ClickEdge ( edge.from, edge.to ))
-                        , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                        , markerEnd marker
-                        , fill "none"
-                        , strokeWidth (toString (Maybe.withDefault 1 edge.width))
-                        , stroke strokeColor
-                        , d (path position ( xx, yy ))
+            Just
+                ([ Svg.path
+                    [ onClick (ClickEdge ( edge.from, edge.to ))
+                    , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
+                    , fill "none"
+                    , strokeWidth (toString (Maybe.withDefault 8 edge.width))
+                    , stroke (Maybe.withDefault "#fff" edge.color)
+                    , strokeLinecap "round"
+                    , strokeLinejoin "round"
+                    , d (path position ( xx, yy ))
+                    ]
+                    []
+                 , Svg.path
+                    [ onClick (ClickEdge ( edge.from, edge.to ))
+                    , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
+                    , fill "none"
+                    , strokeWidth (toString ( 0.75 * (Maybe.withDefault 8 edge.width)))
+                    , stroke (Maybe.withDefault "#b0b0b0" edge.dashColor)
+                    , strokeLinecap "round"
+                    , strokeLinejoin "round"
+                    , strokeDasharray (toString (2 * (Maybe.withDefault 8 edge.width)))
+                    , strokeDashoffset (toString edge.dashOffset)
+                    , d (path position ( xx, yy ))
+                    ]
+                    []
+                 , Svg.text_
+                    [ fill (Maybe.withDefault "#b0b0b0" edge.color)
+                    , fontSize "20"
+                    , fontWeight "800"
+                    , fontFamily "sans-serif"
+                    , textAnchor "middle"
+                    , Svg.Attributes.filter "url(#solid)"
+                    , dy "-5"
+                    ]
+                    [ Svg.textPath
+                        [ xlinkHref ("#" ++ (toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
+                        , startOffset "50%"
+                        , orient "up"
                         ]
-                        []
-                     , Svg.text_
-                        [ fill "#808080"
-                        , fontSize "20"
-                        , fontFamily "sans-serif"
-                        , textAnchor "middle"
-                        , dy "-5"
+                        [ Svg.text (Maybe.withDefault "" edge.label)
                         ]
-                        [ Svg.textPath
-                            [ xlinkHref ("#" ++ (toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                            , startOffset "50%"
-                            , orient "up"
-                            ]
-                            [ Svg.text (Maybe.withDefault "" edge.label)
-                            ]
-                        ]
-                     ]
-                    )
+                    ]
+                 ]
+                )
 
         _ ->
             Nothing

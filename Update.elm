@@ -19,6 +19,21 @@ update msg model =
         SocketMsg msg ->
             handleCommunication model msg
 
+        Tick ->
+            let
+                newEdges =
+                    List.map
+                        (\e ->
+                            case e.speed of
+                                Just speed ->
+                                    { e | dashOffset = e.dashOffset - speed }
+                                Nothing ->
+                                    e
+                        )
+                        model.edges
+            in
+                ( { model | edges = newEdges }, Cmd.none )
+
         WindowSize { width, height } ->
             let
                 newPosition =
@@ -31,7 +46,8 @@ update msg model =
                                 dh =
                                     toFloat (height - oldHeight) / 2 / model.zoom
                             in
-                                { x = model.position.x + dw, y = model.position.y + dh}
+                                { x = model.position.x + dw, y = model.position.y + dh }
+
                         Nothing ->
                             model.position
 
@@ -42,7 +58,8 @@ update msg model =
 
         MouseMove ({ x, y } as point) ->
             let
-                pos = model.position
+                pos =
+                    model.position
             in
                 case model.drag of
                     Just drag ->

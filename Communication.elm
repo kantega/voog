@@ -32,8 +32,10 @@ edgeDecoder =
         |> required "to" int
         |> optional "info" stringStringListDecoder []
         |> optional "label" (maybe string) Nothing
-        |> optional "width" (maybe int) Nothing
+        |> optional "width" (maybe float) Nothing
         |> optional "color" (maybe string) Nothing
+        |> optional "speed" (maybe float) Nothing
+        |> optional "dashColor" (maybe string) Nothing
 
 
 handleCommunication : Model -> String -> ( Model, Cmd Msg )

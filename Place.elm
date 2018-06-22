@@ -107,13 +107,13 @@ placeEdge nodes edges edge =
                                         if List.any (\e -> e.id == ( toNode.id, fromNode.id )) edges then
                                             let
                                                 f =
-                                                    { x = from.x + nodeRadius + round (nodeRadius * cos (angle)) + round (8 * cos (angle + 3.1415 / 2))
-                                                    , y = from.y + nodeRadius + round (nodeRadius * sin (angle)) + round (8 * sin (angle + 3.1415 / 2))
+                                                    { x = from.x + nodeRadius
+                                                    , y = from.y + nodeRadius
                                                     }
 
                                                 t =
-                                                    { x = to.x + nodeRadius - round ((nodeRadius + arrowDistance) * cos (angle)) + round (8 * cos (angle + 3.1415 / 2))
-                                                    , y = to.y + nodeRadius - round ((nodeRadius + arrowDistance) * sin (angle)) + round (8 * sin (angle + 3.1415 / 2))
+                                                    { x = to.x + nodeRadius
+                                                    , y = to.y + nodeRadius
                                                     }
 
                                                 v =
@@ -131,13 +131,13 @@ placeEdge nodes edges edge =
                                         else
                                             let
                                                 f =
-                                                    { x = from.x + nodeRadius + round ((nodeRadius + arrowDistance) * cos (angle))
-                                                    , y = from.y + nodeRadius + round ((nodeRadius + arrowDistance) * sin (angle))
+                                                    { x = from.x + nodeRadius
+                                                    , y = from.y + nodeRadius
                                                     }
 
                                                 t =
-                                                    { x = to.x + nodeRadius - round ((nodeRadius + arrowDistance) * cos (angle))
-                                                    , y = to.y + nodeRadius - round ((nodeRadius + arrowDistance) * sin (angle))
+                                                    { x = to.x + nodeRadius
+                                                    , y = to.y + nodeRadius
                                                     }
                                             in
                                                 Just
