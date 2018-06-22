@@ -44,7 +44,7 @@ popup model =
                         ((p [ Svg.Attributes.style "margin-top: 5px;" ] [ Html.text "Info" ])
                             :: (List.map
                                     (\( k, v ) -> p [ Svg.Attributes.style "margin: 5px 0;" ] [ Html.text (k ++ ": " ++ v) ])
-                                    (Dict.toList node.info)
+                                    node.info
                                )
                         )
 
@@ -68,7 +68,7 @@ popup model =
                                 ((p [ Svg.Attributes.style "margin-top: 0;" ] [ Html.text "Info" ])
                                     :: (List.map
                                             (\( k, v ) -> p [ Svg.Attributes.style "margin: 5px 0;" ] [ Html.text (k ++ ": " ++ v) ])
-                                            (Dict.toList edge.info)
+                                            edge.info
                                        )
                                 )
 
@@ -83,7 +83,7 @@ defs : Model -> Html Msg
 defs model =
     let
         imageNodes =
-            List.filter (\n -> Dict.member "image" n.info) model.nodes
+            List.filter (\n -> n.image /= Nothing) model.nodes
 
         imageIds =
             List.map (\n -> n.id) imageNodes
@@ -125,7 +125,7 @@ defs model =
                                         , patternContentUnits "objectBoundingBox"
                                         ]
                                         [ Svg.image
-                                            [ xlinkHref (Maybe.withDefault "" (Dict.get "image" node.info))
+                                            [ xlinkHref (Maybe.withDefault "" node.image)
                                             , preserveAspectRatio "xMidYMid slice"
                                             , width "1"
                                             , height "1"
@@ -144,7 +144,7 @@ defs model =
 
 getStrokeWidth : Node -> String
 getStrokeWidth node =
-    (if Dict.get "error" node.info == Just "True" then
+    (if getAttribute "error" node == Just "True" then
         "3"
      else
         "0"
@@ -177,7 +177,7 @@ viewNode node =
                             , cx (toString (x + nodeRadius))
                             , cy (toString (y + nodeRadius))
                             , r (toString nodeRadius)
-                            , fill "#f0f0f0"
+                            , fill (Maybe.withDefault "#f0f0f0" node.color)
                             , stroke "#f44336"
                             , strokeWidth (getStrokeWidth node)
                             ]
@@ -198,7 +198,7 @@ viewNode node =
                     , textAnchor "middle"
                     , alignmentBaseline "hanging"
                     ]
-                    [ Svg.text (Maybe.withDefault "" (getAttribute "name" node)) ]
+                    [ Svg.text (Maybe.withDefault "" node.name) ]
                 ]
 
         _ ->
@@ -275,7 +275,7 @@ viewEdge edge =
                         , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
                         , markerEnd marker
                         , fill "none"
-                        , strokeWidth (toString arrowWidth)
+                        , strokeWidth (toString (Maybe.withDefault 1 edge.width))
                         , stroke strokeColor
                         , d (path position)
                         ]
@@ -291,7 +291,7 @@ viewEdge edge =
                             [ xlinkHref ("#" ++ (toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
                             , startOffset "50%"
                             ]
-                            [ Svg.text (Maybe.withDefault "" (getAttribute "speed" edge))
+                            [ Svg.text (Maybe.withDefault "" edge.label)
                             ]
                         ]
                      ]

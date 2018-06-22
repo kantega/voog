@@ -25,36 +25,56 @@ type alias Edges =
 
 
 type alias Node =
-    InfoElement NodeCore
+    SystemNode InputNode
 
 
-type alias InfoNode =
-    InfoElement NodeCore
+type alias Edge =
+    SystemEdge InputEdge
 
 
-type alias NodeCore =
+type alias SystemNode a =
+    { a
+        | selected : Bool
+        , position : Maybe Point
+    }
+
+
+type alias SystemEdge a =
+    { a
+        | id : ( Int, Int )
+        , selected : Bool
+        , position : Maybe Line
+    }
+
+
+type alias InputNode =
     { id : Int
-    , selected : Bool
-    , position : Maybe Point
+    , info : Info
+    , name : Maybe String
+    , shape : Maybe String
+    , image : Maybe String
+    , category : Maybe String
+    , color : Maybe String
+    , size : Maybe Int
+    }
+
+
+type alias InputEdge =
+    { from : Int
+    , to : Int
+    , info : Info
+    , label : Maybe String
+    , width : Maybe Int
+    , color : Maybe String
     }
 
 
 type alias Info =
-    Dict.Dict String String
+    List (String, String)
 
 
 type alias InfoElement a =
     { a | info : Info }
-
-
-type alias Edge =
-    InfoElement
-        { id : ( Int, Int )
-        , from : Int
-        , to : Int
-        , selected : Bool
-        , position : Maybe Line
-        }
 
 
 type Line

@@ -7,48 +7,85 @@ import Sugiyama.Model
 import Place exposing (..)
 
 
-addNodes : Model -> Bool -> List ( String, Dict.Dict String String ) -> Bool -> Model
-addNodes model update nodes recalculate =
-    case nodes of
-        ( id, info ) :: rest ->
-            case String.toInt id of
-                Ok id ->
-                    if not update || not (List.any (\n -> n.id == id) model.nodes) then
-                        let
-                            node =
-                                { id = id
-                                , info = info
-                                , selected = False
-                                , position = Nothing
-                                }
-                        in
-                            if not (List.any (\n -> n.id == id) model.nodes) then
-                                addNodes { model | nodes = node :: model.nodes } update rest True
-                            else
-                                addNodes model update rest recalculate
-                    else
-                        addNodes
-                            { model
-                                | nodes =
-                                    List.map
-                                        (\n ->
-                                            if n.id == id then
-                                                let
-                                                    union =
-                                                        Dict.union info n.info
-                                                in
-                                                    { n | info = union }
-                                            else
-                                                n
-                                        )
-                                        model.nodes
-                            }
-                            update
-                            rest
-                            recalculate
+updateVal : Maybe a -> Maybe a -> Maybe a
+updateVal old new =
+    if new == Nothing then
+        old
+    else
+        new
 
-                _ ->
-                    addNodes model update rest recalculate
+
+updateInfo : Info -> Info -> Info
+updateInfo old new =
+    let
+        newItems =
+            Dict.fromList new
+
+        oldKeys =
+            List.map Tuple.first old
+
+        updated =
+            List.map
+                (\( k, v ) ->
+                    case Dict.get k newItems of
+                        Just newVal ->
+                            ( k, newVal )
+
+                        Nothing ->
+                            ( k, v )
+                )
+                old
+
+        appended =
+            List.filter (\( k, v ) -> not (List.member k oldKeys)) new
+    in
+        List.append updated appended
+
+
+addNodes : Model -> List InputNode -> Bool -> Model
+addNodes model nodes recalculate =
+    case nodes of
+        node :: rest ->
+            if not (List.any (\n -> n.id == node.id) model.nodes) then
+                let
+                    newNodes =
+                        { selected = False
+                        , position = Nothing
+                        , id = node.id
+                        , info = node.info
+                        , name = node.name
+                        , shape = node.shape
+                        , image = node.image
+                        , category = node.category
+                        , color = node.color
+                        , size = node.size
+                        }
+                            :: model.nodes
+                in
+                    addNodes { model | nodes = newNodes } rest True
+            else
+                let
+                    ( oldNode, oldNodes ) =
+                        List.partition (\n -> n.id == node.id) model.nodes
+
+                    newNodes =
+                        case List.head oldNode of
+                            Just oldNode ->
+                                { oldNode
+                                    | info = updateInfo oldNode.info node.info
+                                    , name = updateVal oldNode.name node.name
+                                    , shape = updateVal oldNode.shape node.shape
+                                    , image = updateVal oldNode.image node.image
+                                    , category = updateVal oldNode.category node.category
+                                    , color = updateVal oldNode.color node.color
+                                    , size = updateVal oldNode.size node.size
+                                }
+                                    :: oldNodes
+
+                            _ ->
+                                model.nodes
+                in
+                    addNodes { model | nodes = newNodes } rest recalculate
 
         _ ->
             if recalculate then
@@ -77,35 +114,46 @@ removeNodes model nodes =
         place { model | nodes = new2Nodes, edges = new2Edges }
 
 
-addEdges : Model -> Bool -> List ( ( Int, Int ), Dict.Dict String String ) -> Bool -> Model
-addEdges model update edges recalculate =
+addEdges : Model -> List InputEdge -> Bool -> Model
+addEdges model edges recalculate =
     case edges of
-        ( ( from, to ), info ) :: rest ->
-            if not update || not (List.any (\e -> e.id == ( from, to )) model.edges) then
+        edge :: rest ->
+            if not (List.any (\e -> e.id == ( edge.from, edge.to )) model.edges) then
                 let
-                    edge =
-                        { id = ( from, to ), from = from, to = to, selected = False, info = info, position = Nothing }
+                    newEdges =
+                        { id = ( edge.from, edge.to )
+                        , selected = False
+                        , position = Nothing
+                        , from = edge.from
+                        , to = edge.to
+                        , info = edge.info
+                        , label = edge.label
+                        , width = edge.width
+                        , color = edge.color
+                        }
+                            :: model.edges
                 in
-                    if not (List.any (\e -> e.id == ( from, to )) model.edges) then
-                        addEdges { model | edges = edge :: model.edges } update rest True
-                    else
-                        addEdges model update rest recalculate
+                    addEdges { model | edges = newEdges } rest True
             else
-                addEdges
-                    { model
-                        | edges =
-                            List.map
-                                (\e ->
-                                    if e.id == ( from, to ) then
-                                        { e | info = Dict.union info e.info }
-                                    else
-                                        e
-                                )
+                let
+                    ( oldEdge, oldEdges ) =
+                        List.partition (\e -> e.id == ( edge.from, edge.to )) model.edges
+
+                    newEdges =
+                        case List.head oldEdge of
+                            Just oldNode ->
+                                { oldNode
+                                    | info = updateInfo oldNode.info edge.info
+                                    , label = updateVal oldNode.label edge.label
+                                    , width = updateVal oldNode.width edge.width
+                                    , color = updateVal oldNode.color edge.color
+                                }
+                                    :: oldEdges
+
+                            _ ->
                                 model.edges
-                    }
-                    update
-                    rest
-                    recalculate
+                in
+                    addEdges { model | edges = newEdges } rest recalculate
 
         _ ->
             if recalculate then

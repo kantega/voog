@@ -6,4 +6,11 @@ import Model exposing (..)
 
 getAttribute : String -> InfoElement e -> Maybe String
 getAttribute attribute element =
-    Dict.get attribute element.info
+    element.info
+        |> Dict.fromList
+        |> Dict.get attribute
+
+
+getAttributeWithDefault : String -> String -> InfoElement e -> String
+getAttributeWithDefault attribute default element =
+    Maybe.withDefault default (getAttribute attribute element)
