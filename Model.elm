@@ -1,6 +1,7 @@
 module Model exposing (..)
 
 import Dict
+import Window
 import Keyboard exposing (..)
 
 
@@ -8,11 +9,19 @@ type Msg
     = ClickNode Int
     | ClickEdge ( Int, Int )
     | SocketMsg String
+    | WindowSize Window.Size
+    | MouseMove Point
+    | MouseUp Point
+    | MouseDown Point
 
 
 type alias Model =
     { nodes : Nodes
     , edges : Edges
+    , position : { x : Float, y : Float }
+    , drag : Maybe Point
+    , windowSize : Maybe ( Int, Int )
+    , zoom : Float
     }
 
 
@@ -70,7 +79,7 @@ type alias InputEdge =
 
 
 type alias Info =
-    List (String, String)
+    List ( String, String )
 
 
 type alias InfoElement a =

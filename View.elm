@@ -13,16 +13,58 @@ import Attributes exposing (..)
 
 view : Model -> Html Msg
 view model =
-    div []
-        ((popup model)
-            :: [ svg [ width "10000", height "10000", viewBox "0 0 10000 10000" ]
-                    ((defs model)
-                        :: (List.append
-                                (List.foldr List.append [] (List.filterMap viewNode model.nodes))
-                                (List.foldr List.append [] (List.filterMap viewEdge model.edges))
-                           )
+    let
+        windowWidth =
+            model.windowSize
+                |> Maybe.withDefault ( 0, 0 )
+                |> Tuple.first
+
+        windowHeight =
+            model.windowSize
+                |> Maybe.withDefault ( 0, 0 )
+                |> Tuple.second
+
+        xx =
+            round model.position.x
+
+        yy =
+            round model.position.y
+    in
+        div [ Svg.Attributes.style "overflow: hidden;" ]
+            ((popup model)
+                :: [ svg
+                        [ width (toString windowWidth)
+                        , height (toString windowHeight)
+                        , viewBox ("0 0 " ++ (toString (toFloat windowWidth / model.zoom)) ++ " " ++ (toString (toFloat windowHeight / model.zoom)))
+                        ]
+                        ((defs model)
+                            :: (List.append
+                                    (List.foldr List.append [] (List.filterMap (viewNode ( xx, yy )) model.nodes))
+                                    (List.foldr List.append [] (List.filterMap (viewEdge ( xx, yy )) model.edges))
+                               )
+                        )
+                   ]
+            )
+
+
+infoList : List ( String, String ) -> Html Msg
+infoList info =
+    div
+        [ Svg.Attributes.style
+            ("position: absolute; left: -1px; top: -1px; display: grid; grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr); grid-gap: 10px; background-color: #ffffff; border: 1px solid #ccc; padding: 20px 30px; font-family: sans-serif;")
+        ]
+        (List.concat
+            (List.append
+                [ [ p [ Svg.Attributes.style "margin-top: 5px; font-size: 24px;" ] [ Html.text "Info" ], p [] [] ] ]
+                (List.map
+                    (\( k, v ) ->
+                        [ p [ Svg.Attributes.style "margin: 5px 0; font-size: 20px;" ] [ Html.text k ]
+                        , p [ Svg.Attributes.style "margin: 5px 0; font-size: 20px;" ] [ Html.text v ]
+                        ]
                     )
-               ]
+                    info
+                )
+            )
         )
 
 
@@ -30,50 +72,12 @@ popup : Model -> Html Msg
 popup model =
     case List.head (List.filter (\n -> n.selected) model.nodes) of
         Just node ->
-            case node.position of
-                Just { x, y } ->
-                    div
-                        [ Svg.Attributes.style
-                            ("position: absolute; left: "
-                                ++ (toString (x + 110))
-                                ++ "px; top: "
-                                ++ (toString (y + 10))
-                                ++ "px; background-color: #808080; color: #fff; padding: 10px 15px; font-family: sans-serif; border-radius: 5px;"
-                            )
-                        ]
-                        ((p [ Svg.Attributes.style "margin-top: 5px;" ] [ Html.text "Info" ])
-                            :: (List.map
-                                    (\( k, v ) -> p [ Svg.Attributes.style "margin: 5px 0;" ] [ Html.text (k ++ ": " ++ v) ])
-                                    node.info
-                               )
-                        )
-
-                _ ->
-                    div [] []
+            infoList node.info
 
         _ ->
             case List.head (List.filter (\e -> e.selected) model.edges) of
                 Just edge ->
-                    case edge.position of
-                        Just (Straight line) ->
-                            div
-                                [ Svg.Attributes.style
-                                    ("position: absolute; left: "
-                                        ++ (toString ((toFloat (line.from.x + line.to.x)) / 2))
-                                        ++ "px; top: "
-                                        ++ (toString ((toFloat (line.from.y + line.to.y)) / 2))
-                                        ++ "px; background-color: #808080; color: #fff; padding: 5px 10px; font-family: sans-serif; border-radius: 5px;"
-                                    )
-                                ]
-                                ((p [ Svg.Attributes.style "margin-top: 0;" ] [ Html.text "Info" ])
-                                    :: (List.map
-                                            (\( k, v ) -> p [ Svg.Attributes.style "margin: 5px 0;" ] [ Html.text (k ++ ": " ++ v) ])
-                                            edge.info
-                                       )
-                                )
-
-                        _ ->
-                            div [] []
+                    infoList edge.info
 
                 _ ->
                     div [] []
@@ -151,8 +155,8 @@ getStrokeWidth node =
     )
 
 
-viewNode : Node -> Maybe (List (Svg Msg))
-viewNode node =
+viewNode : ( Int, Int ) -> Node -> Maybe (List (Svg Msg))
+viewNode ( xx, yy ) node =
     case node.position of
         Just { x, y } ->
             Just
@@ -160,8 +164,8 @@ viewNode node =
                     Just "rect" ->
                         rect
                             [ onClick (ClickNode node.id)
-                            , Svg.Attributes.x (toString x)
-                            , Svg.Attributes.y (toString y)
+                            , Svg.Attributes.x (toString (xx + x))
+                            , Svg.Attributes.y (toString (yy + y))
                             , width "100"
                             , height "100"
                             , rx "15"
@@ -174,9 +178,9 @@ viewNode node =
                     _ ->
                         circle
                             [ onClick (ClickNode node.id)
-                            , cx (toString (x + nodeRadius))
-                            , cy (toString (y + nodeRadius))
-                            , r (toString nodeRadius)
+                            , cx (toString (xx + x + nodeRadius))
+                            , cy (toString (yy + y + nodeRadius))
+                            , r (toString (Maybe.withDefault nodeRadius node.size))
                             , fill (Maybe.withDefault "#f0f0f0" node.color)
                             , stroke "#f44336"
                             , strokeWidth (getStrokeWidth node)
@@ -184,15 +188,15 @@ viewNode node =
                   )
                     []
                 , circle
-                    [ cx (toString (x + nodeRadius))
-                    , cy (toString (y + 30))
+                    [ cx (toString (xx + x + nodeRadius))
+                    , cy (toString (yy + y + 30))
                     , r "25"
                     , fill ("url(#img" ++ (toString node.id) ++ ")")
                     ]
                     []
                 , Svg.text_
-                    [ Svg.Attributes.x (toString (x + nodeRadius))
-                    , Svg.Attributes.y (toString (y + round (nodeRadius * 1.4)))
+                    [ Svg.Attributes.x (toString (xx + x + nodeRadius))
+                    , Svg.Attributes.y (toString (yy + y + round (nodeRadius * 1.4)))
                     , fill "#b0b0b0"
                     , fontFamily "sans-serif"
                     , textAnchor "middle"
@@ -213,39 +217,39 @@ getStrokeColor selected =
         ( "url(#arrow)", "#b0b0b0" )
 
 
-path : Line -> String
-path position =
+path : Line -> ( Int, Int ) -> String
+path position ( xx, yy ) =
     case position of
         Straight line ->
             "M"
-                ++ (toString line.from.x)
+                ++ (toString (xx + line.from.x))
                 ++ " "
-                ++ (toString line.from.y)
+                ++ (toString (yy + line.from.y))
                 ++ " "
-                ++ (toString line.to.x)
+                ++ (toString (xx + line.to.x))
                 ++ " "
-                ++ (toString line.to.y)
+                ++ (toString (yy + line.to.y))
 
         Curved line ->
             "M"
-                ++ (toString line.from.x)
+                ++ (toString (xx + line.from.x))
                 ++ " "
-                ++ (toString line.from.y)
+                ++ (toString (yy + line.from.y))
                 ++ " Q "
-                ++ (toString line.via.x)
+                ++ (toString (xx + line.via.x))
                 ++ " "
-                ++ (toString line.via.y)
+                ++ (toString (yy + line.via.y))
                 ++ " "
-                ++ (toString line.to.x)
+                ++ (toString (xx + line.to.x))
                 ++ " "
-                ++ (toString line.to.y)
+                ++ (toString (yy + line.to.y))
 
         Multi line ->
-            lineToString line True
+            lineToString line ( xx, yy ) True
 
 
-lineToString : List Point -> Bool -> String
-lineToString line first =
+lineToString : List Point -> ( Int, Int ) -> Bool -> String
+lineToString line ( xx, yy ) first =
     let
         char =
             if first then
@@ -255,14 +259,20 @@ lineToString line first =
     in
         case line of
             head :: rest ->
-                char ++ " " ++ (toString (head.x)) ++ " " ++ (toString (head.y)) ++ " " ++ lineToString rest False
+                char
+                    ++ " "
+                    ++ (toString (xx + head.x))
+                    ++ " "
+                    ++ (toString (yy + head.y))
+                    ++ " "
+                    ++ lineToString rest ( xx, yy ) False
 
             _ ->
                 ""
 
 
-viewEdge : Edge -> Maybe (List (Html Msg))
-viewEdge edge =
+viewEdge : ( Int, Int ) -> Edge -> Maybe (List (Html Msg))
+viewEdge ( xx, yy ) edge =
     case edge.position of
         Just position ->
             let
@@ -277,7 +287,7 @@ viewEdge edge =
                         , fill "none"
                         , strokeWidth (toString (Maybe.withDefault 1 edge.width))
                         , stroke strokeColor
-                        , d (path position)
+                        , d (path position ( xx, yy ))
                         ]
                         []
                      , Svg.text_
@@ -290,6 +300,7 @@ viewEdge edge =
                         [ Svg.textPath
                             [ xlinkHref ("#" ++ (toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
                             , startOffset "50%"
+                            , orient "up"
                             ]
                             [ Svg.text (Maybe.withDefault "" edge.label)
                             ]
