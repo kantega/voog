@@ -199,7 +199,7 @@ viewNode ( xx, yy ) node =
                     [ Svg.Attributes.x (toString (xx + x + nodeRadius))
                     , Svg.Attributes.y (toString (yy + y + round (nodeRadius * 1.2)))
                     , fill "#b0b0b0"
-                    , fontFamily """\"Lucida Sans Unicode\", \"Lucida Grande\", sans-serif"""
+                    , fontFamily """"Lucida Sans Unicode", "Lucida Grande", sans-serif"""
                     , textAnchor "middle"
                     , alignmentBaseline "hanging"
                     ]
@@ -318,7 +318,7 @@ viewEdge ( xx, yy ) edge =
                                 , alignmentBaseline "middle"
                                 , fontSize "20"
                                 , fontWeight "800"
-                                , fontFamily """\"Lucida Sans Unicode\", \"Lucida Grande\", sans-serif"""
+                                , fontFamily """"Lucida Sans Unicode", "Lucida Grande", sans-serif"""
                                 ]
                                 [ Svg.text label
                                 ]
