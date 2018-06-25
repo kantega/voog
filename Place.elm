@@ -131,29 +131,24 @@ placeEdge nodes edges edge =
                                             in
                                                 if List.any (\e -> e.id == ( toNode.id, fromNode.id )) edges then
                                                     let
+                                                        offset = Maybe.withDefault 8 edge.width / 2 + 1
                                                         f =
-                                                            { x = from.x + nodeRadius
-                                                            , y = from.y + nodeRadius
+                                                            { x = from.x + nodeRadius + round (offset * cos (angle + 3.1415 / 2))
+                                                            , y = from.y + nodeRadius + round (offset * sin (angle + 3.1415 / 2))
                                                             }
 
                                                         t =
-                                                            { x = to.x + nodeRadius
-                                                            , y = to.y + nodeRadius
-                                                            }
-
-                                                        v =
-                                                            { x = from.x + nodeRadius + round (distance / 2 * cos (angle + 3.1415 / 32)) + round (8 * cos (angle + 3.1415 / 2))
-                                                            , y = from.y + nodeRadius + round (distance / 2 * sin (angle + 3.1415 / 32)) + round (8 * sin (angle + 3.1415 / 2))
+                                                            { x = to.x + nodeRadius + round (offset * cos (angle + 3.1415 / 2))
+                                                            , y = to.y + nodeRadius + round (offset * sin (angle + 3.1415 / 2))
                                                             }
                                                     in
                                                         ( Just
-                                                            (Curved
+                                                            (Straight
                                                                 { from = f
                                                                 , to = t
-                                                                , via = v
                                                                 }
                                                             )
-                                                        , Just v
+                                                        , Just t
                                                         )
                                                 else
                                                     let

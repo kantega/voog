@@ -96,7 +96,6 @@ type alias InfoElement a =
 
 type Line
     = Straight StraightLine
-    | Curved CurvedLine
     | Multi MultiLine
 
 
@@ -108,13 +107,6 @@ type alias StraightLine =
 
 type alias MultiLine =
     List Point
-
-
-type alias CurvedLine =
-    { from : Point
-    , to : Point
-    , via : Point
-    }
 
 
 type alias Point =

@@ -315,13 +315,15 @@ calculateDepth edges nodes =
     in
         ( mergedNodes, mergedEdges )
 
+reverseId : (Int, Int) -> (Int, Int)
+reverseId id = (Tuple.second id, Tuple.first id)
 
 mergeEdge : Sugiyama.Model.Graph -> Edge -> Edge
 mergeEdge { nodes, edges } edge =
     let
         parts =
             edges
-                |> List.filter (\e -> e.id == edge.id)
+                |> List.filter (\e -> e.id == edge.id || reverseId e.id == edge.id)
                 |> List.filterMap
                     (\e ->
                         case e.num of

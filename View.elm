@@ -223,20 +223,6 @@ path position ( xx, yy ) =
                 ++ " "
                 ++ (toString (yy + line.to.y))
 
-        Curved line ->
-            "M"
-                ++ (toString (xx + line.from.x))
-                ++ " "
-                ++ (toString (yy + line.from.y))
-                ++ " Q "
-                ++ (toString (xx + line.via.x))
-                ++ " "
-                ++ (toString (yy + line.via.y))
-                ++ " "
-                ++ (toString (xx + line.to.x))
-                ++ " "
-                ++ (toString (yy + line.to.y))
-
         Multi line ->
             lineToString line ( xx, yy ) True
 

@@ -1,5 +1,6 @@
 module Sugiyama.Sugiyama exposing (..)
 
+import Set
 import Sugiyama.CrossReduction exposing (..)
 import Sugiyama.InitialPlacement exposing (..)
 import Sugiyama.DummyNodes exposing (..)
@@ -13,6 +14,7 @@ import Sugiyama.Placement exposing (..)
 sugiyama : BasicGraph -> Graph
 sugiyama graph =
     graph
+        |> mergeBidirectional
         |> initialize
         |> removeCycles
         |> layer
@@ -32,3 +34,24 @@ initialize { nodes, edges } =
             List.map (\( from, to ) -> { from = from, to = to, reversed = False, num = Nothing, id = ( from, to ) }) edges
     in
         { nodes = newNodes, edges = newEdges }
+
+
+mergeBidirectional : BasicGraph -> BasicGraph
+mergeBidirectional ({ edges } as graph) =
+    let
+        edgeSet =
+            Set.fromList edges
+
+        newEdges =
+            List.filterMap
+                (\( from, to ) ->
+                    if from < to && Set.member ( to, from ) edgeSet then
+                        Nothing
+                    else if from == to then
+                        Nothing
+                    else
+                        Just ( from, to )
+                )
+                edges
+    in
+        { graph | edges = newEdges }
