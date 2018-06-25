@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import AnimationFrame
 import Html
+import Ports exposing (..)
 import Time
 import WebSocket
 import Window
@@ -38,6 +39,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ WebSocket.listen "ws://127.0.0.1:8000/" SocketMsg
+        , input SocketMsg
         , AnimationFrame.times Tick
         , Window.resizes WindowSize
         , Mouse.moves MouseMove
