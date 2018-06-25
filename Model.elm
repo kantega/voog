@@ -46,6 +46,7 @@ type alias SystemNode a =
     { a
         | selected : Bool
         , position : Maybe Point
+        , categoryColor : Maybe String
     }
 
 
@@ -54,6 +55,7 @@ type alias SystemEdge a =
         | id : ( Int, Int )
         , selected : Bool
         , position : Maybe Line
+        , labelPosition : Maybe Point
         , dashOffset : Float
     }
 

@@ -115,11 +115,6 @@ defs model =
                     , refY "3"
                     ]
                     [ Svg.path [ d "M0,0 V6 L3,3 Z", fill "#808080" ] [] ]
-                 , Svg.filter
-                    [ id "solid", x "0", y "0", width "1", height "1" ]
-                    [ feFlood [ floodColor "#ffffff" ] []
-                    , feComposite [ Svg.Attributes.in_ "SourceGraphic" ] []
-                    ]
                  ]
                 )
                 (List.filterMap
@@ -151,13 +146,14 @@ defs model =
             )
 
 
-getStrokeWidth : Node -> String
-getStrokeWidth node =
-    (if getAttribute "error" node == Just "True" then
-        "3"
-     else
-        "0"
-    )
+nodeColor : Node -> String
+nodeColor node =
+    case node.color of
+        Just color ->
+            color
+
+        Nothing ->
+            Maybe.withDefault "#808080" node.categoryColor
 
 
 viewNode : ( Int, Int ) -> Node -> Maybe (List (Svg Msg))
@@ -175,9 +171,9 @@ viewNode ( xx, yy ) node =
                             , height "100"
                             , rx "15"
                             , ry "15"
-                            , fill "#f0f0f0"
-                            , stroke "#f44336"
-                            , strokeWidth (getStrokeWidth node)
+                            , fill "#ffffff"
+                            , stroke (nodeColor node)
+                            , strokeWidth "5"
                             ]
 
                     _ ->
@@ -186,9 +182,9 @@ viewNode ( xx, yy ) node =
                             , cx (toString (xx + x + nodeRadius))
                             , cy (toString (yy + y + nodeRadius))
                             , r (toString (Maybe.withDefault nodeRadius node.size))
-                            , fill (Maybe.withDefault "#f0f0f0" node.color)
-                            , stroke "#f44336"
-                            , strokeWidth (getStrokeWidth node)
+                            , fill "#ffffff"
+                            , stroke (nodeColor node)
+                            , strokeWidth "5"
                             ]
                   )
                     []
@@ -273,48 +269,64 @@ viewEdge ( xx, yy ) edge =
     case edge.position of
         Just position ->
             Just
-                ([ Svg.path
-                    [ onClick (ClickEdge ( edge.from, edge.to ))
-                    , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                    , fill "none"
-                    , strokeWidth (toString (Maybe.withDefault 8 edge.width))
-                    , stroke (Maybe.withDefault "#fff" edge.color)
-                    , strokeLinecap "round"
-                    , strokeLinejoin "round"
-                    , d (path position ( xx, yy ))
-                    ]
-                    []
-                 , Svg.path
-                    [ onClick (ClickEdge ( edge.from, edge.to ))
-                    , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                    , fill "none"
-                    , strokeWidth (toString ( 0.75 * (Maybe.withDefault 8 edge.width)))
-                    , stroke (Maybe.withDefault "#b0b0b0" edge.dashColor)
-                    , strokeLinecap "round"
-                    , strokeLinejoin "round"
-                    , strokeDasharray (toString (2 * (Maybe.withDefault 8 edge.width)))
-                    , strokeDashoffset (toString edge.dashOffset)
-                    , d (path position ( xx, yy ))
-                    ]
-                    []
-                 , Svg.text_
-                    [ fill (Maybe.withDefault "#b0b0b0" edge.color)
-                    , fontSize "20"
-                    , fontWeight "800"
-                    , fontFamily "sans-serif"
-                    , textAnchor "middle"
-                    , Svg.Attributes.filter "url(#solid)"
-                    , dy "-5"
-                    ]
-                    [ Svg.textPath
-                        [ xlinkHref ("#" ++ (toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                        , startOffset "50%"
-                        , orient "up"
+                (List.append
+                    [ Svg.path
+                        [ onClick (ClickEdge ( edge.from, edge.to ))
+                        , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
+                        , fill "none"
+                        , strokeWidth (toString (Maybe.withDefault 8 edge.width))
+                        , stroke (Maybe.withDefault "#fff" edge.color)
+                        , strokeLinecap "round"
+                        , strokeLinejoin "round"
+                        , d (path position ( xx, yy ))
                         ]
-                        [ Svg.text (Maybe.withDefault "" edge.label)
+                        []
+                    , Svg.path
+                        [ onClick (ClickEdge ( edge.from, edge.to ))
+                        , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
+                        , fill "none"
+                        , strokeWidth (toString (0.75 * (Maybe.withDefault 8 edge.width)))
+                        , stroke (Maybe.withDefault "#b0b0b0" edge.dashColor)
+                        , strokeLinecap "round"
+                        , strokeLinejoin "round"
+                        , strokeDasharray (toString (2 * (Maybe.withDefault 8 edge.width)))
+                        , strokeDashoffset (toString edge.dashOffset)
+                        , d (path position ( xx, yy ))
                         ]
+                        []
                     ]
-                 ]
+                    (case ( edge.labelPosition, edge.label ) of
+                        ( Just position, Just label ) ->
+                            [ rect
+                                [ onClick (ClickEdge edge.id)
+                                , x (toString (xx + position.x - 30))
+                                , y (toString (yy + position.y - 15))
+                                , width "60"
+                                , height "30"
+                                , rx "3"
+                                , ry "3"
+                                , fill "#ffffff"
+                                , stroke (Maybe.withDefault "#808080" edge.color)
+                                , strokeWidth "2"
+                                ]
+                                []
+                            , Svg.text_
+                                [ fill (Maybe.withDefault "#b0b0b0" edge.color)
+                                , x (toString (xx + position.x))
+                                , y (toString (yy + position.y + 2))
+                                , textAnchor "middle"
+                                , alignmentBaseline "middle"
+                                , fontSize "20"
+                                , fontWeight "800"
+                                , fontFamily "sans-serif"
+                                ]
+                                [ Svg.text label
+                                ]
+                            ]
+
+                        _ ->
+                            []
+                    )
                 )
 
         _ ->

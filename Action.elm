@@ -9,10 +9,25 @@ import Place exposing (..)
 
 updateVal : Maybe a -> Maybe a -> Maybe a
 updateVal old new =
-    if new == Nothing then
-        old
-    else
-        new
+    new
+
+
+categoryColor =
+    [ "#f44336"
+    , "#2196f3"
+    , "#4caf50"
+    , "#ffeb3b"
+    , "#607d8b"
+    ]
+        |> List.indexedMap (\i c -> ( i, c ))
+        |> Dict.fromList
+
+
+
+--if new == Nothing then
+--    old
+--else
+--    new
 
 
 updateInfo : Info -> Info -> Info
@@ -51,6 +66,7 @@ addNodes model nodes recalculate =
                     newNodes =
                         { selected = False
                         , position = Nothing
+                        , categoryColor = Nothing
                         , id = node.id
                         , info = node.info
                         , name = node.name
@@ -88,15 +104,19 @@ addNodes model nodes recalculate =
                     addNodes { model | nodes = newNodes } rest recalculate
 
         _ ->
-            if recalculate then
-                let
-                    ( newNodes, newEdges ) =
-                        calculateDepth model.edges model.nodes
-                in
-                    place
-                        { model | nodes = newNodes, edges = newEdges }
-            else
-                model
+            let
+                coloredNodes =
+                    setNodeColors model.nodes
+            in
+                if recalculate then
+                    let
+                        ( newNodes, newEdges ) =
+                            calculateDepth model.edges coloredNodes
+                    in
+                        place
+                            { model | nodes = newNodes, edges = newEdges }
+                else
+                    { model | nodes = coloredNodes }
 
 
 removeNodes : Model -> List Int -> Model
@@ -124,6 +144,7 @@ addEdges model edges recalculate =
                         { id = ( edge.from, edge.to )
                         , selected = False
                         , position = Nothing
+                        , labelPosition = Nothing
                         , dashOffset = 0
                         , from = edge.from
                         , to = edge.to
@@ -214,6 +235,49 @@ toggleEdge model id =
                 model.edges
         , nodes = List.map (\n -> { n | selected = False }) model.nodes
     }
+
+
+setNodeColors : Nodes -> Nodes
+setNodeColors nodes =
+    let
+        categories =
+            nodes
+                |> List.filterMap
+                    (\n ->
+                        case n.category of
+                            Just category ->
+                                Just ( n.id, category )
+
+                            _ ->
+                                Nothing
+                    )
+                |> List.sortWith (\a b -> compare (Tuple.second a) (Tuple.second b))
+                |> (setColors "" -1)
+                |> Dict.fromList
+    in
+        List.map
+            (\n ->
+                case Dict.get n.id categories of
+                    Just colorId ->
+                        { n | categoryColor = Dict.get colorId categoryColor }
+
+                    Nothing ->
+                        n
+            )
+            nodes
+
+
+setColors : String -> Int -> List ( Int, String ) -> List ( Int, Int )
+setColors prevCategory colorId categories =
+    case categories of
+        ( id, category ) :: rest ->
+            if category == prevCategory then
+                ( id, colorId ) :: (setColors category colorId rest)
+            else
+                ( id, colorId + 1 ) :: (setColors category (colorId + 1) rest)
+
+        _ ->
+            []
 
 
 calculateDepth : Edges -> Nodes -> ( Nodes, Edges )

@@ -6,8 +6,10 @@ import Model exposing (..)
 nodeRadius =
     45
 
+
 distance =
     4 * nodeRadius
+
 
 arrowDistance =
     10
@@ -70,103 +72,139 @@ setPos ({ position } as node) =
 
 placeEdges : Edges -> Nodes -> Edges
 placeEdges edges nodes =
-    List.map (\e -> { e | position = placeEdge nodes edges e }) edges
+    List.map (placeEdge nodes edges) edges
 
 
-placeEdge : Nodes -> Edges -> Edge -> Maybe Line
+getLabelPosition : MultiLine -> Maybe Point
+getLabelPosition line =
+    let
+
+        second =
+            line
+                |> List.indexedMap (\i p -> ( i, p ))
+                |> List.filter (\( i, p ) -> i == 1)
+                |> List.head
+        pos =
+            case second of
+                Just (i, p) ->
+                    Just { x = distance * p.x + nodeRadius, y = distance * p.y + nodeRadius }
+                _ ->
+                    Nothing
+    in
+        pos
+
+
+placeEdge : Nodes -> Edges -> Edge -> Edge
 placeEdge nodes edges edge =
-    case edge.position of
-        Just (Multi line) ->
-            Just
-                (Multi
-                    (line
-                        |> List.map (\{ x, y } -> { x = distance * x + nodeRadius, y = distance * y + nodeRadius })
+    let
+        ( position, labelPosition ) =
+            case edge.position of
+                Just (Multi line) ->
+                    ( Just
+                        (Multi
+                            (line
+                                |> List.map (\{ x, y } -> { x = distance * x + nodeRadius, y = distance * y + nodeRadius })
+                            )
+                        )
+                    , getLabelPosition line
                     )
-                )
 
-        _ ->
-            let
-                from =
-                    List.head (List.filter (\node -> node.id == edge.from) nodes)
+                _ ->
+                    let
+                        from =
+                            List.head (List.filter (\node -> node.id == edge.from) nodes)
 
-                to =
-                    List.head (List.filter (\node -> node.id == edge.to) nodes)
-            in
-                case ( from, to ) of
-                    ( Just fromNode, Just toNode ) ->
-                        case ( fromNode.position, toNode.position ) of
-                            ( Just from, Just to ) ->
-                                if from /= to then
-                                    let
-                                        angle =
-                                            atan2 (toFloat (to.y - from.y)) (toFloat (to.x - from.x))
-
-                                        distance =
-                                            sqrt ((toFloat (to.y - from.y)) ^ 2 + (toFloat (to.x - from.x)) ^ 2)
-                                    in
-                                        if List.any (\e -> e.id == ( toNode.id, fromNode.id )) edges then
+                        to =
+                            List.head (List.filter (\node -> node.id == edge.to) nodes)
+                    in
+                        case ( from, to ) of
+                            ( Just fromNode, Just toNode ) ->
+                                case ( fromNode.position, toNode.position ) of
+                                    ( Just from, Just to ) ->
+                                        if from /= to then
                                             let
-                                                f =
-                                                    { x = from.x + nodeRadius
-                                                    , y = from.y + nodeRadius
-                                                    }
+                                                angle =
+                                                    atan2 (toFloat (to.y - from.y)) (toFloat (to.x - from.x))
 
-                                                t =
-                                                    { x = to.x + nodeRadius
-                                                    , y = to.y + nodeRadius
-                                                    }
-
-                                                v =
-                                                    { x = from.x + nodeRadius + round (distance / 2 * cos (angle + 3.1415 / 32)) + round (8 * cos (angle + 3.1415 / 2))
-                                                    , y = from.y + nodeRadius + round (distance / 2 * sin (angle + 3.1415 / 32)) + round (8 * sin (angle + 3.1415 / 2))
-                                                    }
+                                                distance =
+                                                    sqrt ((toFloat (to.y - from.y)) ^ 2 + (toFloat (to.x - from.x)) ^ 2)
                                             in
-                                                Just
-                                                    (Curved
-                                                        { from = f
-                                                        , to = t
-                                                        , via = v
-                                                        }
-                                                    )
+                                                if List.any (\e -> e.id == ( toNode.id, fromNode.id )) edges then
+                                                    let
+                                                        f =
+                                                            { x = from.x + nodeRadius
+                                                            , y = from.y + nodeRadius
+                                                            }
+
+                                                        t =
+                                                            { x = to.x + nodeRadius
+                                                            , y = to.y + nodeRadius
+                                                            }
+
+                                                        v =
+                                                            { x = from.x + nodeRadius + round (distance / 2 * cos (angle + 3.1415 / 32)) + round (8 * cos (angle + 3.1415 / 2))
+                                                            , y = from.y + nodeRadius + round (distance / 2 * sin (angle + 3.1415 / 32)) + round (8 * sin (angle + 3.1415 / 2))
+                                                            }
+                                                    in
+                                                        ( Just
+                                                            (Curved
+                                                                { from = f
+                                                                , to = t
+                                                                , via = v
+                                                                }
+                                                            )
+                                                        , Just v
+                                                        )
+                                                else
+                                                    let
+                                                        f =
+                                                            { x = from.x + nodeRadius
+                                                            , y = from.y + nodeRadius
+                                                            }
+
+                                                        t =
+                                                            { x = to.x + nodeRadius
+                                                            , y = to.y + nodeRadius
+                                                            }
+
+                                                        m =
+                                                            { x = nodeRadius + round (toFloat (from.x + to.x) / 2)
+                                                            , y = nodeRadius + round (toFloat (from.y + to.y) / 2)
+                                                            }
+                                                    in
+                                                        ( Just
+                                                            (Straight
+                                                                { from = f
+                                                                , to = t
+                                                                }
+                                                            )
+                                                        , Just m
+                                                        )
                                         else
                                             let
                                                 f =
-                                                    { x = from.x + nodeRadius
+                                                    { x = from.x - arrowDistance - 2
                                                     , y = from.y + nodeRadius
                                                     }
 
                                                 t =
-                                                    { x = to.x + nodeRadius
-                                                    , y = to.y + nodeRadius
+                                                    { x = from.x - arrowDistance
+                                                    , y = from.y + nodeRadius
                                                     }
                                             in
-                                                Just
+                                                ( Just
                                                     (Straight
                                                         { from = f
                                                         , to = t
                                                         }
                                                     )
-                                else
-                                    let
-                                        f =
-                                            { x = from.x - arrowDistance - 2
-                                            , y = from.y + nodeRadius
-                                            }
+                                                , Nothing
+                                                )
 
-                                        t =
-                                            { x = from.x - arrowDistance
-                                            , y = from.y + nodeRadius
-                                            }
-                                    in
-                                        Just
-                                            (Straight
-                                                { from = f
-                                                , to = t
-                                                }
-                                            )
+                                    _ ->
+                                        ( Nothing, Nothing )
 
                             _ ->
-                                Nothing
-
-                    _ ->
-                        Nothing
+                                ( Nothing, Nothing )
+    in
+        { edge | position = position, labelPosition = labelPosition }
