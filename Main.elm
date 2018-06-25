@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import AnimationFrame
 import Html
 import Time
 import WebSocket
@@ -30,14 +31,14 @@ init =
 
 empty : Model
 empty =
-    { nodes = [], edges = [], position = { x = 0, y = 0 }, drag = Nothing, windowSize = Nothing, zoom = 1 }
+    { nodes = [], edges = [], position = { x = 0, y = 0 }, drag = Nothing, windowSize = Nothing, zoom = 1, time = Nothing }
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ WebSocket.listen "ws://127.0.0.1:8000/" SocketMsg
-        , Time.every (30 * Time.millisecond) (always Tick)
+        , AnimationFrame.times Tick
         , Window.resizes WindowSize
         , Mouse.moves MouseMove
         , Mouse.ups MouseUp

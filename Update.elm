@@ -5,6 +5,7 @@ import Char exposing (..)
 import Model exposing (..)
 import Communication exposing (..)
 import Action exposing (..)
+import Time
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -19,20 +20,25 @@ update msg model =
         SocketMsg msg ->
             handleCommunication model msg
 
-        Tick ->
-            let
-                newEdges =
-                    List.map
-                        (\e ->
-                            case e.speed of
-                                Just speed ->
-                                    { e | dashOffset = e.dashOffset - speed }
-                                Nothing ->
-                                    e
-                        )
-                        model.edges
-            in
-                ( { model | edges = newEdges }, Cmd.none )
+        Tick time ->
+            case model.time of
+                Just prevTime ->
+                    let
+                        deltaTime = (Time.inSeconds (time - prevTime))
+                        newEdges =
+                            List.map
+                                (\e ->
+                                    case e.speed of
+                                        Just speed ->
+                                            { e | dashOffset = e.dashOffset - speed * deltaTime}
+                                        Nothing ->
+                                            e
+                                )
+                                model.edges
+                    in
+                        ( { model | time = Just time, edges = newEdges }, Cmd.none )
+                Nothing ->
+                    ({ model | time = Just time }, Cmd.none )
 
         WindowSize { width, height } ->
             let

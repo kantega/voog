@@ -3,13 +3,14 @@ module Model exposing (..)
 import Dict
 import Window
 import Keyboard exposing (..)
+import Time
 
 
 type Msg
     = ClickNode Int
     | ClickEdge ( Int, Int )
     | SocketMsg String
-    | Tick
+    | Tick Time.Time
     | WindowSize Window.Size
     | MouseMove Point
     | MouseUp Point
@@ -23,6 +24,7 @@ type alias Model =
     , drag : Maybe Point
     , windowSize : Maybe ( Int, Int )
     , zoom : Float
+    , time : Maybe Time.Time
     }
 
 
