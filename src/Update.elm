@@ -51,10 +51,10 @@ update msg model =
                         Just ( oldWidth, oldHeight ) ->
                             let
                                 dw =
-                                    toFloat (width - oldWidth) / 2 / model.zoom
+                                    toFloat (width - oldWidth) / 2
 
                                 dh =
-                                    toFloat (height - oldHeight) / 2 / model.zoom
+                                    toFloat (height - oldHeight) / 2
                             in
                                 { x = model.position.x + dw, y = model.position.y + dh }
 
