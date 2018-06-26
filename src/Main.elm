@@ -2,24 +2,22 @@ module Main exposing (..)
 
 import AnimationFrame
 import Html
-import Ports exposing (..)
-import Time
 import WebSocket
 import Window
 import Task
 import Mouse
+import Ports exposing (..)
 import Model exposing (..)
-import View exposing (..)
-import Update exposing (..)
-import Keyboard exposing (..)
-import Sugiyama.Sugiyama exposing (..)
+import Messages exposing (..)
+import View
+import Update
 
 
 main : Program Never Model Msg
 main =
     Html.program
         { init = init
-        , update = update
+        , update = Update.update
         , view = View.view
         , subscriptions = subscriptions
         }
@@ -45,8 +43,8 @@ empty =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ WebSocket.listen "ws://127.0.0.1:8000/" SocketMsg
-        , input SocketMsg
+        [ WebSocket.listen "ws://127.0.0.1:8000/" InputMsg
+        , Ports.input InputMsg
         , AnimationFrame.times Tick
         , Window.resizes WindowSize
         , Mouse.moves MouseMove

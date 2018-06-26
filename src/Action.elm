@@ -2,9 +2,9 @@ module Action exposing (..)
 
 import Dict
 import Model exposing (..)
+import Place exposing (..)
 import Sugiyama.Sugiyama exposing (sugiyama)
 import Sugiyama.Model
-import Place exposing (..)
 
 
 updateVal : Maybe a -> Maybe a -> Maybe a

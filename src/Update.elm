@@ -1,11 +1,10 @@
 module Update exposing (..)
 
-import Random
-import Char exposing (..)
-import Model exposing (..)
-import Input exposing (..)
-import Action exposing (..)
 import Time
+import Model exposing (..)
+import Messages exposing (..)
+import Action exposing (..)
+import Input
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -17,8 +16,8 @@ update msg model =
         ClickEdge id ->
             ( toggleEdge model id, Cmd.none )
 
-        SocketMsg msg ->
-            ( handleInput model msg, Cmd.none )
+        InputMsg msg ->
+            ( Input.handleInput model msg, Cmd.none )
 
         Tick time ->
             case model.time of

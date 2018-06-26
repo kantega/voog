@@ -1,20 +1,8 @@
 module Model exposing (..)
 
 import Dict
-import Window
-import Keyboard exposing (..)
 import Time
-
-
-type Msg
-    = ClickNode Int
-    | ClickEdge ( Int, Int )
-    | SocketMsg String
-    | Tick Time.Time
-    | WindowSize Window.Size
-    | MouseMove Point
-    | MouseUp Point
-    | MouseDown Point
+import Keyboard exposing (..)
 
 
 type alias Model =
@@ -65,7 +53,7 @@ type alias SystemEdge a =
 type alias Input =
     { addNodes : List InputNode
     , addEdges : List InputEdge
-    , removeNodes : (List Int)
+    , removeNodes : List Int
     , removeEdges : List ( Int, Int )
     }
 
