@@ -62,6 +62,14 @@ type alias SystemEdge a =
     }
 
 
+type alias Input =
+    { addNodes : List InputNode
+    , addEdges : List InputEdge
+    , removeNodes : (List Int)
+    , removeEdges : List ( Int, Int )
+    }
+
+
 type alias InputNode =
     { id : Int
     , info : Info

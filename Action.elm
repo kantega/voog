@@ -23,13 +23,6 @@ categoryColor =
         |> Dict.fromList
 
 
-
---if new == Nothing then
---    old
---else
---    new
-
-
 updateInfo : Info -> Info -> Info
 updateInfo old new =
     let
@@ -57,8 +50,8 @@ updateInfo old new =
         List.append updated appended
 
 
-addNodes : Model -> List InputNode -> Bool -> Model
-addNodes model nodes recalculate =
+addNodes : List InputNode -> Bool -> Model -> Model
+addNodes nodes recalculate model =
     case nodes of
         node :: rest ->
             if not (List.any (\n -> n.id == node.id) model.nodes) then
@@ -78,7 +71,7 @@ addNodes model nodes recalculate =
                         }
                             :: model.nodes
                 in
-                    addNodes { model | nodes = newNodes } rest True
+                    addNodes rest True { model | nodes = newNodes }
             else
                 let
                     ( oldNode, oldNodes ) =
@@ -101,7 +94,7 @@ addNodes model nodes recalculate =
                             _ ->
                                 model.nodes
                 in
-                    addNodes { model | nodes = newNodes } rest recalculate
+                    addNodes rest recalculate { model | nodes = newNodes }
 
         _ ->
             let
@@ -119,8 +112,8 @@ addNodes model nodes recalculate =
                     { model | nodes = coloredNodes }
 
 
-removeNodes : Model -> List Int -> Model
-removeNodes model nodes =
+removeNodes : List Int -> Model -> Model
+removeNodes nodes model =
     let
         newNodes =
             List.filter (\n -> not (List.member n.id nodes)) model.nodes
@@ -134,8 +127,8 @@ removeNodes model nodes =
         place { model | nodes = new2Nodes, edges = new2Edges }
 
 
-addEdges : Model -> List InputEdge -> Bool -> Model
-addEdges model edges recalculate =
+addEdges : List InputEdge -> Bool -> Model -> Model
+addEdges edges recalculate model =
     case edges of
         edge :: rest ->
             if not (List.any (\e -> e.id == ( edge.from, edge.to )) model.edges) then
@@ -157,7 +150,7 @@ addEdges model edges recalculate =
                         }
                             :: model.edges
                 in
-                    addEdges { model | edges = newEdges } rest True
+                    addEdges rest True { model | edges = newEdges }
             else
                 let
                     ( oldEdge, oldEdges ) =
@@ -179,7 +172,7 @@ addEdges model edges recalculate =
                             _ ->
                                 model.edges
                 in
-                    addEdges { model | edges = newEdges } rest recalculate
+                    addEdges rest recalculate { model | edges = newEdges }
 
         _ ->
             if recalculate then
@@ -193,8 +186,8 @@ addEdges model edges recalculate =
                 model
 
 
-removeEdges : Model -> List ( Int, Int ) -> Model
-removeEdges model edges =
+removeEdges : List ( Int, Int ) -> Model -> Model
+removeEdges edges model =
     let
         newEdges =
             List.filter (\e -> not (List.member e.id edges)) model.edges

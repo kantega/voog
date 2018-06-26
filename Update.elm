@@ -3,7 +3,7 @@ module Update exposing (..)
 import Random
 import Char exposing (..)
 import Model exposing (..)
-import Communication exposing (..)
+import Input exposing (..)
 import Action exposing (..)
 import Time
 
@@ -18,27 +18,31 @@ update msg model =
             ( toggleEdge model id, Cmd.none )
 
         SocketMsg msg ->
-            handleCommunication model msg
+            ( handleInput model msg, Cmd.none )
 
         Tick time ->
             case model.time of
                 Just prevTime ->
                     let
-                        deltaTime = (Time.inSeconds (time - prevTime))
+                        deltaTime =
+                            (Time.inSeconds (time - prevTime))
+
                         newEdges =
                             List.map
                                 (\e ->
                                     case e.speed of
                                         Just speed ->
-                                            { e | dashOffset = e.dashOffset - speed * deltaTime}
+                                            { e | dashOffset = e.dashOffset - speed * deltaTime }
+
                                         Nothing ->
                                             e
                                 )
                                 model.edges
                     in
                         ( { model | time = Just time, edges = newEdges }, Cmd.none )
+
                 Nothing ->
-                    ({ model | time = Just time }, Cmd.none )
+                    ( { model | time = Just time }, Cmd.none )
 
         WindowSize { width, height } ->
             let

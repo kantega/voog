@@ -32,7 +32,14 @@ init =
 
 empty : Model
 empty =
-    { nodes = [], edges = [], position = { x = 0, y = 0 }, drag = Nothing, windowSize = Nothing, zoom = 1, time = Nothing }
+    { nodes = []
+    , edges = []
+    , position = { x = 0, y = 0 }
+    , drag = Nothing
+    , windowSize = Nothing
+    , zoom = 1
+    , time = Nothing
+    }
 
 
 subscriptions : Model -> Sub Msg
