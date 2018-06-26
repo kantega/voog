@@ -35,11 +35,16 @@ view model =
                 :: [ svg
                         [ width (toString windowWidth)
                         , height (toString windowHeight)
-                        , viewBox ("0 0 " ++ (toString (toFloat windowWidth / model.zoom)) ++ " " ++ (toString (toFloat windowHeight / model.zoom)))
+                        , viewBox
+                            ("0 0 "
+                                ++ (toString (toFloat windowWidth / model.zoom))
+                                ++ " "
+                                ++ (toString (toFloat windowHeight / model.zoom))
+                            )
                         ]
                         ((defs model)
                             :: (List.concat
-                                    [(List.foldr List.append [] (List.filterMap (viewEdge ( xx, yy )) model.edges))
+                                    [ (List.foldr List.append [] (List.filterMap (viewEdge ( xx, yy )) model.edges))
                                     , (List.foldr List.append [] (List.filterMap (viewNode ( xx, yy )) model.nodes))
                                     , (List.foldr List.append [] (List.filterMap (viewLabel ( xx, yy )) model.edges))
                                     ]
@@ -53,7 +58,10 @@ infoList : List ( String, String ) -> Html Msg
 infoList info =
     div
         [ Svg.Attributes.style
-            ("position: absolute; left: -1px; top: -1px; display: grid; grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr); grid-gap: 10px; background-color: #ffffff; border: 1px solid #ccc; padding: 20px 30px; font-family: sans-serif;")
+            ("position: absolute; left: -1px; top: -1px; display: grid; grid-template-columns: minmax(150px, 1fr)"
+                ++ " minmax(150px, 1fr); grid-gap: 10px; background-color: #ffffff; border: 1px solid #ccc;"
+                ++ " padding: 20px 30px; font-family: sans-serif;"
+            )
         ]
         (List.concat
             (List.append

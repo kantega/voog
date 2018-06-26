@@ -148,114 +148,125 @@ placeEdge nodes edges edge =
         ( position, labelPosition ) =
             case edge.position of
                 Just (Multi line) ->
-                    let
-                        width =
-                            round ((Maybe.withDefault 8 edge.width) / 2)
-
-                        offset =
-                            if not (List.any (\e -> e.id == reverseId edge.id) edges) then
-                                0
-                            else if Tuple.first edge.id > Tuple.second edge.id then
-                                -width - 1
-                            else
-                                width + 1
-                    in
-                        ( Just
-                            (Multi
-                                (List.map
-                                    (\{ x, y } ->
-                                        { x = distance * x + nodeRadius + offset
-                                        , y = distance * y + nodeRadius
-                                        }
-                                    )
-                                    line
-                                )
-                            )
-                        , getLabelPosition line offset
-                        )
+                    placeMultiLineEdge line edges edge
 
                 _ ->
-                    let
-                        from =
-                            List.head (List.filter (\node -> node.id == edge.from) nodes)
-
-                        to =
-                            List.head (List.filter (\node -> node.id == edge.to) nodes)
-                    in
-                        case ( from, to ) of
-                            ( Just fromNode, Just toNode ) ->
-                                case ( fromNode.position, toNode.position ) of
-                                    ( Just from, Just to ) ->
-                                        if from /= to then
-                                            let
-                                                angle =
-                                                    atan2 (toFloat (to.y - from.y)) (toFloat (to.x - from.x))
-
-                                                distance =
-                                                    sqrt ((toFloat (to.y - from.y)) ^ 2 + (toFloat (to.x - from.x)) ^ 2)
-                                            in
-                                                if List.any (\e -> e.id == ( toNode.id, fromNode.id )) edges then
-                                                    let
-                                                        width =
-                                                            (Maybe.withDefault 8 edge.width) / 2
-
-                                                        offset =
-                                                            width + 1
-
-                                                        labelOffset =
-                                                            if Tuple.first edge.id > Tuple.second edge.id then
-                                                                -(round offset)
-                                                            else
-                                                                round offset
-
-                                                        direction =
-                                                            if from.x == to.x then
-                                                                sign labelOffset
-                                                            else
-                                                                sign (to.x - from.x)
-                                                    in
-                                                        ( Just
-                                                            (Straight
-                                                                { from =
-                                                                    { x = from.x + nodeRadius + round (offset * cos (angle + 3.1415 / 2))
-                                                                    , y = from.y + nodeRadius + round (offset * sin (angle + 3.1415 / 2))
-                                                                    }
-                                                                , to =
-                                                                    { x = to.x + nodeRadius + round (offset * cos (angle + 3.1415 / 2))
-                                                                    , y = to.y + nodeRadius + round (offset * sin (angle + 3.1415 / 2))
-                                                                    }
-                                                                }
-                                                            )
-                                                        , Just
-                                                            { x = nodeRadius + round (toFloat (from.x + to.x) / 2) + labelOffset
-                                                            , y = nodeRadius + round (toFloat (from.y + to.y) / 2) + (sign (direction) * (round (toFloat labelHeight / 2) + 2))
-                                                            }
-                                                        )
-                                                else
-                                                    ( Just
-                                                        (Straight
-                                                            { from =
-                                                                { x = from.x + nodeRadius
-                                                                , y = from.y + nodeRadius
-                                                                }
-                                                            , to =
-                                                                { x = to.x + nodeRadius
-                                                                , y = to.y + nodeRadius
-                                                                }
-                                                            }
-                                                        )
-                                                    , Just
-                                                        { x = nodeRadius + round (toFloat (from.x + to.x) / 2)
-                                                        , y = nodeRadius + round (toFloat (from.y + to.y) / 2)
-                                                        }
-                                                    )
-                                        else
-                                            ( Nothing, Nothing )
-
-                                    _ ->
-                                        ( Nothing, Nothing )
-
-                            _ ->
-                                ( Nothing, Nothing )
+                    placeSingleLineEdge nodes edges edge
     in
         { edge | position = position, labelPosition = labelPosition }
+
+
+placeMultiLineEdge : MultiLine -> Edges -> Edge -> (Maybe Line, Maybe Point)
+placeMultiLineEdge line edges edge =
+    let
+        width =
+            round ((Maybe.withDefault 8 edge.width) / 2)
+
+        offset =
+            if not (List.any (\e -> e.id == reverseId edge.id) edges) then
+                0
+            else if Tuple.first edge.id > Tuple.second edge.id then
+                -width - 1
+            else
+                width + 1
+    in
+        ( Just
+            (Multi
+                (List.map
+                    (\{ x, y } ->
+                        { x = distance * x + nodeRadius + offset
+                        , y = distance * y + nodeRadius
+                        }
+                    )
+                    line
+                )
+            )
+        , getLabelPosition line offset
+        )
+
+
+placeSingleLineEdge : Nodes -> Edges -> Edge -> (Maybe Line, Maybe Point)
+placeSingleLineEdge nodes edges edge =
+    let
+        from =
+            List.head (List.filter (\node -> node.id == edge.from) nodes)
+
+        to =
+            List.head (List.filter (\node -> node.id == edge.to) nodes)
+    in
+        case ( from, to ) of
+            ( Just fromNode, Just toNode ) ->
+                case ( fromNode.position, toNode.position ) of
+                    ( Just from, Just to ) ->
+                        if from == to then
+                            ( Nothing, Nothing )
+                        else if List.any (\e -> e.id == ( toNode.id, fromNode.id )) edges then
+                            let
+                                width =
+                                    (Maybe.withDefault 8 edge.width) / 2
+
+                                offset =
+                                    width + 1
+
+                                labelOffset =
+                                    if Tuple.first edge.id > Tuple.second edge.id then
+                                        -(round offset)
+                                    else
+                                        round offset
+
+                                direction =
+                                    if from.x == to.x then
+                                        sign labelOffset
+                                    else
+                                        sign (to.x - from.x)
+
+                                angle =
+                                    atan2 (toFloat (to.y - from.y)) (toFloat (to.x - from.x))
+                            in
+                                ( Just
+                                    (Straight
+                                        { from =
+                                            { x = from.x + nodeRadius + round (offset * cos (angle + 3.1415 / 2))
+                                            , y = from.y + nodeRadius + round (offset * sin (angle + 3.1415 / 2))
+                                            }
+                                        , to =
+                                            { x = to.x + nodeRadius + round (offset * cos (angle + 3.1415 / 2))
+                                            , y = to.y + nodeRadius + round (offset * sin (angle + 3.1415 / 2))
+                                            }
+                                        }
+                                    )
+                                , Just
+                                    { x =
+                                        nodeRadius
+                                            + round (toFloat (from.x + to.x) / 2)
+                                            + labelOffset
+                                    , y =
+                                        nodeRadius
+                                            + round (toFloat (from.y + to.y) / 2)
+                                            + (sign (direction) * (round (toFloat labelHeight / 2) + 2))
+                                    }
+                                )
+                        else
+                            ( Just
+                                (Straight
+                                    { from =
+                                        { x = from.x + nodeRadius
+                                        , y = from.y + nodeRadius
+                                        }
+                                    , to =
+                                        { x = to.x + nodeRadius
+                                        , y = to.y + nodeRadius
+                                        }
+                                    }
+                                )
+                            , Just
+                                { x = nodeRadius + round (toFloat (from.x + to.x) / 2)
+                                , y = nodeRadius + round (toFloat (from.y + to.y) / 2)
+                                }
+                            )
+
+                    _ ->
+                        ( Nothing, Nothing )
+
+            _ ->
+                ( Nothing, Nothing )
