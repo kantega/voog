@@ -184,10 +184,12 @@ tryFlip crossEdges x y direction =
                             |> Dict.insert keyDownB downFromA
                             |> Dict.insert keyUpA upFromB
                             |> Dict.insert keyUpB upFromA
-                            |> reverseUpdate keyDownB -1 downFromB
-                            |> reverseUpdate keyDownA 1 downFromA
-                            |> reverseUpdate keyUpB -1 upFromB
-                            |> reverseUpdate keyUpA 1 upFromA
+                            |> reverseUpdate
+                                (getUpdates keyDownB -1 downFromB []
+                                    |> getUpdates keyDownA 1 downFromA
+                                    |> getUpdates keyUpB -1 upFromB
+                                    |> getUpdates keyUpA 1 upFromA
+                                )
                         )
                         (x + 1)
                         y
@@ -198,31 +200,41 @@ tryFlip crossEdges x y direction =
             crossEdges
 
 
-reverseUpdate : ( Int, Int, Int ) -> Int -> Dict Int Int -> CrossEdges -> CrossEdges
-reverseUpdate ( x, y, dir ) move updateDict crossEdges =
-    let
-        newDicts =
-            updateDict
-                |> Dict.toList
-                |> List.map
-                    (\( x2, id ) ->
-                        ( ( x2, y + dir, -1 * dir )
-                        , (Dict.get ( x2, y + dir, -1 * dir ) crossEdges
-                            |> Maybe.withDefault Dict.empty
-                            |> Dict.remove x
-                            |> Dict.insert (x + move) id
-                          )
-                        )
-                    )
-    in
-        foldUpdate crossEdges newDicts
+getUpdates : ( Int, Int, Int ) -> Int -> Dict Int Int -> List ( ( Int, Int, Int ), Int, Int, Int ) -> List ( ( Int, Int, Int ), Int, Int, Int )
+getUpdates ( x, y, dir ) move updateDict otherUpdates =
+    List.append
+        otherUpdates
+        (updateDict
+            |> Dict.toList
+            |> List.map
+                (\( x2, id ) -> ( ( x2, y + dir, -1 * dir ), x, (x + move), id ))
+        )
 
 
-foldUpdate : CrossEdges -> List ( ( Int, Int, Int ), Dict Int Int ) -> CrossEdges
-foldUpdate crossEdges updates =
+reverseUpdate : List ( ( Int, Int, Int ), Int, Int, Int ) -> CrossEdges -> CrossEdges
+reverseUpdate updates crossEdges =
+    crossEdges
+        |> foldUpdate updates True
+        |> foldUpdate updates False
+
+
+foldUpdate : List ( ( Int, Int, Int ), Int, Int, Int ) -> Bool -> CrossEdges -> CrossEdges
+foldUpdate updates remove crossEdges =
     case updates of
-        ( k, v ) :: rest ->
-            foldUpdate (Dict.insert k v crossEdges) rest
+        ( k, x, x2, id ) :: rest ->
+            let
+                current =
+                    crossEdges
+                        |> Dict.get k
+                        |> Maybe.withDefault Dict.empty
+
+                new =
+                    if remove then
+                        Dict.remove x current
+                    else
+                        Dict.insert x2 id current
+            in
+                foldUpdate rest remove (Dict.insert k new crossEdges)
 
         _ ->
             crossEdges

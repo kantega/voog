@@ -316,33 +316,46 @@ calculateDepth edges nodes =
         ( mergedNodes, mergedEdges )
 
 
+getParts : Edge -> ( Int, Int ) -> Sugiyama.Model.Edges -> List { from : Int, to : Int, id : ( Int, Int ), num : Int }
+getParts edge id edges =
+    edges
+        |> List.filter (\e -> e.id == id)
+        |> List.filterMap
+            (\e ->
+                case e.num of
+                    Just num ->
+                        Just { from = e.from, to = e.to, id = e.id, num = num }
+
+                    _ ->
+                        Nothing
+            )
+        |> List.sortWith (\a b -> compare a.num b.num)
+
+
 mergeEdge : Sugiyama.Model.Graph -> Edge -> Edge
 mergeEdge { nodes, edges } edge =
     let
-        parts =
-            edges
-                |> List.filter (\e -> e.id == edge.id)
-                |> List.filterMap
-                    (\e ->
-                        case e.num of
-                            Just num ->
-                                Just { e | num = num }
+        partsA =
+            getParts edge edge.id edges
 
-                            _ ->
-                                Nothing
-                    )
-                |> List.sortWith (\a b -> compare a.num b.num)
+        partsB =
+            getParts edge (reverseId edge.id) edges
+                |> List.reverse
+                |> List.map (\e -> { e | from = e.to, to = e.from })
+
+        parts =
+            List.append partsA partsB
     in
         if List.length parts < 2 then
             { edge | position = Nothing }
         else
             let
                 endNodeIds =
-                    List.map (\e -> e.to) parts
+                    List.map .to parts
 
                 nodeIds =
                     parts
-                        |> List.map (\e -> e.from)
+                        |> List.map .from
                         |> List.head
                         |> List.singleton
                         |> List.filterMap identity
@@ -357,7 +370,7 @@ mergeEdge { nodes, edges } edge =
                         |> List.map (\e -> { reversed = e.reversed })
                         |> List.head
                         |> Maybe.withDefault { reversed = False }
-                        |> (\e -> e.reversed)
+                        |> .reversed
 
                 correctPoints =
                     if reversed then

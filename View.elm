@@ -38,9 +38,11 @@ view model =
                         , viewBox ("0 0 " ++ (toString (toFloat windowWidth / model.zoom)) ++ " " ++ (toString (toFloat windowHeight / model.zoom)))
                         ]
                         ((defs model)
-                            :: (List.append
-                                    (List.foldr List.append [] (List.filterMap (viewEdge ( xx, yy )) model.edges))
-                                    (List.foldr List.append [] (List.filterMap (viewNode ( xx, yy )) model.nodes))
+                            :: (List.concat
+                                    [(List.foldr List.append [] (List.filterMap (viewEdge ( xx, yy )) model.edges))
+                                    , (List.foldr List.append [] (List.filterMap (viewNode ( xx, yy )) model.nodes))
+                                    , (List.foldr List.append [] (List.filterMap (viewLabel ( xx, yy )) model.edges))
+                                    ]
                                )
                         )
                    ]
@@ -223,20 +225,6 @@ path position ( xx, yy ) =
                 ++ " "
                 ++ (toString (yy + line.to.y))
 
-        Curved line ->
-            "M"
-                ++ (toString (xx + line.from.x))
-                ++ " "
-                ++ (toString (yy + line.from.y))
-                ++ " Q "
-                ++ (toString (xx + line.via.x))
-                ++ " "
-                ++ (toString (yy + line.via.y))
-                ++ " "
-                ++ (toString (xx + line.to.x))
-                ++ " "
-                ++ (toString (yy + line.to.y))
-
         Multi line ->
             lineToString line ( xx, yy ) True
 
@@ -269,64 +257,72 @@ viewEdge ( xx, yy ) edge =
     case edge.position of
         Just position ->
             Just
-                (List.append
-                    [ Svg.path
-                        [ onClick (ClickEdge ( edge.from, edge.to ))
-                        , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                        , fill "none"
-                        , strokeWidth (toString (Maybe.withDefault 8 edge.width))
-                        , stroke (Maybe.withDefault "#fff" edge.color)
-                        , strokeLinecap "round"
-                        , strokeLinejoin "round"
-                        , d (path position ( xx, yy ))
-                        ]
-                        []
-                    , Svg.path
-                        [ onClick (ClickEdge ( edge.from, edge.to ))
-                        , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                        , fill "none"
-                        , strokeWidth (toString (0.75 * (Maybe.withDefault 8 edge.width)))
-                        , stroke (Maybe.withDefault "#b0b0b0" edge.dashColor)
-                        , strokeLinecap "round"
-                        , strokeLinejoin "round"
-                        , strokeDasharray (toString (2 * (Maybe.withDefault 8 edge.width)))
-                        , strokeDashoffset (toString edge.dashOffset)
-                        , d (path position ( xx, yy ))
-                        ]
-                        []
+                [ Svg.path
+                    [ onClick (ClickEdge ( edge.from, edge.to ))
+                    , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
+                    , fill "none"
+                    , strokeWidth (toString (Maybe.withDefault 8 edge.width))
+                    , stroke (Maybe.withDefault "#fff" edge.color)
+                    , strokeLinecap "round"
+                    , strokeLinejoin "round"
+                    , d (path position ( xx, yy ))
                     ]
-                    (case ( edge.labelPosition, edge.label ) of
-                        ( Just position, Just label ) ->
-                            [ rect
-                                [ onClick (ClickEdge edge.id)
-                                , x (toString (xx + position.x - 30))
-                                , y (toString (yy + position.y - 15))
-                                , width "60"
-                                , height "30"
-                                , rx "3"
-                                , ry "3"
-                                , fill "#ffffff"
-                                , stroke (Maybe.withDefault "#808080" edge.color)
-                                , strokeWidth "2"
-                                ]
-                                []
-                            , Svg.text_
-                                [ fill (Maybe.withDefault "#b0b0b0" edge.color)
-                                , x (toString (xx + position.x))
-                                , y (toString (yy + position.y + 2))
-                                , textAnchor "middle"
-                                , alignmentBaseline "middle"
-                                , fontSize "20"
-                                , fontWeight "800"
-                                , fontFamily """"Lucida Sans Unicode", "Lucida Grande", sans-serif"""
-                                ]
-                                [ Svg.text label
-                                ]
-                            ]
+                    []
+                , Svg.path
+                    [ onClick (ClickEdge ( edge.from, edge.to ))
+                    , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
+                    , fill "none"
+                    , strokeWidth (toString (0.75 * (Maybe.withDefault 8 edge.width)))
+                    , stroke (Maybe.withDefault "#b0b0b0" edge.dashColor)
+                    , strokeLinecap "round"
+                    , strokeLinejoin "round"
+                    , strokeDasharray (toString (2 * (Maybe.withDefault 8 edge.width)))
+                    , strokeDashoffset (toString edge.dashOffset)
+                    , d (path position ( xx, yy ))
+                    ]
+                    []
+                ]
 
-                        _ ->
+        _ ->
+            Nothing
+
+
+viewLabel : ( Int, Int ) -> Edge -> Maybe (List (Html Msg))
+viewLabel ( xx, yy ) edge =
+    case edge.position of
+        Just position ->
+            Just
+                (case ( edge.labelPosition, edge.label ) of
+                    ( Just position, Just label ) ->
+                        [ rect
+                            [ onClick (ClickEdge edge.id)
+                            , x (toString (xx + position.x - round (toFloat labelWidth / 2)))
+                            , y (toString (yy + position.y - round (toFloat labelHeight / 2)))
+                            , width (toString labelWidth)
+                            , height (toString labelHeight)
+                            , rx "3"
+                            , ry "3"
+                            , fill "#ffffff"
+                            , stroke (Maybe.withDefault "#808080" edge.color)
+                            , strokeWidth "2"
+                            ]
                             []
-                    )
+                        , Svg.text_
+                            [ fill (Maybe.withDefault "#b0b0b0" edge.color)
+                            , x (toString (xx + position.x))
+                            , y (toString (yy + position.y + 2))
+                            , textAnchor "middle"
+                            , alignmentBaseline "middle"
+                            , fontSize "20"
+                            , fontWeight "800"
+                            , fontFamily """"Lucida Sans Unicode", "Lucida Grande", sans-serif"""
+                            ]
+                            [ Svg.text label
+                            ]
+                        ]
+
+                    _ ->
+                        []
                 )
 
         _ ->

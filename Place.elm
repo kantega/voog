@@ -11,12 +11,27 @@ distance =
     4 * nodeRadius
 
 
-arrowDistance =
-    10
+labelWidth =
+    60
 
 
-arrowWidth =
-    2
+labelHeight =
+    30
+
+
+sign : Int -> Int
+sign a =
+    if a < 0 then
+        -1
+    else if a > 0 then
+        1
+    else
+        0
+
+
+reverseId : ( Int, Int ) -> ( Int, Int )
+reverseId id =
+    ( Tuple.second id, Tuple.first id )
 
 
 place : Model -> Model
@@ -75,23 +90,56 @@ placeEdges edges nodes =
     List.map (placeEdge nodes edges) edges
 
 
-getLabelPosition : MultiLine -> Maybe Point
-getLabelPosition line =
-    let
+getLabelPosition : MultiLine -> Int -> Maybe Point
+getLabelPosition line offset =
+    if List.length line % 2 == 0 then
+        let
+            mid =
+                round (toFloat (List.length line) / 2)
 
-        second =
-            line
-                |> List.indexedMap (\i p -> ( i, p ))
-                |> List.filter (\( i, p ) -> i == 1)
-                |> List.head
-        pos =
-            case second of
-                Just (i, p) ->
-                    Just { x = distance * p.x + nodeRadius, y = distance * p.y + nodeRadius }
+            midPoints =
+                line
+                    |> List.indexedMap (\i p -> ( i, p ))
+                    |> List.filter (\( i, p ) -> i == mid || i == mid - 1)
+        in
+            case midPoints of
+                ( i, nodeA ) :: ( j, nodeB ) :: rest ->
+                    Just
+                        { x =
+                            round (distance * (toFloat (nodeA.x + nodeB.x) / 2))
+                                + nodeRadius
+                                + offset
+                        , y =
+                            round (distance * (toFloat (nodeA.y + nodeB.y) / 2))
+                                + nodeRadius
+                                + (sign offset * (round (toFloat labelHeight / 2) + 2))
+                        }
+
                 _ ->
                     Nothing
-    in
-        pos
+    else
+        let
+            mid =
+                round (toFloat (List.length line) / 2) - 1
+
+            midPoint =
+                line
+                    |> List.indexedMap (\i p -> ( i, p ))
+                    |> List.filter (\( i, p ) -> i == mid)
+                    |> List.head
+
+            pos =
+                case midPoint of
+                    Just ( i, p ) ->
+                        Just
+                            { x = distance * p.x + nodeRadius + offset
+                            , y = distance * p.y + nodeRadius + (sign offset * (round (toFloat labelHeight / 2) + 2))
+                            }
+
+                    _ ->
+                        Nothing
+        in
+            pos
 
 
 placeEdge : Nodes -> Edges -> Edge -> Edge
@@ -100,14 +148,31 @@ placeEdge nodes edges edge =
         ( position, labelPosition ) =
             case edge.position of
                 Just (Multi line) ->
-                    ( Just
-                        (Multi
-                            (line
-                                |> List.map (\{ x, y } -> { x = distance * x + nodeRadius, y = distance * y + nodeRadius })
+                    let
+                        width =
+                            round ((Maybe.withDefault 8 edge.width) / 2)
+
+                        offset =
+                            if not (List.any (\e -> e.id == reverseId edge.id) edges) then
+                                0
+                            else if Tuple.first edge.id > Tuple.second edge.id then
+                                -width - 1
+                            else
+                                width + 1
+                    in
+                        ( Just
+                            (Multi
+                                (List.map
+                                    (\{ x, y } ->
+                                        { x = distance * x + nodeRadius + offset
+                                        , y = distance * y + nodeRadius
+                                        }
+                                    )
+                                    line
+                                )
                             )
+                        , getLabelPosition line offset
                         )
-                    , getLabelPosition line
-                    )
 
                 _ ->
                     let
@@ -131,75 +196,61 @@ placeEdge nodes edges edge =
                                             in
                                                 if List.any (\e -> e.id == ( toNode.id, fromNode.id )) edges then
                                                     let
-                                                        f =
-                                                            { x = from.x + nodeRadius
-                                                            , y = from.y + nodeRadius
-                                                            }
+                                                        width =
+                                                            (Maybe.withDefault 8 edge.width) / 2
 
-                                                        t =
-                                                            { x = to.x + nodeRadius
-                                                            , y = to.y + nodeRadius
-                                                            }
+                                                        offset =
+                                                            width + 1
 
-                                                        v =
-                                                            { x = from.x + nodeRadius + round (distance / 2 * cos (angle + 3.1415 / 32)) + round (8 * cos (angle + 3.1415 / 2))
-                                                            , y = from.y + nodeRadius + round (distance / 2 * sin (angle + 3.1415 / 32)) + round (8 * sin (angle + 3.1415 / 2))
-                                                            }
-                                                    in
-                                                        ( Just
-                                                            (Curved
-                                                                { from = f
-                                                                , to = t
-                                                                , via = v
-                                                                }
-                                                            )
-                                                        , Just v
-                                                        )
-                                                else
-                                                    let
-                                                        f =
-                                                            { x = from.x + nodeRadius
-                                                            , y = from.y + nodeRadius
-                                                            }
+                                                        labelOffset =
+                                                            if Tuple.first edge.id > Tuple.second edge.id then
+                                                                -(round offset)
+                                                            else
+                                                                round offset
 
-                                                        t =
-                                                            { x = to.x + nodeRadius
-                                                            , y = to.y + nodeRadius
-                                                            }
-
-                                                        m =
-                                                            { x = nodeRadius + round (toFloat (from.x + to.x) / 2)
-                                                            , y = nodeRadius + round (toFloat (from.y + to.y) / 2)
-                                                            }
+                                                        direction =
+                                                            if from.x == to.x then
+                                                                sign labelOffset
+                                                            else
+                                                                sign (to.x - from.x)
                                                     in
                                                         ( Just
                                                             (Straight
-                                                                { from = f
-                                                                , to = t
+                                                                { from =
+                                                                    { x = from.x + nodeRadius + round (offset * cos (angle + 3.1415 / 2))
+                                                                    , y = from.y + nodeRadius + round (offset * sin (angle + 3.1415 / 2))
+                                                                    }
+                                                                , to =
+                                                                    { x = to.x + nodeRadius + round (offset * cos (angle + 3.1415 / 2))
+                                                                    , y = to.y + nodeRadius + round (offset * sin (angle + 3.1415 / 2))
+                                                                    }
                                                                 }
                                                             )
-                                                        , Just m
+                                                        , Just
+                                                            { x = nodeRadius + round (toFloat (from.x + to.x) / 2) + labelOffset
+                                                            , y = nodeRadius + round (toFloat (from.y + to.y) / 2) + (sign (direction) * (round (toFloat labelHeight / 2) + 2))
+                                                            }
                                                         )
-                                        else
-                                            let
-                                                f =
-                                                    { x = from.x - arrowDistance - 2
-                                                    , y = from.y + nodeRadius
-                                                    }
-
-                                                t =
-                                                    { x = from.x - arrowDistance
-                                                    , y = from.y + nodeRadius
-                                                    }
-                                            in
-                                                ( Just
-                                                    (Straight
-                                                        { from = f
-                                                        , to = t
+                                                else
+                                                    ( Just
+                                                        (Straight
+                                                            { from =
+                                                                { x = from.x + nodeRadius
+                                                                , y = from.y + nodeRadius
+                                                                }
+                                                            , to =
+                                                                { x = to.x + nodeRadius
+                                                                , y = to.y + nodeRadius
+                                                                }
+                                                            }
+                                                        )
+                                                    , Just
+                                                        { x = nodeRadius + round (toFloat (from.x + to.x) / 2)
+                                                        , y = nodeRadius + round (toFloat (from.y + to.y) / 2)
                                                         }
                                                     )
-                                                , Nothing
-                                                )
+                                        else
+                                            ( Nothing, Nothing )
 
                                     _ ->
                                         ( Nothing, Nothing )
