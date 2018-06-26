@@ -53,8 +53,8 @@ handleInput model inputString =
             model
                 |> removeNodes input.removeNodes
                 |> removeEdges input.removeEdges
-                |> addNodes input.addNodes False
-                |> addEdges input.addEdges False
+                |> addNodes input.addNodes False (model.nodes == [])
+                |> addEdges input.addEdges False (model.edges == [])
 
         _ ->
             model

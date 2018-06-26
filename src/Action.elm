@@ -50,8 +50,8 @@ updateInfo old new =
         List.append updated appended
 
 
-addNodes : List InputNode -> Bool -> Model -> Model
-addNodes nodes recalculate model =
+addNodes : List InputNode -> Bool -> Bool -> Model -> Model
+addNodes nodes recalculate center model =
     case nodes of
         node :: rest ->
             if not (List.any (\n -> n.id == node.id) model.nodes) then
@@ -71,7 +71,7 @@ addNodes nodes recalculate model =
                         }
                             :: model.nodes
                 in
-                    addNodes rest True { model | nodes = newNodes }
+                    addNodes rest True center { model | nodes = newNodes }
             else
                 let
                     ( oldNode, oldNodes ) =
@@ -94,22 +94,30 @@ addNodes nodes recalculate model =
                             _ ->
                                 model.nodes
                 in
-                    addNodes rest recalculate { model | nodes = newNodes }
+                    addNodes rest recalculate center { model | nodes = newNodes }
 
         _ ->
             let
-                coloredNodes =
-                    setNodeColors model.nodes
+                colored =
+                    { model | nodes = setNodeColors model.nodes }
+
+                placed =
+                    if recalculate then
+                        let
+                            recalculated =
+                                calculateDepth colored
+
+                            centered =
+                                if center then
+                                    centerGraph recalculated
+                                else
+                                    recalculated
+                        in
+                            place centered
+                    else
+                        colored
             in
-                if recalculate then
-                    let
-                        ( newNodes, newEdges ) =
-                            calculateDepth model.edges coloredNodes
-                    in
-                        place
-                            { model | nodes = newNodes, edges = newEdges }
-                else
-                    { model | nodes = coloredNodes }
+                placed
 
 
 removeNodes : List Int -> Model -> Model
@@ -121,14 +129,14 @@ removeNodes nodes model =
         newEdges =
             List.filter (\e -> (not (List.member e.from nodes)) && (not (List.member e.to nodes))) model.edges
 
-        ( new2Nodes, new2Edges ) =
-            calculateDepth newEdges newNodes
+        newModel =
+            calculateDepth { model | nodes = newNodes, edges = newEdges }
     in
-        place { model | nodes = new2Nodes, edges = new2Edges }
+        place newModel
 
 
-addEdges : List InputEdge -> Bool -> Model -> Model
-addEdges edges recalculate model =
+addEdges : List InputEdge -> Bool -> Bool -> Model -> Model
+addEdges edges recalculate center model =
     case edges of
         edge :: rest ->
             if not (List.any (\e -> e.id == ( edge.from, edge.to )) model.edges) then
@@ -150,7 +158,7 @@ addEdges edges recalculate model =
                         }
                             :: model.edges
                 in
-                    addEdges rest True { model | edges = newEdges }
+                    addEdges rest True center { model | edges = newEdges }
             else
                 let
                     ( oldEdge, oldEdges ) =
@@ -172,18 +180,83 @@ addEdges edges recalculate model =
                             _ ->
                                 model.edges
                 in
-                    addEdges rest recalculate { model | edges = newEdges }
+                    addEdges rest recalculate center { model | edges = newEdges }
 
         _ ->
             if recalculate then
                 let
-                    ( newNodes, newEdges ) =
-                        calculateDepth model.edges model.nodes
+                    recalculated =
+                        calculateDepth model
+
+                    centered =
+                        if center then
+                            centerGraph recalculated
+                        else
+                            recalculated
                 in
-                    place
-                        { model | nodes = newNodes, edges = newEdges }
+                    place centered
             else
                 model
+
+
+centerGraph : Model -> Model
+centerGraph ({ nodes } as model) =
+    case model.windowSize of
+        Just ( windowWidth, windowHeight ) ->
+            let
+                width =
+                    nodes
+                        |> List.map .position
+                        |> List.filterMap identity
+                        |> List.map .x
+                        |> List.maximum
+                        |> Maybe.withDefault 0
+                        |> (+) 3
+                        |> toFloat
+
+                height =
+                    nodes
+                        |> List.map .position
+                        |> List.filterMap identity
+                        |> List.map .y
+                        |> List.maximum
+                        |> Maybe.withDefault 0
+                        |> (+) 3
+                        |> toFloat
+
+                widthZoom =
+                    toFloat windowWidth / (width * distance)
+
+                heightZoom =
+                    toFloat windowHeight / (height * distance)
+
+                zoom =
+                    min widthZoom heightZoom
+
+                finalZoom =
+                    if zoom > 3 then
+                        3
+                    else if zoom < 0.1 then
+                        0.1
+                    else
+                        zoom
+
+                extraWidth =
+                    (toFloat windowWidth - (finalZoom * width * distance)) / 2
+
+                extraHeight =
+                    (toFloat windowHeight - (finalZoom * height * distance)) / 2
+            in
+                { model
+                    | zoom = finalZoom
+                    , position =
+                        { x = distance * finalZoom + extraWidth
+                        , y = distance * finalZoom + extraHeight
+                        }
+                }
+
+        _ ->
+            model
 
 
 removeEdges : List ( Int, Int ) -> Model -> Model
@@ -192,10 +265,10 @@ removeEdges edges model =
         newEdges =
             List.filter (\e -> not (List.member e.id edges)) model.edges
 
-        ( newNodes, new2Edges ) =
-            calculateDepth newEdges model.nodes
+        newModel =
+            calculateDepth { model | edges = newEdges }
     in
-        place { model | edges = new2Edges, nodes = newNodes }
+        place newModel
 
 
 toggleNode : Model -> Int -> Model
@@ -273,8 +346,8 @@ setColors prevCategory colorId categories =
             []
 
 
-calculateDepth : Edges -> Nodes -> ( Nodes, Edges )
-calculateDepth edges nodes =
+calculateDepth : Model -> Model
+calculateDepth ({ nodes, edges } as model) =
     let
         basicEdges =
             List.map (\e -> ( e.from, e.to )) edges
@@ -306,7 +379,7 @@ calculateDepth edges nodes =
         mergedEdges =
             List.map (mergeEdge graph) edges
     in
-        ( mergedNodes, mergedEdges )
+        { model | nodes = mergedNodes, edges = mergedEdges }
 
 
 getParts : Edge -> ( Int, Int ) -> Sugiyama.Model.Edges -> List { from : Int, to : Int, id : ( Int, Int ), num : Int }
