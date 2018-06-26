@@ -26,12 +26,15 @@ view model =
                 |> Tuple.second
 
         xx =
-            round model.position.x
+            round (model.position.x / model.zoom)
 
         yy =
-            round model.position.y
+            round (model.position.y / model.zoom)
     in
-        div [ Svg.Attributes.style "overflow: hidden;" ]
+        div
+            [ onMouseWheel MouseWheel
+            , Svg.Attributes.style "overflow: hidden;"
+            ]
             ((popup model)
                 :: [ svg
                         [ width (toString windowWidth)

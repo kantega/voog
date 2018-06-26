@@ -33,7 +33,8 @@ empty =
     { nodes = []
     , edges = []
     , position = { x = 0, y = 0 }
-    , drag = Nothing
+    , mouse = Nothing
+    , drag = False
     , windowSize = Nothing
     , zoom = 1
     , time = Nothing

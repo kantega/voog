@@ -1,6 +1,5 @@
 module Model exposing (..)
 
-import Dict
 import Time
 import Keyboard exposing (..)
 
@@ -9,7 +8,8 @@ type alias Model =
     { nodes : Nodes
     , edges : Edges
     , position : { x : Float, y : Float }
-    , drag : Maybe Point
+    , mouse : Maybe Point
+    , drag : Bool
     , windowSize : Maybe ( Int, Int )
     , zoom : Float
     , time : Maybe Time.Time

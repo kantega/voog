@@ -1,5 +1,6 @@
 module Update exposing (..)
 
+import Task
 import Time
 import Model exposing (..)
 import Messages exposing (..)
@@ -70,25 +71,57 @@ update msg model =
                 pos =
                     model.position
             in
-                case model.drag of
-                    Just drag ->
+                case ( model.drag, model.mouse ) of
+                    ( True, Just mouse ) ->
                         let
                             dx =
-                                toFloat (x - drag.x) / model.zoom
+                                toFloat (x - mouse.x)
 
                             dy =
-                                toFloat (y - drag.y) / model.zoom
+                                toFloat (y - mouse.y)
 
                             newPos =
                                 { pos | x = pos.x + dx, y = pos.y + dy }
                         in
-                            ( { model | position = newPos, drag = Just point }, Cmd.none )
+                            ( { model | position = newPos, mouse = Just point }, Cmd.none )
 
                     _ ->
-                        ( model, Cmd.none )
+                        ( { model | mouse = Just point }, Cmd.none )
 
         MouseUp { x, y } ->
-            ( { model | drag = Nothing }, Cmd.none )
+            ( { model | drag = False }, Cmd.none )
 
         MouseDown point ->
-            ( { model | drag = Just point }, Cmd.none )
+            ( { model | drag = True }, Cmd.none )
+
+        MouseWheel wheelDelta ->
+            let
+                zoomFactor =
+                    1 - wheelDelta / 3000
+
+                newZoom =
+                    model.zoom * zoomFactor
+
+                clampedZoom =
+                    if newZoom > 10 then
+                        10
+                    else if newZoom < 0.1 then
+                        0.1
+                    else
+                        newZoom
+
+                scaleChange =
+                    (clampedZoom - model.zoom) / model.zoom
+
+                ({ x, y } as pos) =
+                    model.position
+
+                newPosition =
+                    case ( model.windowSize, model.mouse ) of
+                        ( Just ( width, height ), Just mouse ) ->
+                            { pos | x = x - (toFloat mouse.x - x) * scaleChange, y = y - (toFloat mouse.y - y) * scaleChange }
+
+                        _ ->
+                            pos
+            in
+                ( { model | zoom = clampedZoom, position = newPosition }, Cmd.none )
