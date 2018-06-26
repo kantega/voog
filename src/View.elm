@@ -179,6 +179,7 @@ viewNode ( xx, yy ) node =
                     Just "rect" ->
                         rect
                             [ onClick (ClickNode node.id)
+                            , Svg.Attributes.style "cursor: pointer;"
                             , Svg.Attributes.x (toString (xx + x))
                             , Svg.Attributes.y (toString (yy + y))
                             , width "100"
@@ -193,6 +194,7 @@ viewNode ( xx, yy ) node =
                     _ ->
                         circle
                             [ onClick (ClickNode node.id)
+                            , Svg.Attributes.style "cursor: pointer;"
                             , cx (toString (xx + x + nodeRadius))
                             , cy (toString (yy + y + nodeRadius))
                             , r (toString (Maybe.withDefault nodeRadius node.size))
@@ -203,14 +205,18 @@ viewNode ( xx, yy ) node =
                   )
                     []
                 , circle
-                    [ cx (toString (xx + x + nodeRadius))
+                    [ onClick (ClickNode node.id)
+                    , Svg.Attributes.style "cursor: pointer;"
+                    , cx (toString (xx + x + nodeRadius))
                     , cy (toString (yy + y + 30))
                     , r "25"
                     , fill ("url(#img" ++ (toString node.id) ++ ")")
                     ]
                     []
                 , Svg.text_
-                    [ Svg.Attributes.x (toString (xx + x + nodeRadius))
+                    [ onClick (ClickNode node.id)
+                    , Svg.Attributes.style "cursor: pointer;"
+                    , Svg.Attributes.x (toString (xx + x + nodeRadius))
                     , Svg.Attributes.y (toString (yy + y + round (nodeRadius * 1.2)))
                     , fill "#b0b0b0"
                     , fontFamily """"Lucida Sans Unicode", "Lucida Grande", sans-serif"""
@@ -270,7 +276,8 @@ viewEdge ( xx, yy ) edge =
         Just position ->
             Just
                 [ Svg.path
-                    [ onClick (ClickEdge ( edge.from, edge.to ))
+                    [ onClick (ClickEdge edge.id)
+                    , Svg.Attributes.style "cursor: pointer;"
                     , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
                     , fill "none"
                     , strokeWidth (toString (Maybe.withDefault 8 edge.width))
@@ -281,7 +288,8 @@ viewEdge ( xx, yy ) edge =
                     ]
                     []
                 , Svg.path
-                    [ onClick (ClickEdge ( edge.from, edge.to ))
+                    [ onClick (ClickEdge edge.id)
+                    , Svg.Attributes.style "cursor: pointer;"
                     , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
                     , fill "none"
                     , strokeWidth (toString (0.75 * (Maybe.withDefault 8 edge.width)))
@@ -308,6 +316,7 @@ viewLabel ( xx, yy ) edge =
                     ( Just position, Just label ) ->
                         [ rect
                             [ onClick (ClickEdge edge.id)
+                            , Svg.Attributes.style "cursor: pointer;"
                             , x (toString (xx + position.x - round (toFloat labelWidth / 2)))
                             , y (toString (yy + position.y - round (toFloat labelHeight / 2)))
                             , width (toString labelWidth)
@@ -320,7 +329,9 @@ viewLabel ( xx, yy ) edge =
                             ]
                             []
                         , Svg.text_
-                            [ fill (Maybe.withDefault "#b0b0b0" edge.color)
+                            [ onClick (ClickEdge edge.id)
+                            , Svg.Attributes.style "cursor: pointer;"
+                            , fill (Maybe.withDefault "#b0b0b0" edge.color)
                             , x (toString (xx + position.x))
                             , y (toString (yy + position.y + 2))
                             , textAnchor "middle"
