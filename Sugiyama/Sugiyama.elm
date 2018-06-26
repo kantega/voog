@@ -24,18 +24,6 @@ sugiyama graph =
         |> setPosition
 
 
-initialize : BasicGraph -> Graph
-initialize { nodes, edges } =
-    let
-        newNodes =
-            List.map (\n -> { id = n, dummy = False, x = Nothing, y = Nothing }) nodes
-
-        newEdges =
-            List.map (\( from, to ) -> { from = from, to = to, reversed = False, num = Nothing, id = ( from, to ) }) edges
-    in
-        { nodes = newNodes, edges = newEdges }
-
-
 mergeBidirectional : BasicGraph -> BasicGraph
 mergeBidirectional ({ edges } as graph) =
     let
@@ -55,3 +43,15 @@ mergeBidirectional ({ edges } as graph) =
                 edges
     in
         { graph | edges = newEdges }
+
+
+initialize : BasicGraph -> Graph
+initialize { nodes, edges } =
+    let
+        newNodes =
+            List.map (\n -> { id = n, dummy = False, x = Nothing, y = Nothing }) nodes
+
+        newEdges =
+            List.map (\( from, to ) -> { from = from, to = to, reversed = False, num = Nothing, id = ( from, to ) }) edges
+    in
+        { nodes = newNodes, edges = newEdges }

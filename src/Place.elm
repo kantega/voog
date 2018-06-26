@@ -156,7 +156,7 @@ placeEdge nodes edges edge =
         { edge | position = position, labelPosition = labelPosition }
 
 
-placeMultiLineEdge : MultiLine -> Edges -> Edge -> (Maybe Line, Maybe Point)
+placeMultiLineEdge : MultiLine -> Edges -> Edge -> ( Maybe Line, Maybe Point )
 placeMultiLineEdge line edges edge =
     let
         width =
@@ -185,7 +185,7 @@ placeMultiLineEdge line edges edge =
         )
 
 
-placeSingleLineEdge : Nodes -> Edges -> Edge -> (Maybe Line, Maybe Point)
+placeSingleLineEdge : Nodes -> Edges -> Edge -> ( Maybe Line, Maybe Point )
 placeSingleLineEdge nodes edges edge =
     let
         from =

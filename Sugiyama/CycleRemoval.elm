@@ -65,7 +65,7 @@ findFlipEdges ({ nodes, edges } as graph) =
                                 flipEdges =
                                     edges
                                         |> List.filter (\e -> e.to == nodeId)
-                                        |> List.map (\e -> e.id)
+                                        |> List.map .id
 
                                 newNodes =
                                     List.filter (\n -> n.id /= nodeId) nodes

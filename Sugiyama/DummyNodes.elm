@@ -51,7 +51,7 @@ addDummy ({ nodes, edges } as graph) ({ from, to, reversed } as edge) =
                                 let
                                     id =
                                         nodes
-                                            |> List.map (\n -> n.id)
+                                            |> List.map .id
                                             |> List.maximum
                                             |> Maybe.withDefault 0
                                             |> \n -> n + 1

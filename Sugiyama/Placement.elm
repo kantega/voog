@@ -12,7 +12,7 @@ setPosition ({ nodes } as graph) =
         wideLayer =
             nodes
                 |> List.sortWith (\a b -> compare (Maybe.withDefault -1 a.x) (Maybe.withDefault -1 b.x))
-                |> List.map (\n -> n.y)
+                |> List.map .y
                 |> List.reverse
                 |> List.head
                 |> Maybe.withDefault Nothing
@@ -33,7 +33,7 @@ makePositive ({ nodes } as graph) =
         minVal =
             nodes
                 |> List.sortWith (\a b -> compare (Maybe.withDefault -1 a.x) (Maybe.withDefault -1 b.x))
-                |> List.map (\n -> n.x)
+                |> List.map .x
                 |> List.head
                 |> Maybe.withDefault Nothing
                 |> Maybe.withDefault 0
@@ -71,7 +71,7 @@ setLayerPosition layerPos layer direction ({ nodes, edges } as graph) =
                     List.filter (\e -> Dict.get e.from layerPos == Just (Just (edgeLayer))) edges
 
                 moveAmount =
-                    round ((toFloat (Dict.size xPos)) / 2 + 1)
+                    round (toFloat (Dict.size xPos) / 2) + 1
 
                 movedXPos =
                     xPos
