@@ -37,7 +37,6 @@ empty =
     , drag = False
     , windowSize = Nothing
     , zoom = 1
-    , time = Nothing
     }
 
 
@@ -46,9 +45,6 @@ subscriptions model =
     Sub.batch
         [ WebSocket.listen "ws://127.0.0.1:8000/" InputMsg
         , Ports.input InputMsg
-        , AnimationFrame.times Tick
+        , AnimationFrame.diffs Tick
         , Window.resizes WindowSize
-        , Mouse.moves MouseMove
-        , Mouse.ups MouseUp
-        , Mouse.downs MouseDown
         ]

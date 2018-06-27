@@ -20,29 +20,21 @@ update msg model =
         InputMsg msg ->
             ( Input.handleInput model msg, Cmd.none )
 
-        Tick time ->
-            case model.time of
-                Just prevTime ->
-                    let
-                        deltaTime =
-                            (Time.inSeconds (time - prevTime))
+        Tick diff ->
+            let
+                newEdges =
+                    List.map
+                        (\e ->
+                            case e.speed of
+                                Just speed ->
+                                    { e | dashOffset = e.dashOffset - speed * (Time.inSeconds diff) }
 
-                        newEdges =
-                            List.map
-                                (\e ->
-                                    case e.speed of
-                                        Just speed ->
-                                            { e | dashOffset = e.dashOffset - speed * deltaTime }
-
-                                        Nothing ->
-                                            e
-                                )
-                                model.edges
-                    in
-                        ( { model | time = Just time, edges = newEdges }, Cmd.none )
-
-                Nothing ->
-                    ( { model | time = Just time }, Cmd.none )
+                                Nothing ->
+                                    e
+                        )
+                        model.edges
+            in
+                ( { model | edges = newEdges }, Cmd.none )
 
         WindowSize { width, height } ->
             let
@@ -66,7 +58,7 @@ update msg model =
             in
                 ( newModel, Cmd.none )
 
-        MouseMove ({ x, y } as point) ->
+        MouseMove (x, y) ->
             let
                 pos =
                     model.position
@@ -83,21 +75,28 @@ update msg model =
                             newPos =
                                 { pos | x = pos.x + dx, y = pos.y + dy }
                         in
-                            ( { model | position = newPos, mouse = Just point }, Cmd.none )
+                            ( { model | position = newPos, mouse = Just {x=x, y=y} }, Cmd.none )
 
                     _ ->
-                        ( { model | mouse = Just point }, Cmd.none )
+                        ( { model | mouse = Just {x=x, y=y} }, Cmd.none )
 
-        MouseUp { x, y } ->
+        MouseUp (btn, x, y) ->
             ( { model | drag = False }, Cmd.none )
 
-        MouseDown point ->
-            ( { model | drag = True }, Cmd.none )
+        MouseDown (btn, x, y) ->
+            let
+                drag =
+                    if btn == 1 || btn == 2 then
+                        True
+                    else
+                        False
+            in
+                ( { model | drag = drag }, Cmd.none )
 
         MouseWheel wheelDelta ->
             let
                 zoomFactor =
-                    1 - wheelDelta / 3000
+                    1 - (toFloat wheelDelta) / 3000
 
                 newZoom =
                     model.zoom * zoomFactor

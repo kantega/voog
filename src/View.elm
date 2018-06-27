@@ -32,7 +32,10 @@ view model =
             round (model.position.y / model.zoom)
     in
         div
-            [ onMouseWheel MouseWheel
+            [ Messages.onMouseWheel MouseWheel
+            , Messages.onMouseMove MouseMove
+            , Messages.onMouseUp MouseUp
+            , Messages.onMouseDown MouseDown
             , Svg.Attributes.style "overflow: hidden;"
             ]
             ((popup model)

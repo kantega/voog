@@ -12,7 +12,6 @@ type alias Model =
     , drag : Bool
     , windowSize : Maybe ( Int, Int )
     , zoom : Float
-    , time : Maybe Time.Time
     }
 
 
