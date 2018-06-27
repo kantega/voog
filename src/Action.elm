@@ -7,11 +7,6 @@ import Sugiyama.Sugiyama exposing (sugiyama)
 import Sugiyama.Model
 
 
-updateVal : Maybe a -> Maybe a -> Maybe a
-updateVal old new =
-    new
-
-
 categoryColor =
     [ "#f44336"
     , "#2196f3"
@@ -62,6 +57,7 @@ addNodes nodes recalculate center model =
                         , categoryColor = Nothing
                         , id = node.id
                         , info = node.info
+                        , classes = node.classes
                         , name = node.name
                         , shape = node.shape
                         , image = node.image
@@ -82,12 +78,13 @@ addNodes nodes recalculate center model =
                             Just oldNode ->
                                 { oldNode
                                     | info = updateInfo oldNode.info node.info
-                                    , name = updateVal oldNode.name node.name
-                                    , shape = updateVal oldNode.shape node.shape
-                                    , image = updateVal oldNode.image node.image
-                                    , category = updateVal oldNode.category node.category
-                                    , color = updateVal oldNode.color node.color
-                                    , size = updateVal oldNode.size node.size
+                                    , classes = node.classes
+                                    , name = node.name
+                                    , shape = node.shape
+                                    , image = node.image
+                                    , category = node.category
+                                    , color = node.color
+                                    , size = node.size
                                 }
                                     :: oldNodes
 
@@ -150,6 +147,7 @@ addEdges edges recalculate center model =
                         , from = edge.from
                         , to = edge.to
                         , info = edge.info
+                        , classes = edge.classes
                         , label = edge.label
                         , width = edge.width
                         , color = edge.color
@@ -169,11 +167,12 @@ addEdges edges recalculate center model =
                             Just oldEdge ->
                                 { oldEdge
                                     | info = updateInfo oldEdge.info edge.info
-                                    , label = updateVal oldEdge.label edge.label
-                                    , width = updateVal oldEdge.width edge.width
-                                    , color = updateVal oldEdge.color edge.color
-                                    , speed = updateVal oldEdge.speed edge.speed
-                                    , dashColor = updateVal oldEdge.dashColor edge.dashColor
+                                    , classes = edge.classes
+                                    , label = edge.label
+                                    , width = edge.width
+                                    , color = edge.color
+                                    , speed = edge.speed
+                                    , dashColor = edge.dashColor
                                 }
                                     :: oldEdges
 

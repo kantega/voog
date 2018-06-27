@@ -60,6 +60,7 @@ type alias Input =
 type alias InputNode =
     { id : Int
     , info : Info
+    , classes : List String
     , name : Maybe String
     , shape : Maybe String
     , image : Maybe String
@@ -73,6 +74,7 @@ type alias InputEdge =
     { from : Int
     , to : Int
     , info : Info
+    , classes : List String
     , label : Maybe String
     , width : Maybe Float
     , color : Maybe String

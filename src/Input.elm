@@ -25,6 +25,7 @@ nodeDecoder =
     decode InputNode
         |> required "id" int
         |> optional "info" stringStringListDecoder []
+        |> optional "classes" (list string) []
         |> optional "name" (maybe string) Nothing
         |> optional "shape" (maybe string) Nothing
         |> optional "image" (maybe string) Nothing
@@ -39,6 +40,7 @@ edgeDecoder =
         |> required "from" int
         |> required "to" int
         |> optional "info" stringStringListDecoder []
+        |> optional "classes" (list string) []
         |> optional "label" (maybe string) Nothing
         |> optional "width" (maybe float) Nothing
         |> optional "color" (maybe string) Nothing
