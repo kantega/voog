@@ -15,92 +15,82 @@ import Attributes exposing (..)
 view : Model -> Html Msg
 view model =
     let
-        windowWidth =
-            model.windowSize
-                |> Maybe.withDefault ( 0, 0 )
-                |> Tuple.first
-
-        windowHeight =
-            model.windowSize
-                |> Maybe.withDefault ( 0, 0 )
-                |> Tuple.second
-
-        xx =
-            round (model.position.x / model.zoom)
-
-        yy =
-            round (model.position.y / model.zoom)
+        ( windowWidth, windowHeight ) =
+            Maybe.withDefault ( 0, 0 ) model.windowSize
     in
-        div
-            [ Messages.onMouseWheel MouseWheel
-            , Messages.onMouseMove MouseMove
-            , Messages.onMouseUp MouseUp
-            , Messages.onMouseDown MouseDown
-            , Svg.Attributes.style "overflow: hidden;"
-            ]
-            ((popup model)
-                :: [ svg
-                        [ width (toString windowWidth)
-                        , height (toString windowHeight)
-                        , viewBox
-                            ((toString -xx)
-                                ++ " "
-                                ++ (toString -yy)
-                                ++ " "
-                                ++ (toString (toFloat windowWidth / model.zoom))
-                                ++ " "
-                                ++ (toString (toFloat windowHeight / model.zoom))
-                            )
-                        ]
-                        ((defs model)
-                            :: (List.concat
-                                    [ (List.foldr List.append [] (List.filterMap viewEdge model.edges))
-                                    , (List.foldr List.append [] (List.filterMap viewNode model.nodes))
-                                    , (List.foldr List.append [] (List.filterMap viewLabel model.edges))
-                                    ]
-                               )
-                        )
-                   ]
-            )
-
-
-infoList : List ( String, String ) -> Html Msg
-infoList info =
-    div
-        [ Svg.Attributes.style
-            ("position: absolute; left: -1px; top: -1px; display: grid; grid-template-columns: minmax(150px, 1fr)"
-                ++ " minmax(150px, 1fr); grid-gap: 10px; background-color: #ffffff; border: 1px solid #ccc;"
-                ++ " padding: 20px 30px; font-family: sans-serif;"
-            )
-        ]
-        (List.concat
-            (List.append
-                [ [ p [ Svg.Attributes.style "margin-top: 5px; font-size: 24px;" ] [ Html.text "Info" ], p [] [] ] ]
-                (List.map
-                    (\( k, v ) ->
-                        [ p [ Svg.Attributes.style "margin: 5px 0; font-size: 20px;" ] [ Html.text k ]
-                        , p [ Svg.Attributes.style "margin: 5px 0; font-size: 20px;" ] [ Html.text v ]
-                        ]
+        div []
+            [ viewTooltip model
+            , svg
+                [ Messages.onMouseWheel MouseWheel
+                , Messages.onMouseMove MouseMove
+                , Messages.onMouseUp MouseUp
+                , Messages.onMouseDown MouseDown
+                , width (toString windowWidth)
+                , height (toString windowHeight)
+                , viewBox
+                    ((toString <| -model.position.x / model.zoom)
+                        ++ " "
+                        ++ (toString <| -model.position.y / model.zoom)
+                        ++ " "
+                        ++ (toString <| toFloat windowWidth / model.zoom)
+                        ++ " "
+                        ++ (toString <| toFloat windowHeight / model.zoom)
                     )
-                    info
+                ]
+                (List.concat
+                    [ [ defs model ]
+                    , (List.foldr List.append [] (List.filterMap viewEdge model.edges))
+                    , (List.foldr List.append [] (List.filterMap viewNode model.nodes))
+                    , (List.foldr List.append [] (List.filterMap viewLabel model.edges))
+                    ]
                 )
-            )
-        )
+            ]
 
 
-popup : Model -> Html Msg
-popup model =
+viewTooltip : Model -> Html Msg
+viewTooltip model =
     case List.head (List.filter (\n -> n.selected) model.nodes) of
         Just node ->
-            infoList node.info
+            viewInfoList model node.info node.position ( 2 * nodeRadius, 0 )
 
         _ ->
             case List.head (List.filter (\e -> e.selected) model.edges) of
                 Just edge ->
-                    infoList edge.info
+                    viewInfoList model edge.info edge.labelPosition ( labelWidth / 2, -labelHeight / 2 )
 
                 _ ->
-                    div [] []
+                    Html.text ""
+
+
+viewInfoList : Model -> List ( String, String ) -> Maybe Point -> ( Float, Float ) -> Html Msg
+viewInfoList model info maybeElementPos ( offsetX, offsetY ) =
+    let
+        elementPos =
+            Maybe.withDefault { x = 0, y = 0 } maybeElementPos
+
+        pos =
+            { x = model.position.x + (offsetX + toFloat elementPos.x + 10) * model.zoom
+            , y = model.position.y + (offsetY + toFloat elementPos.y) * model.zoom
+            }
+    in
+        div
+            [ id "infoList"
+            , class "tooltip"
+            , Svg.Attributes.style <| "left: " ++ (toString pos.x) ++ "; top: " ++ (toString pos.y) ++ ";"
+            ]
+            (List.concat
+                (List.append
+                    [ [ p [] [ Html.text "Info" ], p [] [] ] ]
+                    (List.map
+                        (\( k, v ) ->
+                            [ p [] [ Html.text k ]
+                            , p [] [ Html.text v ]
+                            ]
+                        )
+                        info
+                    )
+                )
+            )
 
 
 defs : Model -> Html Msg
@@ -116,54 +106,33 @@ defs model =
             List.filter (\n -> List.member n.id imageIds) model.nodes
     in
         Svg.defs []
-            (List.append
-                ([ Svg.marker
-                    [ id "arrow"
-                    , orient "auto"
-                    , markerWidth "3"
-                    , markerHeight "6"
-                    , refX "0.1"
-                    , refY "3"
-                    ]
-                    [ Svg.path [ d "M0,0 V6 L3,3 Z", fill "#b0b0b0" ] [] ]
-                 , Svg.marker
-                    [ id "selectedArrow"
-                    , orient "auto"
-                    , markerWidth "3"
-                    , markerHeight "6"
-                    , refX "0.1"
-                    , refY "3"
-                    ]
-                    [ Svg.path [ d "M0,0 V6 L3,3 Z", fill "#808080" ] [] ]
-                 ]
-                )
-                (List.filterMap
-                    (\node ->
-                        case node.position of
-                            Just { x, y } ->
-                                Just
-                                    (Svg.pattern
-                                        [ id ("img" ++ (toString node.id))
-                                        , height "100%"
-                                        , width "100%"
-                                        , patternContentUnits "objectBoundingBox"
+            (List.filterMap
+                (\node ->
+                    case node.position of
+                        Just { x, y } ->
+                            Just
+                                (Svg.pattern
+                                    [ id ("img" ++ (toString node.id))
+                                    , class "image-pattern"
+                                    , height "100%"
+                                    , width "100%"
+                                    , patternContentUnits "objectBoundingBox"
+                                    ]
+                                    [ Svg.image
+                                        [ class "image-pattern-image"
+                                        , xlinkHref (Maybe.withDefault "" node.image)
+                                        , preserveAspectRatio "xMidYMid slice"
+                                        , width "1"
+                                        , height "1"
                                         ]
-                                        [ Svg.image
-                                            [ xlinkHref (Maybe.withDefault "" node.image)
-                                            , preserveAspectRatio "xMidYMid slice"
-                                            , width "1"
-                                            , height "1"
-                                            ]
-                                            []
-                                        ]
-                                    )
+                                        []
+                                    ]
+                                )
 
-                            Nothing ->
-                                Nothing
-                    )
-                    imageNodes
+                        Nothing ->
+                            Nothing
                 )
-            )
+                imageNodes)
 
 
 nodeColor : Node -> String
@@ -185,14 +154,11 @@ viewNode node =
                     Just "rect" ->
                         rect
                             [ onClick (ClickNode node.id)
-                            , Svg.Attributes.style "cursor: pointer;"
+                            , class "node-rect"
                             , Svg.Attributes.x (toString x)
                             , Svg.Attributes.y (toString y)
-                            , width "100"
-                            , height "100"
-                            , rx "15"
-                            , ry "15"
-                            , fill "#ffffff"
+                            , width <| toString <| 2 * nodeRadius
+                            , height <| toString <| 2 * nodeRadius
                             , stroke (nodeColor node)
                             , strokeWidth "5"
                             ]
@@ -200,11 +166,10 @@ viewNode node =
                     _ ->
                         circle
                             [ onClick (ClickNode node.id)
-                            , Svg.Attributes.style "cursor: pointer;"
+                            , class "node-circle"
                             , cx (toString (x + nodeRadius))
                             , cy (toString (y + nodeRadius))
                             , r (toString (Maybe.withDefault nodeRadius node.size))
-                            , fill "#ffffff"
                             , stroke (nodeColor node)
                             , strokeWidth "5"
                             ]
@@ -212,22 +177,17 @@ viewNode node =
                     []
                 , circle
                     [ onClick (ClickNode node.id)
-                    , Svg.Attributes.style "cursor: pointer;"
+                    , class "node-image"
                     , cx (toString (x + nodeRadius))
                     , cy (toString (y + 30))
-                    , r "25"
                     , fill ("url(#img" ++ (toString node.id) ++ ")")
                     ]
                     []
                 , Svg.text_
                     [ onClick (ClickNode node.id)
-                    , Svg.Attributes.style "cursor: pointer;"
+                    , class "node-text"
                     , Svg.Attributes.x (toString (x + nodeRadius))
                     , Svg.Attributes.y (toString (y + round (nodeRadius * 1.2)))
-                    , fill "#b0b0b0"
-                    , fontFamily """"Lucida Sans Unicode", "Lucida Grande", sans-serif"""
-                    , textAnchor "middle"
-                    , alignmentBaseline "hanging"
                     ]
                     [ Svg.text (Maybe.withDefault "" node.name) ]
                 ]
@@ -283,25 +243,19 @@ viewEdge edge =
             Just
                 [ Svg.path
                     [ onClick (ClickEdge edge.id)
-                    , Svg.Attributes.style "cursor: pointer;"
+                    , class "edge"
                     , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                    , fill "none"
                     , strokeWidth (toString (Maybe.withDefault 8 edge.width))
                     , stroke (Maybe.withDefault "#fff" edge.color)
-                    , strokeLinecap "round"
-                    , strokeLinejoin "round"
                     , d (path position)
                     ]
                     []
                 , Svg.path
                     [ onClick (ClickEdge edge.id)
-                    , Svg.Attributes.style "cursor: pointer;"
+                    , class "edge-dash"
                     , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                    , fill "none"
                     , strokeWidth (toString (0.75 * (Maybe.withDefault 8 edge.width)))
                     , stroke (Maybe.withDefault "#b0b0b0" edge.dashColor)
-                    , strokeLinecap "round"
-                    , strokeLinejoin "round"
                     , strokeDasharray (toString (2 * (Maybe.withDefault 8 edge.width)))
                     , strokeDashoffset (toString edge.dashOffset)
                     , d (path position)
@@ -322,29 +276,20 @@ viewLabel edge =
                     ( Just position, Just label ) ->
                         [ rect
                             [ onClick (ClickEdge edge.id)
-                            , Svg.Attributes.style "cursor: pointer;"
+                            , class "label"
                             , x (toString (position.x - round (toFloat labelWidth / 2)))
                             , y (toString (position.y - round (toFloat labelHeight / 2)))
                             , width (toString labelWidth)
                             , height (toString labelHeight)
-                            , rx "3"
-                            , ry "3"
-                            , fill "#ffffff"
                             , stroke (Maybe.withDefault "#808080" edge.color)
-                            , strokeWidth "2"
                             ]
                             []
                         , Svg.text_
                             [ onClick (ClickEdge edge.id)
-                            , Svg.Attributes.style "cursor: pointer;"
+                            , class "label-text"
                             , fill (Maybe.withDefault "#b0b0b0" edge.color)
                             , x (toString position.x)
                             , y (toString (position.y + 2))
-                            , textAnchor "middle"
-                            , alignmentBaseline "middle"
-                            , fontSize "20"
-                            , fontWeight "800"
-                            , fontFamily """"Lucida Sans Unicode", "Lucida Grande", sans-serif"""
                             ]
                             [ Svg.text label
                             ]
