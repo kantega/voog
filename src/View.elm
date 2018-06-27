@@ -51,19 +51,20 @@ viewTooltip : Model -> Html Msg
 viewTooltip model =
     case List.head (List.filter (\n -> n.selected) model.nodes) of
         Just node ->
-            viewInfoList model node.info node.position ( 2 * nodeRadius, 0 )
+            viewInfoList model node.info node.position node.name
+            ( toFloat <| nodeRadius + (Maybe.withDefault nodeRadius node.size), toFloat <| nodeRadius - (Maybe.withDefault nodeRadius node.size) )
 
         _ ->
             case List.head (List.filter (\e -> e.selected) model.edges) of
                 Just edge ->
-                    viewInfoList model edge.info edge.labelPosition ( labelWidth / 2, -labelHeight / 2 )
+                    viewInfoList model edge.info edge.labelPosition edge.label ( labelWidth / 2, -labelHeight / 2 )
 
                 _ ->
                     Html.text ""
 
 
-viewInfoList : Model -> List ( String, String ) -> Maybe Point -> ( Float, Float ) -> Html Msg
-viewInfoList model info maybeElementPos ( offsetX, offsetY ) =
+viewInfoList : Model -> List ( String, String ) -> Maybe Point -> Maybe String -> ( Float, Float ) -> Html Msg
+viewInfoList model info maybeElementPos name ( offsetX, offsetY ) =
     let
         elementPos =
             Maybe.withDefault { x = 0, y = 0 } maybeElementPos
@@ -74,23 +75,27 @@ viewInfoList model info maybeElementPos ( offsetX, offsetY ) =
             }
     in
         div
-            [ id "infoList"
-            , class "tooltip"
+            [ class "info-popup"
             , Svg.Attributes.style <| "left: " ++ (toString pos.x) ++ "; top: " ++ (toString pos.y) ++ ";"
             ]
-            (List.concat
-                (List.append
-                    [ [ p [] [ Html.text "Info" ], p [] [] ] ]
-                    (List.map
-                        (\( k, v ) ->
-                            [ p [] [ Html.text k ]
-                            , p [] [ Html.text v ]
-                            ]
-                        )
-                        info
+            [ div [class "info-top"]
+                [ h3 [class "info-header"] [ Html.text <| Maybe.withDefault "Info" name ]
+                , h3
+                    [ Messages.onMouseDown CloseInfo
+                    , class "info-close"
+                    ]
+                    [ Html.text "✖" ]
+                ]
+            , div [ class "info-list" ]
+                (List.concatMap
+                    (\( k, v ) ->
+                        [ p [] [ Html.text k ]
+                        , p [] [ Html.text v ]
+                        ]
                     )
+                    info
                 )
-            )
+            ]
 
 
 defs : Model -> Html Msg
@@ -132,7 +137,8 @@ defs model =
                         Nothing ->
                             Nothing
                 )
-                imageNodes)
+                imageNodes
+            )
 
 
 nodeColor : Node -> String

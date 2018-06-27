@@ -11,6 +11,7 @@ import Time
 type Msg
     = ClickNode Int
     | ClickEdge ( Int, Int )
+    | CloseInfo (Int, Int, Int)
     | InputMsg String
     | Tick Time.Time
     | WindowSize Window.Size

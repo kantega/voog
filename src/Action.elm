@@ -303,6 +303,14 @@ toggleEdge model id =
     }
 
 
+closeInfo : Model -> Model
+closeInfo model =
+    { model
+        | edges = List.map (\e -> { e | selected = False }) model.edges
+        , nodes = List.map (\n -> { n | selected = False }) model.nodes
+    }
+
+
 setNodeColors : Nodes -> Nodes
 setNodeColors nodes =
     let

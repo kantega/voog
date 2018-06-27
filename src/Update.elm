@@ -17,6 +17,9 @@ update msg model =
         ClickEdge id ->
             ( toggleEdge model id, Cmd.none )
 
+        CloseInfo _ ->
+            ( closeInfo model, Cmd.none )
+
         InputMsg msg ->
             ( Input.handleInput model msg, Cmd.none )
 
