@@ -29,8 +29,6 @@ nodeDecoder =
         |> optional "name" (maybe string) Nothing
         |> optional "shape" (maybe string) Nothing
         |> optional "image" (maybe string) Nothing
-        |> optional "category" (maybe string) Nothing
-        |> optional "color" (maybe string) Nothing
         |> optional "size" (maybe int) Nothing
 
 
@@ -43,9 +41,7 @@ edgeDecoder =
         |> optional "classes" (list string) []
         |> optional "label" (maybe string) Nothing
         |> optional "width" (maybe float) Nothing
-        |> optional "color" (maybe string) Nothing
         |> optional "speed" (maybe float) Nothing
-        |> optional "dashColor" (maybe string) Nothing
 
 
 handleInput : Model -> String -> Model

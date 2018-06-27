@@ -7,17 +7,6 @@ import Sugiyama.Sugiyama exposing (sugiyama)
 import Sugiyama.Model
 
 
-categoryColor =
-    [ "#f44336"
-    , "#2196f3"
-    , "#4caf50"
-    , "#ffeb3b"
-    , "#607d8b"
-    ]
-        |> List.indexedMap (\i c -> ( i, c ))
-        |> Dict.fromList
-
-
 updateInfo : Info -> Info -> Info
 updateInfo old new =
     let
@@ -54,15 +43,12 @@ addNodes nodes recalculate center model =
                     newNodes =
                         { selected = False
                         , position = Nothing
-                        , categoryColor = Nothing
                         , id = node.id
                         , info = node.info
                         , classes = node.classes
                         , name = node.name
                         , shape = node.shape
                         , image = node.image
-                        , category = node.category
-                        , color = node.color
                         , size = node.size
                         }
                             :: model.nodes
@@ -82,8 +68,6 @@ addNodes nodes recalculate center model =
                                     , name = node.name
                                     , shape = node.shape
                                     , image = node.image
-                                    , category = node.category
-                                    , color = node.color
                                     , size = node.size
                                 }
                                     :: oldNodes
@@ -94,27 +78,20 @@ addNodes nodes recalculate center model =
                     addNodes rest recalculate center { model | nodes = newNodes }
 
         _ ->
-            let
-                colored =
-                    { model | nodes = setNodeColors model.nodes }
+            if recalculate then
+                let
+                    recalculated =
+                        calculateDepth model
 
-                placed =
-                    if recalculate then
-                        let
-                            recalculated =
-                                calculateDepth colored
-
-                            centered =
-                                if center then
-                                    centerGraph recalculated
-                                else
-                                    recalculated
-                        in
-                            place centered
-                    else
-                        colored
-            in
-                placed
+                    centered =
+                        if center then
+                            centerGraph recalculated
+                        else
+                            recalculated
+                in
+                    place centered
+            else
+                model
 
 
 removeNodes : List Int -> Model -> Model
@@ -150,9 +127,7 @@ addEdges edges recalculate center model =
                         , classes = edge.classes
                         , label = edge.label
                         , width = edge.width
-                        , color = edge.color
                         , speed = edge.speed
-                        , dashColor = edge.dashColor
                         }
                             :: model.edges
                 in
@@ -170,9 +145,7 @@ addEdges edges recalculate center model =
                                     , classes = edge.classes
                                     , label = edge.label
                                     , width = edge.width
-                                    , color = edge.color
                                     , speed = edge.speed
-                                    , dashColor = edge.dashColor
                                 }
                                     :: oldEdges
 
@@ -308,49 +281,6 @@ closeInfo model =
         | edges = List.map (\e -> { e | selected = False }) model.edges
         , nodes = List.map (\n -> { n | selected = False }) model.nodes
     }
-
-
-setNodeColors : Nodes -> Nodes
-setNodeColors nodes =
-    let
-        categories =
-            nodes
-                |> List.filterMap
-                    (\n ->
-                        case n.category of
-                            Just category ->
-                                Just ( n.id, category )
-
-                            _ ->
-                                Nothing
-                    )
-                |> List.sortWith (\a b -> compare (Tuple.second a) (Tuple.second b))
-                |> (setColors "" -1)
-                |> Dict.fromList
-    in
-        List.map
-            (\n ->
-                case Dict.get n.id categories of
-                    Just colorId ->
-                        { n | categoryColor = Dict.get colorId categoryColor }
-
-                    Nothing ->
-                        n
-            )
-            nodes
-
-
-setColors : String -> Int -> List ( Int, String ) -> List ( Int, Int )
-setColors prevCategory colorId categories =
-    case categories of
-        ( id, category ) :: rest ->
-            if category == prevCategory then
-                ( id, colorId ) :: (setColors category colorId rest)
-            else
-                ( id, colorId + 1 ) :: (setColors category (colorId + 1) rest)
-
-        _ ->
-            []
 
 
 calculateDepth : Model -> Model

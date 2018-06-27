@@ -35,7 +35,6 @@ type alias SystemNode a =
     { a
         | selected : Bool
         , position : Maybe Point
-        , categoryColor : Maybe String
     }
 
 
@@ -64,8 +63,6 @@ type alias InputNode =
     , name : Maybe String
     , shape : Maybe String
     , image : Maybe String
-    , category : Maybe String
-    , color : Maybe String
     , size : Maybe Int
     }
 
@@ -77,9 +74,7 @@ type alias InputEdge =
     , classes : List String
     , label : Maybe String
     , width : Maybe Float
-    , color : Maybe String
     , speed : Maybe Float
-    , dashColor : Maybe String
     }
 
 

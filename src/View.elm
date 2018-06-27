@@ -51,8 +51,11 @@ viewTooltip : Model -> Html Msg
 viewTooltip model =
     case List.head (List.filter (\n -> n.selected) model.nodes) of
         Just node ->
-            viewInfoList model node.info node.position node.name
-            ( toFloat <| nodeRadius + (Maybe.withDefault nodeRadius node.size), toFloat <| nodeRadius - (Maybe.withDefault nodeRadius node.size) )
+            viewInfoList model
+                node.info
+                node.position
+                node.name
+                ( toFloat <| nodeRadius + (Maybe.withDefault nodeRadius node.size), toFloat <| nodeRadius - (Maybe.withDefault nodeRadius node.size) )
 
         _ ->
             case List.head (List.filter (\e -> e.selected) model.edges) of
@@ -78,8 +81,8 @@ viewInfoList model info maybeElementPos name ( offsetX, offsetY ) =
             [ class "info-popup"
             , Svg.Attributes.style <| "left: " ++ (toString pos.x) ++ "; top: " ++ (toString pos.y) ++ ";"
             ]
-            [ div [class "info-top"]
-                [ h3 [class "info-header"] [ Html.text <| Maybe.withDefault "Info" name ]
+            [ div [ class "info-top" ]
+                [ h3 [ class "info-header" ] [ Html.text <| Maybe.withDefault "Info" name ]
                 , h3
                     [ Messages.onMouseDown CloseInfo
                     , class "info-close"
@@ -141,16 +144,6 @@ defs model =
             )
 
 
-nodeColor : Node -> String
-nodeColor node =
-    case node.color of
-        Just color ->
-            color
-
-        Nothing ->
-            Maybe.withDefault "#808080" node.categoryColor
-
-
 viewNode : Node -> Maybe (List (Svg Msg))
 viewNode node =
     case node.position of
@@ -159,28 +152,25 @@ viewNode node =
                 [ (case node.shape of
                     Just "rect" ->
                         let
-                            radius = (Maybe.withDefault nodeRadius node.size)
+                            radius =
+                                (Maybe.withDefault nodeRadius node.size)
                         in
                             rect
                                 [ onClick (ClickNode node.id)
-                                , class <| String.join " " <| "node-rect" :: node.classes
+                                , class <| String.join " " <| "node rect" :: node.classes
                                 , Svg.Attributes.x (toString <| x + nodeRadius - radius)
                                 , Svg.Attributes.y (toString <| y + nodeRadius - radius)
                                 , width <| toString <| 2 * radius
                                 , height <| toString <| 2 * radius
-                                , stroke (nodeColor node)
-                                , strokeWidth "5"
                                 ]
 
                     _ ->
                         circle
                             [ onClick (ClickNode node.id)
-                            , class <| String.join " " <| "node-circle" :: node.classes
+                            , class <| String.join " " <| "node circle" :: node.classes
                             , cx (toString (x + nodeRadius))
                             , cy (toString (y + nodeRadius))
                             , r (toString (Maybe.withDefault nodeRadius node.size))
-                            , stroke (nodeColor node)
-                            , strokeWidth "5"
                             ]
                   )
                     []
@@ -255,7 +245,6 @@ viewEdge edge =
                     , class <| String.join " " <| "edge" :: edge.classes
                     , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
                     , strokeWidth (toString (Maybe.withDefault 8 edge.width))
-                    , stroke (Maybe.withDefault "#fff" edge.color)
                     , d (path position)
                     ]
                     []
@@ -264,7 +253,6 @@ viewEdge edge =
                     , class <| String.join " " <| "edge-dash" :: edge.classes
                     , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
                     , strokeWidth (toString (0.75 * (Maybe.withDefault 8 edge.width)))
-                    , stroke (Maybe.withDefault "#b0b0b0" edge.dashColor)
                     , strokeDasharray (toString (2 * (Maybe.withDefault 8 edge.width)))
                     , strokeDashoffset (toString edge.dashOffset)
                     , d (path position)
@@ -290,13 +278,11 @@ viewLabel edge =
                             , y (toString (position.y - round (toFloat labelHeight / 2)))
                             , width (toString labelWidth)
                             , height (toString labelHeight)
-                            , stroke (Maybe.withDefault "#808080" edge.color)
                             ]
                             []
                         , Svg.text_
                             [ onClick (ClickEdge edge.id)
                             , class <| String.join " " <| "label-text" :: edge.classes
-                            , fill (Maybe.withDefault "#b0b0b0" edge.color)
                             , x (toString position.x)
                             , y (toString (position.y + 2))
                             ]
