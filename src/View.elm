@@ -40,7 +40,10 @@ view model =
                         [ width (toString windowWidth)
                         , height (toString windowHeight)
                         , viewBox
-                            ("0 0 "
+                            ((toString -xx)
+                                ++ " "
+                                ++ (toString -yy)
+                                ++ " "
                                 ++ (toString (toFloat windowWidth / model.zoom))
                                 ++ " "
                                 ++ (toString (toFloat windowHeight / model.zoom))
@@ -48,9 +51,9 @@ view model =
                         ]
                         ((defs model)
                             :: (List.concat
-                                    [ (List.foldr List.append [] (List.filterMap (viewEdge ( xx, yy )) model.edges))
-                                    , (List.foldr List.append [] (List.filterMap (viewNode ( xx, yy )) model.nodes))
-                                    , (List.foldr List.append [] (List.filterMap (viewLabel ( xx, yy )) model.edges))
+                                    [ (List.foldr List.append [] (List.filterMap viewEdge model.edges))
+                                    , (List.foldr List.append [] (List.filterMap viewNode model.nodes))
+                                    , (List.foldr List.append [] (List.filterMap viewLabel model.edges))
                                     ]
                                )
                         )
@@ -170,8 +173,8 @@ nodeColor node =
             Maybe.withDefault "#808080" node.categoryColor
 
 
-viewNode : ( Int, Int ) -> Node -> Maybe (List (Svg Msg))
-viewNode ( xx, yy ) node =
+viewNode : Node -> Maybe (List (Svg Msg))
+viewNode node =
     case node.position of
         Just { x, y } ->
             Just
@@ -180,8 +183,8 @@ viewNode ( xx, yy ) node =
                         rect
                             [ onClick (ClickNode node.id)
                             , Svg.Attributes.style "cursor: pointer;"
-                            , Svg.Attributes.x (toString (xx + x))
-                            , Svg.Attributes.y (toString (yy + y))
+                            , Svg.Attributes.x (toString x)
+                            , Svg.Attributes.y (toString y)
                             , width "100"
                             , height "100"
                             , rx "15"
@@ -195,8 +198,8 @@ viewNode ( xx, yy ) node =
                         circle
                             [ onClick (ClickNode node.id)
                             , Svg.Attributes.style "cursor: pointer;"
-                            , cx (toString (xx + x + nodeRadius))
-                            , cy (toString (yy + y + nodeRadius))
+                            , cx (toString (x + nodeRadius))
+                            , cy (toString (y + nodeRadius))
                             , r (toString (Maybe.withDefault nodeRadius node.size))
                             , fill "#ffffff"
                             , stroke (nodeColor node)
@@ -207,8 +210,8 @@ viewNode ( xx, yy ) node =
                 , circle
                     [ onClick (ClickNode node.id)
                     , Svg.Attributes.style "cursor: pointer;"
-                    , cx (toString (xx + x + nodeRadius))
-                    , cy (toString (yy + y + 30))
+                    , cx (toString (x + nodeRadius))
+                    , cy (toString (y + 30))
                     , r "25"
                     , fill ("url(#img" ++ (toString node.id) ++ ")")
                     ]
@@ -216,8 +219,8 @@ viewNode ( xx, yy ) node =
                 , Svg.text_
                     [ onClick (ClickNode node.id)
                     , Svg.Attributes.style "cursor: pointer;"
-                    , Svg.Attributes.x (toString (xx + x + nodeRadius))
-                    , Svg.Attributes.y (toString (yy + y + round (nodeRadius * 1.2)))
+                    , Svg.Attributes.x (toString (x + nodeRadius))
+                    , Svg.Attributes.y (toString (y + round (nodeRadius * 1.2)))
                     , fill "#b0b0b0"
                     , fontFamily """"Lucida Sans Unicode", "Lucida Grande", sans-serif"""
                     , textAnchor "middle"
@@ -230,25 +233,25 @@ viewNode ( xx, yy ) node =
             Nothing
 
 
-path : Line -> ( Int, Int ) -> String
-path position ( xx, yy ) =
+path : Line -> String
+path position =
     case position of
         Straight line ->
             "M"
-                ++ (toString (xx + line.from.x))
+                ++ (toString line.from.x)
                 ++ " "
-                ++ (toString (yy + line.from.y))
+                ++ (toString line.from.y)
                 ++ " "
-                ++ (toString (xx + line.to.x))
+                ++ (toString line.to.x)
                 ++ " "
-                ++ (toString (yy + line.to.y))
+                ++ (toString line.to.y)
 
         Multi line ->
-            lineToString line ( xx, yy ) True
+            lineToString line True
 
 
-lineToString : List Point -> ( Int, Int ) -> Bool -> String
-lineToString line ( xx, yy ) first =
+lineToString : List Point -> Bool -> String
+lineToString line first =
     let
         char =
             if first then
@@ -260,18 +263,18 @@ lineToString line ( xx, yy ) first =
             head :: rest ->
                 char
                     ++ " "
-                    ++ (toString (xx + head.x))
+                    ++ (toString head.x)
                     ++ " "
-                    ++ (toString (yy + head.y))
+                    ++ (toString head.y)
                     ++ " "
-                    ++ lineToString rest ( xx, yy ) False
+                    ++ lineToString rest False
 
             _ ->
                 ""
 
 
-viewEdge : ( Int, Int ) -> Edge -> Maybe (List (Html Msg))
-viewEdge ( xx, yy ) edge =
+viewEdge : Edge -> Maybe (List (Html Msg))
+viewEdge edge =
     case edge.position of
         Just position ->
             Just
@@ -284,7 +287,7 @@ viewEdge ( xx, yy ) edge =
                     , stroke (Maybe.withDefault "#fff" edge.color)
                     , strokeLinecap "round"
                     , strokeLinejoin "round"
-                    , d (path position ( xx, yy ))
+                    , d (path position)
                     ]
                     []
                 , Svg.path
@@ -298,7 +301,7 @@ viewEdge ( xx, yy ) edge =
                     , strokeLinejoin "round"
                     , strokeDasharray (toString (2 * (Maybe.withDefault 8 edge.width)))
                     , strokeDashoffset (toString edge.dashOffset)
-                    , d (path position ( xx, yy ))
+                    , d (path position)
                     ]
                     []
                 ]
@@ -307,8 +310,8 @@ viewEdge ( xx, yy ) edge =
             Nothing
 
 
-viewLabel : ( Int, Int ) -> Edge -> Maybe (List (Html Msg))
-viewLabel ( xx, yy ) edge =
+viewLabel : Edge -> Maybe (List (Html Msg))
+viewLabel edge =
     case edge.position of
         Just position ->
             Just
@@ -317,8 +320,8 @@ viewLabel ( xx, yy ) edge =
                         [ rect
                             [ onClick (ClickEdge edge.id)
                             , Svg.Attributes.style "cursor: pointer;"
-                            , x (toString (xx + position.x - round (toFloat labelWidth / 2)))
-                            , y (toString (yy + position.y - round (toFloat labelHeight / 2)))
+                            , x (toString (position.x - round (toFloat labelWidth / 2)))
+                            , y (toString (position.y - round (toFloat labelHeight / 2)))
                             , width (toString labelWidth)
                             , height (toString labelHeight)
                             , rx "3"
@@ -332,8 +335,8 @@ viewLabel ( xx, yy ) edge =
                             [ onClick (ClickEdge edge.id)
                             , Svg.Attributes.style "cursor: pointer;"
                             , fill (Maybe.withDefault "#b0b0b0" edge.color)
-                            , x (toString (xx + position.x))
-                            , y (toString (yy + position.y + 2))
+                            , x (toString position.x)
+                            , y (toString (position.y + 2))
                             , textAnchor "middle"
                             , alignmentBaseline "middle"
                             , fontSize "20"
