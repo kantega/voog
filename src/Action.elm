@@ -5,6 +5,28 @@ import Model exposing (..)
 import Place exposing (..)
 import Sugiyama.Sugiyama exposing (sugiyama)
 import Sugiyama.Model
+import Window
+
+
+updateWindow : Window.Size -> Model -> Model
+updateWindow { width, height } model =
+    let
+        newPosition =
+            case model.windowSize of
+                Just ( oldWidth, oldHeight ) ->
+                    let
+                        dw =
+                            toFloat (width - oldWidth) / 2
+
+                        dh =
+                            toFloat (height - oldHeight) / 2
+                    in
+                        { x = model.position.x + dw, y = model.position.y + dh }
+
+                Nothing ->
+                    model.position
+    in
+        { model | position = newPosition, windowSize = Just ( width, height ) }
 
 
 updateInfo : Info -> Info -> Info

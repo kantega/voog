@@ -18,7 +18,7 @@ view model =
         ( windowWidth, windowHeight ) =
             Maybe.withDefault ( 0, 0 ) model.windowSize
     in
-        div []
+        div [class "voog"]
             [ viewTooltip model
             , svg
                 [ Messages.onMouseWheel MouseWheel
@@ -40,7 +40,7 @@ view model =
                 (List.concat
                     [ [ defs model ]
                     , (List.foldr List.append [] (List.filterMap viewEdge model.edges))
-                    , (List.foldr List.append [] (List.filterMap viewNode model.nodes))
+                    , (List.foldr List.append [] (List.filterMap (viewNode model.name) model.nodes))
                     , (List.foldr List.append [] (List.filterMap viewLabel model.edges))
                     ]
                 )
@@ -120,7 +120,7 @@ defs model =
                         Just { x, y } ->
                             Just
                                 (Svg.pattern
-                                    [ id ("img" ++ (toString node.id))
+                                    [ id (model.name ++ "_img" ++ (toString node.id))
                                     , class "image-pattern"
                                     , height "100%"
                                     , width "100%"
@@ -144,8 +144,8 @@ defs model =
             )
 
 
-viewNode : Node -> Maybe (List (Svg Msg))
-viewNode node =
+viewNode : String -> Node -> Maybe (List (Svg Msg))
+viewNode modelName node =
     case node.position of
         Just { x, y } ->
             Just
@@ -179,7 +179,7 @@ viewNode node =
                     , class <| String.join " " <| "node-image" :: node.classes
                     , cx (toString (x + nodeRadius))
                     , cy (toString (y + 30))
-                    , fill ("url(#img" ++ (toString node.id) ++ ")")
+                    , fill ("url(#" ++ modelName ++ "_img" ++ (toString node.id) ++ ")")
                     ]
                     []
                 , Svg.text_

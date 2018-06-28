@@ -7,13 +7,13 @@
     </head>
 
     <body>
-        <div id="main"></div>
+        <div style="width: 50vw; float: left;" id="tree"></div>
+        <div style="width: 50vw; float: right;" id="network"></div>
 
         <script src="main.js"></script>
-        <script>
-            var node = document.getElementById('main');
-            var app = Elm.Main.embed(node);
-        </script>
+
+        <script src="examples/tree.js"></script>
+        <script src="examples/network.js"></script>
     </body>
 
 </html>

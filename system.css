@@ -3,10 +3,8 @@ body {
     font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
 }
 
-#main {
+.voog {
     position: relative;
-    width: 100vw;
-    height: 100vh;
     overflow: hidden;
 }
 

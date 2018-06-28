@@ -5,8 +5,10 @@ import Keyboard exposing (..)
 
 
 type alias Model =
-    { nodes : Nodes
+    { name : String
+    , nodes : Nodes
     , edges : Edges
+    , elementPosition : (Int, Int)
     , position : { x : Float, y : Float }
     , mouse : Maybe Point
     , drag : Bool
@@ -49,7 +51,10 @@ type alias SystemEdge a =
 
 
 type alias Input =
-    { addNodes : List InputNode
+    { name : String
+    , size : Maybe (Int, Int)
+    , position : Maybe (Int, Int)
+    , addNodes : List InputNode
     , addEdges : List InputEdge
     , removeNodes : List Int
     , removeEdges : List ( Int, Int )

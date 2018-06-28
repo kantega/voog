@@ -39,29 +39,10 @@ update msg model =
             in
                 ( { model | edges = newEdges }, Cmd.none )
 
-        WindowSize { width, height } ->
-            let
-                newPosition =
-                    case model.windowSize of
-                        Just ( oldWidth, oldHeight ) ->
-                            let
-                                dw =
-                                    toFloat (width - oldWidth) / 2
+        WindowSize size ->
+            ( updateWindow size model, Cmd.none )
 
-                                dh =
-                                    toFloat (height - oldHeight) / 2
-                            in
-                                { x = model.position.x + dw, y = model.position.y + dh }
-
-                        Nothing ->
-                            model.position
-
-                newModel =
-                    { model | position = newPosition, windowSize = Just ( width, height ) }
-            in
-                ( newModel, Cmd.none )
-
-        MouseMove (x, y) ->
+        MouseMove ( x, y ) ->
             let
                 pos =
                     model.position
@@ -78,15 +59,15 @@ update msg model =
                             newPos =
                                 { pos | x = pos.x + dx, y = pos.y + dy }
                         in
-                            ( { model | position = newPos, mouse = Just {x=x, y=y} }, Cmd.none )
+                            ( { model | position = newPos, mouse = Just { x = x, y = y } }, Cmd.none )
 
                     _ ->
-                        ( { model | mouse = Just {x=x, y=y} }, Cmd.none )
+                        ( { model | mouse = Just { x = x, y = y } }, Cmd.none )
 
-        MouseUp (btn, x, y) ->
+        MouseUp ( btn, x, y ) ->
             ( { model | drag = False }, Cmd.none )
 
-        MouseDown (btn, x, y) ->
+        MouseDown ( btn, x, y ) ->
             let
                 drag =
                     if btn == 1 || btn == 2 then
@@ -118,10 +99,13 @@ update msg model =
                 ({ x, y } as pos) =
                     model.position
 
+                ( elementX, elementY ) =
+                    model.elementPosition
+
                 newPosition =
                     case ( model.windowSize, model.mouse ) of
                         ( Just ( width, height ), Just mouse ) ->
-                            { pos | x = x - (toFloat mouse.x - x) * scaleChange, y = y - (toFloat mouse.y - y) * scaleChange }
+                            { pos | x = x - (toFloat (mouse.x - elementX) - x) * scaleChange, y = y - (toFloat (mouse.y - elementY) - y) * scaleChange }
 
                         _ ->
                             pos

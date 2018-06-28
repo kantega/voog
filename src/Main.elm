@@ -30,7 +30,9 @@ init =
 
 empty : Model
 empty =
-    { nodes = []
+    { name = ""
+    , elementPosition = (0, 0)
+    , nodes = []
     , edges = []
     , position = { x = 0, y = 0 }
     , mouse = Nothing

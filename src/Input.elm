@@ -2,6 +2,7 @@ module Input exposing (..)
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
+import Messages exposing (..)
 import Model exposing (..)
 import Action exposing (..)
 
@@ -11,13 +12,21 @@ stringStringListDecoder =
     (list (map2 (,) (index 0 string) (index 1 string)))
 
 
+intIntTuple : Decoder ( Int, Int )
+intIntTuple =
+    map2 (,) (index 0 int) (index 1 int)
+
+
 inputDecoder : Decoder Input
 inputDecoder =
     decode Input
+        |> optional "name" string ""
+        |> optional "size" (maybe intIntTuple) Nothing
+        |> optional "position" (maybe intIntTuple) Nothing
         |> optional "addNodes" (list nodeDecoder) []
         |> optional "addEdges" (list edgeDecoder) []
         |> optional "removeNodes" (list int) []
-        |> optional "removeEdges" (list (map2 (,) (index 0 int) (index 1 int))) []
+        |> optional "removeEdges" (list (intIntTuple)) []
 
 
 nodeDecoder : Decoder InputNode
@@ -49,10 +58,33 @@ handleInput model inputString =
     case decodeString inputDecoder inputString of
         Ok input ->
             model
+                |> (\m -> { m | name = input.name })
+                |> handleSize input.size
+                |> handlePosition input.position
                 |> removeNodes input.removeNodes
                 |> removeEdges input.removeEdges
                 |> addNodes input.addNodes False (model.nodes == [])
                 |> addEdges input.addEdges False (model.edges == [])
+
+        _ ->
+            model
+
+
+handleSize : Maybe ( Int, Int ) -> Model -> Model
+handleSize size model =
+    case size of
+        Just ( x, y ) ->
+            updateWindow { width = x, height = y } model
+
+        _ ->
+            model
+
+
+handlePosition : Maybe ( Int, Int ) -> Model -> Model
+handlePosition position model =
+    case position of
+        Just ( x, y ) ->
+            { model | elementPosition = (x, y) }
 
         _ ->
             model
