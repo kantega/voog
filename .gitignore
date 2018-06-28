@@ -1,4 +1,7 @@
-# elm-package generated files
-elm-stuff
-# elm-repl generated files
-repl-temp-*
+.idea/
+*.DS_Store
+*.gem
+.bundle
+.sass-cache
+_site
+Gemfile.lock

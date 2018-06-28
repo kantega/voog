@@ -1,0 +1,58 @@
+.info-top, .info-list {
+    background-color: #546e7a;
+}
+
+.node {
+    fill: #ffffff;
+    stroke: #03a9f4;
+    stroke-width: 5;
+}
+
+.node-text {
+    fill: #607d8b;
+}
+
+.edge {
+    stroke: none;
+}
+
+.edge-dash {
+    stroke: #4fc3f7;
+}
+
+.label {
+    fill: #ffffff;
+    stroke: #607d8b;
+}
+
+.label-text {
+    fill: #607d8b;
+}
+
+/* custom */
+
+.node.error {
+    stroke: #f44336;
+}
+
+.edge-dash.error {
+    stroke: #f44336;
+}
+
+.edge.inverted {
+    stroke: #4fc3f7;
+}
+
+.edge-dash.inverted {
+    stroke: #ffffff;
+}
+
+.node.highlight {
+    stroke-width: 20;
+    stroke: #ffeb3b;
+    r: 80;
+}
+
+.node-text.highlight {
+    font-size: 25px;
+}
