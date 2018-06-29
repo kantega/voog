@@ -17,6 +17,11 @@ intIntTuple =
     map2 (,) (index 0 int) (index 1 int)
 
 
+floatFloatTuple : Decoder ( Float, Float )
+floatFloatTuple =
+    map2 (,) (index 0 float) (index 1 float)
+
+
 inputDecoder : Decoder Input
 inputDecoder =
     decode Input
@@ -39,9 +44,9 @@ nodeDecoder =
         |> optional "name" (maybe string) Nothing
         |> optional "shape" (maybe string) Nothing
         |> optional "image" (maybe string) Nothing
-        |> optional "size" (maybe int) Nothing
-        |> optional "x" (maybe int) Nothing
-        |> optional "y" (maybe int) Nothing
+        |> optional "size" (maybe float) Nothing
+        |> optional "x" (maybe float) Nothing
+        |> optional "y" (maybe float) Nothing
 
 
 edgeDecoder : Decoder InputEdge
@@ -88,7 +93,7 @@ handlePosition : Maybe ( Int, Int ) -> Model -> Model
 handlePosition position model =
     case position of
         Just ( x, y ) ->
-            { model | elementPosition = ( x, y ) }
+            { model | elementPosition = ( toFloat x, toFloat y ) }
 
         _ ->
             model

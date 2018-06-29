@@ -55,7 +55,7 @@ viewTooltip model =
                 node.info
                 node.position
                 node.name
-                ( toFloat <| nodeRadius + (Maybe.withDefault nodeRadius node.size), toFloat <| nodeRadius - (Maybe.withDefault nodeRadius node.size) )
+                (nodeRadius + (Maybe.withDefault nodeRadius node.size), nodeRadius - (Maybe.withDefault nodeRadius node.size) )
 
         _ ->
             case List.head (List.filter (\e -> e.selected) model.edges) of
@@ -73,8 +73,8 @@ viewInfoList model info maybeElementPos name ( offsetX, offsetY ) =
             Maybe.withDefault { x = 0, y = 0 } maybeElementPos
 
         pos =
-            { x = model.position.x + (offsetX + toFloat elementPos.x + 10) * model.zoom
-            , y = model.position.y + (offsetY + toFloat elementPos.y) * model.zoom
+            { x = model.position.x + (offsetX + elementPos.x + 10) * model.zoom
+            , y = model.position.y + (offsetY + elementPos.y) * model.zoom
             }
     in
         div
@@ -195,14 +195,14 @@ viewNode modelName node =
             Nothing
 
 
-textPosition : Int -> Maybe String -> String
+textPosition : Float -> Maybe String -> String
 textPosition y image =
     case image of
         Just _ ->
-            (toString (y + round (nodeRadius * 3 / 2)))
+            (toString (y + nodeRadius * 3 / 2))
 
         Nothing ->
-            (toString (y + round (nodeRadius)))
+            (toString (y + nodeRadius))
 
 
 path : Line -> String
@@ -284,8 +284,8 @@ viewLabel edge =
                         [ rect
                             [ onClick (ClickEdge edge.id)
                             , class <| String.join " " <| "label" :: edge.classes
-                            , x (toString (position.x - round (toFloat labelWidth / 2)))
-                            , y (toString (position.y - round (toFloat labelHeight / 2)))
+                            , x (toString (position.x - labelWidth / 2))
+                            , y (toString (position.y - labelHeight / 2))
                             , width (toString labelWidth)
                             , height (toString labelHeight)
                             ]

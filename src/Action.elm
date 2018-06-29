@@ -239,7 +239,6 @@ centerGraph ({ nodes } as model) =
                         |> List.maximum
                         |> Maybe.withDefault 0
                         |> (+) 3
-                        |> toFloat
 
                 height =
                     nodes
@@ -249,7 +248,6 @@ centerGraph ({ nodes } as model) =
                         |> List.maximum
                         |> Maybe.withDefault 0
                         |> (+) 3
-                        |> toFloat
 
                 widthZoom =
                     toFloat windowWidth / (width * distance)
@@ -402,7 +400,7 @@ sugiyamaLayout layout ({ nodes, edges } as model) =
                 (\{ x, y } n ->
                     let
                         position =
-                            Just { x = Maybe.withDefault 0 x, y = Maybe.withDefault 0 y }
+                            Just { x = toFloat <| Maybe.withDefault 0 x, y = toFloat <| Maybe.withDefault 0 y }
                     in
                         { n | position = position }
                 )
@@ -492,7 +490,7 @@ getNodePosition nodes id =
             Just node ->
                 case ( node.x, node.y ) of
                     ( Just x, Just y ) ->
-                        { x = x, y = y }
+                        { x = toFloat x, y = toFloat y }
 
                     _ ->
                         { x = -1, y = -1 }

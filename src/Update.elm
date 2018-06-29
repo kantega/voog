@@ -42,8 +42,9 @@ update msg model =
         WindowSize size ->
             ( updateWindow size model, Cmd.none )
 
-        MouseMove ( x, y ) ->
+        MouseMove ( xx, yy ) ->
             let
+                (x, y) = (toFloat xx, toFloat yy)
                 pos =
                     model.position
             in
@@ -51,10 +52,10 @@ update msg model =
                     ( True, Just mouse ) ->
                         let
                             dx =
-                                toFloat (x - mouse.x)
+                                x - mouse.x
 
                             dy =
-                                toFloat (y - mouse.y)
+                                y - mouse.y
 
                             newPos =
                                 { pos | x = pos.x + dx, y = pos.y + dy }
@@ -105,7 +106,7 @@ update msg model =
                 newPosition =
                     case ( model.windowSize, model.mouse ) of
                         ( Just ( width, height ), Just mouse ) ->
-                            { pos | x = x - (toFloat (mouse.x - elementX) - x) * scaleChange, y = y - (toFloat (mouse.y - elementY) - y) * scaleChange }
+                            { pos | x = x - ((mouse.x - elementX) - x) * scaleChange, y = y - ((mouse.y - elementY) - y) * scaleChange }
 
                         _ ->
                             pos

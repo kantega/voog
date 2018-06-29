@@ -19,7 +19,7 @@ labelHeight =
     30
 
 
-sign : Int -> Int
+sign : Float -> Float
 sign a =
     if a < 0 then
         -1
@@ -90,7 +90,7 @@ placeEdges edges nodes =
     List.map (placeEdge nodes edges) edges
 
 
-getLabelPosition : MultiLine -> Int -> Maybe Point
+getLabelPosition : MultiLine -> Float -> Maybe Point
 getLabelPosition line offset =
     if List.length line % 2 == 0 then
         let
@@ -106,13 +106,15 @@ getLabelPosition line offset =
                 ( i, nodeA ) :: ( j, nodeB ) :: rest ->
                     Just
                         { x =
-                            round (distance * (toFloat (nodeA.x + nodeB.x) / 2))
+                            distance
+                                * ((nodeA.x + nodeB.x) / 2)
                                 + nodeRadius
                                 + offset
                         , y =
-                            round (distance * (toFloat (nodeA.y + nodeB.y) / 2))
+                            distance
+                                * ((nodeA.y + nodeB.y) / 2)
                                 + nodeRadius
-                                + (sign offset * (round (toFloat labelHeight / 2) + 2))
+                                + (sign offset * (toFloat labelHeight / 2) + 2)
                         }
 
                 _ ->
@@ -133,7 +135,7 @@ getLabelPosition line offset =
                     Just ( i, p ) ->
                         Just
                             { x = distance * p.x + nodeRadius + offset
-                            , y = distance * p.y + nodeRadius + (sign offset * (round (toFloat labelHeight / 2) + 2))
+                            , y = distance * p.y + nodeRadius + sign offset * ((toFloat labelHeight / 2) + 2)
                             }
 
                     _ ->
@@ -160,7 +162,7 @@ placeMultiLineEdge : MultiLine -> Edges -> Edge -> ( Maybe Line, Maybe Point )
 placeMultiLineEdge line edges edge =
     let
         width =
-            round ((Maybe.withDefault 8 edge.width) / 2)
+            (Maybe.withDefault 8 edge.width) / 2
 
         offset =
             if not (List.any (\e -> e.id == reverseId edge.id) edges) then
@@ -210,9 +212,9 @@ placeSingleLineEdge nodes edges edge =
 
                                 labelOffset =
                                     if Tuple.first edge.id > Tuple.second edge.id then
-                                        -(round offset)
+                                        -(offset)
                                     else
-                                        round offset
+                                        offset
 
                                 direction =
                                     if from.x == to.x then
@@ -221,29 +223,29 @@ placeSingleLineEdge nodes edges edge =
                                         sign (to.x - from.x)
 
                                 angle =
-                                    atan2 (toFloat (to.y - from.y)) (toFloat (to.x - from.x))
+                                    atan2 (to.y - from.y) (to.x - from.x)
                             in
                                 ( Just
                                     (Straight
                                         { from =
-                                            { x = from.x + nodeRadius + round (offset * cos (angle + 3.1415 / 2))
-                                            , y = from.y + nodeRadius + round (offset * sin (angle + 3.1415 / 2))
+                                            { x = from.x + nodeRadius + offset * cos (angle + 3.1415 / 2)
+                                            , y = from.y + nodeRadius + offset * sin (angle + 3.1415 / 2)
                                             }
                                         , to =
-                                            { x = to.x + nodeRadius + round (offset * cos (angle + 3.1415 / 2))
-                                            , y = to.y + nodeRadius + round (offset * sin (angle + 3.1415 / 2))
+                                            { x = to.x + nodeRadius + offset * cos (angle + 3.1415 / 2)
+                                            , y = to.y + nodeRadius + offset * sin (angle + 3.1415 / 2)
                                             }
                                         }
                                     )
                                 , Just
                                     { x =
                                         nodeRadius
-                                            + round (toFloat (from.x + to.x) / 2)
+                                            + ((from.x + to.x) / 2)
                                             + labelOffset
                                     , y =
                                         nodeRadius
-                                            + round (toFloat (from.y + to.y) / 2)
-                                            + (sign (direction) * (round (toFloat labelHeight / 2) + 2))
+                                            + ((from.y + to.y) / 2)
+                                            + (sign (direction) * (labelHeight / 2) + 2)
                                     }
                                 )
                         else
@@ -260,8 +262,8 @@ placeSingleLineEdge nodes edges edge =
                                     }
                                 )
                             , Just
-                                { x = nodeRadius + round (toFloat (from.x + to.x) / 2)
-                                , y = nodeRadius + round (toFloat (from.y + to.y) / 2)
+                                { x = nodeRadius + (from.x + to.x) / 2
+                                , y = nodeRadius + (from.y + to.y) / 2
                                 }
                             )
 

@@ -8,7 +8,7 @@ type alias Model =
     { name : String
     , nodes : Nodes
     , edges : Edges
-    , elementPosition : (Int, Int)
+    , elementPosition : (Float, Float)
     , position : { x : Float, y : Float }
     , mouse : Maybe Point
     , drag : Bool
@@ -70,9 +70,9 @@ type alias InputNode =
     , name : Maybe String
     , shape : Maybe String
     , image : Maybe String
-    , size : Maybe Int
-    , x : Maybe Int
-    , y : Maybe Int
+    , size : Maybe Float
+    , x : Maybe Float
+    , y : Maybe Float
     }
 
 
@@ -111,6 +111,6 @@ type alias MultiLine =
 
 
 type alias Point =
-    { x : Int
-    , y : Int
+    { x : Float
+    , y : Float
     }
