@@ -5,7 +5,6 @@ import Html
 import WebSocket
 import Window
 import Task
-import Mouse
 import Ports exposing (..)
 import Model exposing (..)
 import Messages exposing (..)
