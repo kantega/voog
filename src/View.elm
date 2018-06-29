@@ -18,7 +18,7 @@ view model =
         ( windowWidth, windowHeight ) =
             Maybe.withDefault ( 0, 0 ) model.windowSize
     in
-        div [class "voog"]
+        div [ class "voog" ]
             [ viewTooltip model
             , svg
                 [ Messages.onMouseWheel MouseWheel
@@ -186,13 +186,23 @@ viewNode modelName node =
                     [ onClick (ClickNode node.id)
                     , class <| String.join " " <| "node-text" :: node.classes
                     , Svg.Attributes.x (toString (x + nodeRadius))
-                    , Svg.Attributes.y (toString (y + round (nodeRadius * 1.2)))
+                    , Svg.Attributes.y <| textPosition y node.image
                     ]
                     [ Svg.text (Maybe.withDefault "" node.name) ]
                 ]
 
         _ ->
             Nothing
+
+
+textPosition : Int -> Maybe String -> String
+textPosition y image =
+    case image of
+        Just _ ->
+            (toString (y + round (nodeRadius * 3 / 2)))
+
+        Nothing ->
+            (toString (y + round (nodeRadius)))
 
 
 path : Line -> String

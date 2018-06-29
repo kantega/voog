@@ -95,5 +95,5 @@ body {
 .node-text {
     fill: #b0b0b0;
     text-anchor: middle;
-    alignment-baseline: hanging;
+    alignment-baseline: middle;
 }
