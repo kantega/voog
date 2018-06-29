@@ -88,6 +88,14 @@ will be assigned to the object.
                         "description": "Radius for circle and width/2 for rect"
                         "type": "integer"
                     },
+                    "x": {
+                        "description": "x position when using manual layout"
+                        "type": "integer"
+                    },
+                    "y": {
+                        "description": "y position when using manual layout"
+                        "type": "integer"
+                    },
                     "required": ["id"]
                 }
             }
