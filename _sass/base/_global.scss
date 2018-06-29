@@ -127,3 +127,10 @@ img[align=left] {
 img[align=right] {
   margin-left: 3%;
 }
+code {
+  font-size: 0.8em;
+  color: $code-color;
+}
+div.highlighter-rouge code {
+  color: $text-color;
+}
