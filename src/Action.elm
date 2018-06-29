@@ -3,7 +3,9 @@ module Action exposing (..)
 import Dict
 import Model exposing (..)
 import Place exposing (..)
-import Sugiyama.Sugiyama exposing (sugiyama)
+import Sugiyama.CycleRemoval exposing (removeCycles)
+import Sugiyama.CycleRemovalSimple exposing (removeCyclesSimple)
+import Sugiyama.Sugiyama exposing (sugiyama, sugiyamaCustom)
 import Sugiyama.Model
 import Window
 
@@ -103,7 +105,7 @@ setNodes nodes recalculate center model =
             if recalculate then
                 let
                     recalculated =
-                        calculateDepth model
+                        layout model
 
                     centered =
                         if center then
@@ -126,7 +128,7 @@ removeNodes nodes model =
             List.filter (\e -> (not (List.member e.from nodes)) && (not (List.member e.to nodes))) model.edges
 
         newModel =
-            calculateDepth { model | nodes = newNodes, edges = newEdges }
+            layout { model | nodes = newNodes, edges = newEdges }
     in
         place newModel
 
@@ -180,7 +182,7 @@ setEdges edges recalculate center model =
             if recalculate then
                 let
                     recalculated =
-                        calculateDepth model
+                        layout model
 
                     centered =
                         if center then
@@ -281,7 +283,7 @@ removeEdges edges model =
             List.filter (\e -> not (List.member e.id edges)) model.edges
 
         newModel =
-            calculateDepth { model | edges = newEdges }
+            layout { model | edges = newEdges }
     in
         place newModel
 
@@ -326,8 +328,17 @@ closeInfo model =
     }
 
 
-calculateDepth : Model -> Model
-calculateDepth ({ nodes, edges } as model) =
+layout : Model -> Model
+layout model =
+    case String.split "." <| Maybe.withDefault "" model.layout of
+        "sugiyama" :: rest ->
+            sugiyamaLayout rest model
+        _ ->
+            sugiyamaLayout [] model
+
+
+sugiyamaLayout : List String -> Model -> Model
+sugiyamaLayout layout ({ nodes, edges } as model) =
     let
         basicEdges =
             List.map (\e -> ( e.from, e.to )) edges
@@ -336,7 +347,14 @@ calculateDepth ({ nodes, edges } as model) =
             List.map (\n -> n.id) nodes
 
         graph =
-            sugiyama { nodes = basicNodes, edges = basicEdges }
+            let
+                cycleRemoval =
+                    if List.member "simpleCycles" layout then
+                        removeCyclesSimple
+                    else
+                        removeCycles
+            in
+                sugiyamaCustom { nodes = basicNodes, edges = basicEdges } cycleRemoval
 
         sortedSugiyama =
             List.sortWith (\a b -> compare a.id b.id) graph.nodes

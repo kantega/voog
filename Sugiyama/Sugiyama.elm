@@ -7,6 +7,7 @@ import Sugiyama.DummyNodes exposing (..)
 import Sugiyama.Layering exposing (..)
 import Sugiyama.Model exposing (..)
 import Sugiyama.CycleRemoval exposing (..)
+import Sugiyama.CycleRemovalSimple exposing (..)
 import Sugiyama.Helpers exposing (..)
 import Sugiyama.Placement exposing (..)
 
@@ -17,6 +18,19 @@ sugiyama graph =
         |> mergeBidirectional
         |> initialize
         |> removeCycles
+        |> layer
+        |> addDummies
+        |> setInitialPosition
+        |> reduceCrossing
+        |> setPosition
+
+
+sugiyamaCustom : BasicGraph -> (Graph -> Graph) -> Graph
+sugiyamaCustom graph cycleRemoval =
+    graph
+        |> mergeBidirectional
+        |> initialize
+        |> cycleRemoval
         |> layer
         |> addDummies
         |> setInitialPosition

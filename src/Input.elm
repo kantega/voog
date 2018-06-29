@@ -23,6 +23,7 @@ inputDecoder =
         |> optional "name" string ""
         |> optional "size" (maybe intIntTuple) Nothing
         |> optional "position" (maybe intIntTuple) Nothing
+        |> optional "layout" (maybe string) Nothing
         |> optional "setNodes" (list nodeDecoder) []
         |> optional "setEdges" (list edgeDecoder) []
         |> optional "removeNodes" (list int) []
@@ -58,7 +59,7 @@ handleInput model inputString =
     case decodeString inputDecoder inputString of
         Ok input ->
             model
-                |> (\m -> { m | name = input.name })
+                |> (\m -> { m | name = input.name, layout = input.layout })
                 |> handleSize input.size
                 |> handlePosition input.position
                 |> removeNodes input.removeNodes

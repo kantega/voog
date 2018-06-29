@@ -1,4 +1,4 @@
-module Sugiyama.CycleRemoval exposing (..)
+module Sugiyama.CycleRemoval exposing (removeCycles)
 
 import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)

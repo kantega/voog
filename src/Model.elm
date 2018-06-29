@@ -14,6 +14,7 @@ type alias Model =
     , drag : Bool
     , windowSize : Maybe ( Int, Int )
     , zoom : Float
+    , layout : Maybe String
     }
 
 
@@ -54,6 +55,7 @@ type alias Input =
     { name : String
     , size : Maybe (Int, Int)
     , position : Maybe (Int, Int)
+    , layout : Maybe String
     , setNodes : List InputNode
     , setEdges : List InputEdge
     , removeNodes : List Int

@@ -39,6 +39,7 @@ empty =
     , drag = False
     , windowSize = Nothing
     , zoom = 1
+    , layout = Nothing
     }
 
 
