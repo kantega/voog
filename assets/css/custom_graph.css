@@ -1,0 +1,25 @@
+.node.error {
+    stroke: #f44336;
+}
+
+.edge-dash.error {
+    stroke: #f44336;
+}
+
+.edge.inverted {
+    stroke: #4fc3f7;
+}
+
+.edge-dash.inverted {
+    stroke: #ffffff;
+}
+
+.node.highlight {
+    stroke-width: 20;
+    stroke: #ffeb3b;
+    r: 80;
+}
+
+.node-text.highlight {
+    font-size: 25px;
+}
