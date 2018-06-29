@@ -7,13 +7,13 @@ feature-img: "assets/img/circles.jpg"
 
 ## Examples
 ### Basic Node
-`addNodes` adds a list of node objects to the graph.
+`setNodes` adds a list of node objects to the graph.
 The minimum requirements for a node is an identifying integer: `{"id": 0}`, but here we also provide a name.
 
 ![Hello](/voog/assets/img/hello.png)
 ```
 {
-    "addNodes": [
+    "setNodes": [
         {"id": 0, "name": "Hello"}
     ]
 }
@@ -25,10 +25,10 @@ Nodes are connected with directed edges. The edge object only has two required f
 ![Hello World](/voog/assets/img/hello_world.png)
 ```
 {
-    "addNodes": [
+    "setNodes": [
         {"id": 0, "name": "Hello"}, {"id": 1, "name": "World"}
     ],
-    "addEdges": [
+    "setEdges": [
         {"from": 0, "to": 1}
     ]
 }

@@ -10244,7 +10244,7 @@ var _kantega$voog$Model$Model = F9(
 	});
 var _kantega$voog$Model$Input = F7(
 	function (a, b, c, d, e, f, g) {
-		return {name: a, size: b, position: c, addNodes: d, addEdges: e, removeNodes: f, removeEdges: g};
+		return {name: a, size: b, position: c, setNodes: d, setEdges: e, removeNodes: f, removeEdges: g};
 	});
 var _kantega$voog$Model$InputNode = F7(
 	function (a, b, c, d, e, f, g) {
@@ -12460,9 +12460,9 @@ var _kantega$voog$Action$updateInfo = F2(
 			old);
 		return A2(_elm_lang$core$List$append, updated, appended);
 	});
-var _kantega$voog$Action$addNodes = F4(
+var _kantega$voog$Action$setNodes = F4(
 	function (nodes, recalculate, center, model) {
-		addNodes:
+		setNodes:
 		while (true) {
 			var _p26 = nodes;
 			if (_p26.ctor === '::') {
@@ -12489,7 +12489,7 @@ var _kantega$voog$Action$addNodes = F4(
 					recalculate = _v13;
 					center = _v14;
 					model = _v15;
-					continue addNodes;
+					continue setNodes;
 				} else {
 					var _p27 = A2(
 						_elm_lang$core$List$partition,
@@ -12531,7 +12531,7 @@ var _kantega$voog$Action$addNodes = F4(
 					recalculate = _v18;
 					center = _v19;
 					model = _v20;
-					continue addNodes;
+					continue setNodes;
 				}
 			} else {
 				if (recalculate) {
@@ -12544,9 +12544,9 @@ var _kantega$voog$Action$addNodes = F4(
 			}
 		}
 	});
-var _kantega$voog$Action$addEdges = F4(
+var _kantega$voog$Action$setEdges = F4(
 	function (edges, recalculate, center, model) {
-		addEdges:
+		setEdges:
 		while (true) {
 			var _p32 = edges;
 			if (_p32.ctor === '::') {
@@ -12588,7 +12588,7 @@ var _kantega$voog$Action$addEdges = F4(
 					recalculate = _v23;
 					center = _v24;
 					model = _v25;
-					continue addEdges;
+					continue setEdges;
 				} else {
 					var _p33 = A2(
 						_elm_lang$core$List$partition,
@@ -12631,7 +12631,7 @@ var _kantega$voog$Action$addEdges = F4(
 					recalculate = _v28;
 					center = _v29;
 					model = _v30;
-					continue addEdges;
+					continue setEdges;
 				}
 			} else {
 				if (recalculate) {
@@ -12959,12 +12959,12 @@ var _kantega$voog$Input$inputDecoder = A4(
 		{ctor: '[]'},
 		A4(
 			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-			'addEdges',
+			'setEdges',
 			_elm_lang$core$Json_Decode$list(_kantega$voog$Input$edgeDecoder),
 			{ctor: '[]'},
 			A4(
 				_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-				'addNodes',
+				'setNodes',
 				_elm_lang$core$Json_Decode$list(_kantega$voog$Input$nodeDecoder),
 				{ctor: '[]'},
 				A4(
@@ -12989,15 +12989,15 @@ var _kantega$voog$Input$handleInput = F2(
 		if (_p2.ctor === 'Ok') {
 			var _p3 = _p2._0;
 			return A4(
-				_kantega$voog$Action$addEdges,
-				_p3.addEdges,
+				_kantega$voog$Action$setEdges,
+				_p3.setEdges,
 				false,
 				_elm_lang$core$Native_Utils.eq(
 					model.edges,
 					{ctor: '[]'}),
 				A4(
-					_kantega$voog$Action$addNodes,
-					_p3.addNodes,
+					_kantega$voog$Action$setNodes,
+					_p3.setNodes,
 					false,
 					_elm_lang$core$Native_Utils.eq(
 						model.nodes,

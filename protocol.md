@@ -5,8 +5,8 @@ permalink: /protocol/
 feature-img: "assets/img/sample_feature_img_2.png"
 ---
 
-The protocol is based on delta messages. The `addNodes` and `addEdges` commands are used when adding elements
-to the graph. To remove a node or edge the `removeNodes` and `removeEdges` commands are used.
+The protocol is based on delta messages. The `setNodes` and `setEdges` commands are used when adding or updating elements.
+To remove a node or edge the `removeNodes` and `removeEdges` commands are used.
 Although the node and edge objects are based on deltas, their attributes are not. When updating an existing object
 with the add command the object will be totally overwritten. All attributes will be cleared and only the new attributes
 will be assigned to the object.
@@ -41,7 +41,7 @@ will be assigned to the object.
             "minItems": 2,
             "maxItems": 2
         },
-        "addNodes": {
+        "setNodes": {
             "description": "List of nodes",
             "type": "array",
             "items": {
@@ -89,7 +89,7 @@ will be assigned to the object.
                 }
             }
         },
-        "addEdges": {
+        "setEdges": {
             "description": "List of edges",
             "type": "array",
             "items": {
