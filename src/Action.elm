@@ -74,6 +74,8 @@ setNodes nodes recalculate center model =
                         , shape = node.shape
                         , image = node.image
                         , size = node.size
+                        , x = node.x
+                        , y = node.y
                         }
                             :: model.nodes
                 in
@@ -93,6 +95,8 @@ setNodes nodes recalculate center model =
                                     , shape = node.shape
                                     , image = node.image
                                     , size = node.size
+                                    , x = node.x
+                                    , y = node.y
                                 }
                                     :: oldNodes
 
@@ -193,10 +197,14 @@ setEdges edges recalculate center model =
                     place centered
             else
                 model
+
+
 setNodesWithEdges : List InputEdge -> Model -> Model
 setNodesWithEdges edges model =
     let
-        nodeIds = List.map .id model.nodes
+        nodeIds =
+            List.map .id model.nodes
+
         nodes =
             edges
                 |> List.concatMap (\e -> [ e.from, e.to ])
@@ -210,6 +218,8 @@ setNodesWithEdges edges model =
                         , shape = Nothing
                         , image = Nothing
                         , size = Nothing
+                        , x = Nothing
+                        , y = Nothing
                         }
                     )
     in
@@ -333,8 +343,33 @@ layout model =
     case String.split "." <| Maybe.withDefault "" model.layout of
         "sugiyama" :: rest ->
             sugiyamaLayout rest model
+
+        "xy" :: rest ->
+            xyLayout rest model
+
         _ ->
             sugiyamaLayout [] model
+
+
+xyLayout : List String -> Model -> Model
+xyLayout layout ({ nodes, edges } as model) =
+    let
+        newNodes =
+            List.map
+                (\n ->
+                    { n
+                        | position =
+                            case ( n.x, n.y ) of
+                                ( Just x, Just y ) ->
+                                    Just { x = x, y = y }
+
+                                _ ->
+                                    Nothing
+                    }
+                )
+                nodes
+    in
+        { model | nodes = newNodes }
 
 
 sugiyamaLayout : List String -> Model -> Model

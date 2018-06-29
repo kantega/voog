@@ -40,6 +40,8 @@ nodeDecoder =
         |> optional "shape" (maybe string) Nothing
         |> optional "image" (maybe string) Nothing
         |> optional "size" (maybe int) Nothing
+        |> optional "x" (maybe int) Nothing
+        |> optional "y" (maybe int) Nothing
 
 
 edgeDecoder : Decoder InputEdge
@@ -86,7 +88,7 @@ handlePosition : Maybe ( Int, Int ) -> Model -> Model
 handlePosition position model =
     case position of
         Just ( x, y ) ->
-            { model | elementPosition = (x, y) }
+            { model | elementPosition = ( x, y ) }
 
         _ ->
             model

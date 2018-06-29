@@ -71,6 +71,8 @@ type alias InputNode =
     , shape : Maybe String
     , image : Maybe String
     , size : Maybe Int
+    , x : Maybe Int
+    , y : Maybe Int
     }
 
 
