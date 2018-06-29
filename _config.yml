@@ -14,7 +14,7 @@ theme_settings:
   # Header and footer text
   header_text: >
      <p>Stream network visualiser</p>
-  header_text_feature_image: assets/img/circles.jpg
+  header_text_feature_image: assets/img/banner.jpg
   footer_text: >
 
   # Icons

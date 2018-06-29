@@ -2,7 +2,7 @@
 layout: page
 title: Protocol
 permalink: /protocol/
-feature-img: "assets/img/sample_feature_img_2.png"
+feature-img: "assets/img/protocol.jpg"
 ---
 
 The protocol is based on delta messages. The `setNodes` and `setEdges` commands are used when adding or updating elements.
