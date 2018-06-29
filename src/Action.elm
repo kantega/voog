@@ -56,8 +56,8 @@ updateInfo old new =
         List.append updated appended
 
 
-addNodes : List InputNode -> Bool -> Bool -> Model -> Model
-addNodes nodes recalculate center model =
+setNodes : List InputNode -> Bool -> Bool -> Model -> Model
+setNodes nodes recalculate center model =
     case nodes of
         node :: rest ->
             if not (List.any (\n -> n.id == node.id) model.nodes) then
@@ -75,7 +75,7 @@ addNodes nodes recalculate center model =
                         }
                             :: model.nodes
                 in
-                    addNodes rest True center { model | nodes = newNodes }
+                    setNodes rest True center { model | nodes = newNodes }
             else
                 let
                     ( oldNode, oldNodes ) =
@@ -97,7 +97,7 @@ addNodes nodes recalculate center model =
                             _ ->
                                 model.nodes
                 in
-                    addNodes rest recalculate center { model | nodes = newNodes }
+                    setNodes rest recalculate center { model | nodes = newNodes }
 
         _ ->
             if recalculate then
@@ -131,8 +131,8 @@ removeNodes nodes model =
         place newModel
 
 
-addEdges : List InputEdge -> Bool -> Bool -> Model -> Model
-addEdges edges recalculate center model =
+setEdges : List InputEdge -> Bool -> Bool -> Model -> Model
+setEdges edges recalculate center model =
     case edges of
         edge :: rest ->
             if not (List.any (\e -> e.id == ( edge.from, edge.to )) model.edges) then
@@ -153,7 +153,7 @@ addEdges edges recalculate center model =
                         }
                             :: model.edges
                 in
-                    addEdges rest True center { model | edges = newEdges }
+                    setEdges rest True center { model | edges = newEdges }
             else
                 let
                     ( oldEdge, oldEdges ) =
@@ -174,7 +174,7 @@ addEdges edges recalculate center model =
                             _ ->
                                 model.edges
                 in
-                    addEdges rest recalculate center { model | edges = newEdges }
+                    setEdges rest recalculate center { model | edges = newEdges }
 
         _ ->
             if recalculate then

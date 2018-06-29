@@ -54,8 +54,8 @@ type alias Input =
     { name : String
     , size : Maybe (Int, Int)
     , position : Maybe (Int, Int)
-    , addNodes : List InputNode
-    , addEdges : List InputEdge
+    , setNodes : List InputNode
+    , setEdges : List InputEdge
     , removeNodes : List Int
     , removeEdges : List ( Int, Int )
     }

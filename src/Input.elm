@@ -23,8 +23,8 @@ inputDecoder =
         |> optional "name" string ""
         |> optional "size" (maybe intIntTuple) Nothing
         |> optional "position" (maybe intIntTuple) Nothing
-        |> optional "addNodes" (list nodeDecoder) []
-        |> optional "addEdges" (list edgeDecoder) []
+        |> optional "setNodes" (list nodeDecoder) []
+        |> optional "setEdges" (list edgeDecoder) []
         |> optional "removeNodes" (list int) []
         |> optional "removeEdges" (list (intIntTuple)) []
 
@@ -63,8 +63,8 @@ handleInput model inputString =
                 |> handlePosition input.position
                 |> removeNodes input.removeNodes
                 |> removeEdges input.removeEdges
-                |> addNodes input.addNodes False (model.nodes == [])
-                |> addEdges input.addEdges False (model.edges == [])
+                |> setNodes input.setNodes False (model.nodes == [])
+                |> setEdges input.setEdges False (model.edges == [])
 
         _ ->
             model
