@@ -363,6 +363,7 @@ xyLayout layout ({ nodes, edges } as model) =
             nodes
                 |> List.map .y
                 |> List.filterMap identity
+                |> List.map (\y -> -y)
                 |> List.minimum
                 |> Maybe.withDefault 0
 
@@ -402,7 +403,7 @@ xyLayout layout ({ nodes, edges } as model) =
                         | position =
                             case ( n.x, n.y ) of
                                 ( Just x, Just y ) ->
-                                    Just { x = (x - minX) / minDistnace, y = (y - minY) / minDistnace }
+                                    Just { x = (x - minX) / minDistnace, y = (-y - minY) / minDistnace }
 
                                 _ ->
                                     Nothing
