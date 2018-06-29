@@ -191,6 +191,27 @@ setEdges edges recalculate center model =
                     place centered
             else
                 model
+setNodesWithEdges : List InputEdge -> Model -> Model
+setNodesWithEdges edges model =
+    let
+        nodeIds = List.map .id model.nodes
+        nodes =
+            edges
+                |> List.concatMap (\e -> [ e.from, e.to ])
+                |> List.filter (\n -> not <| List.member n nodeIds)
+                |> List.map
+                    (\id ->
+                        { id = id
+                        , info = []
+                        , classes = []
+                        , name = Nothing
+                        , shape = Nothing
+                        , image = Nothing
+                        , size = Nothing
+                        }
+                    )
+    in
+        setNodes nodes False (model.nodes == []) model
 
 
 centerGraph : Model -> Model

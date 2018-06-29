@@ -65,6 +65,7 @@ handleInput model inputString =
                 |> removeEdges input.removeEdges
                 |> setNodes input.setNodes False (model.nodes == [])
                 |> setEdges input.setEdges False (model.edges == [])
+                |> setNodesWithEdges input.setEdges
 
         _ ->
             model
