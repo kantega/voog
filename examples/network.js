@@ -348,8 +348,8 @@ function run() {
         "name": "network",
         "size": [networkNode.offsetWidth, networkNode.offsetHeight],
         "position": [networkNode.offsetLeft, networkNode.offsetTop],
-        "addNodes": nodes,
-        "addEdges": edges
+        "setNodes": nodes,
+        "setEdges": edges
     }));
 }
 

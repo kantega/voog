@@ -23,7 +23,7 @@ function createGraph(minNodes, maxNodes) {
 
     var nodes = [];
     while (nodes.length < minNodes || nodes.length > maxNodes) {
-        result = genTree(6, 0, 4, 0, [], []);
+        result = genTree(3, 0, 4, 0, [], []);
         nodes = result[1];
         edges = result[2];
     }
@@ -35,15 +35,15 @@ function createGraph(minNodes, maxNodes) {
         sendEdges.push({"from": edges[i][0], "to": edges[i][1]})
     }
     for (var i = 0; i < nodes.length; i++) {
-        sendNodes.push({"id": nodes[i], "name": String(nodes[i])})
+        sendNodes.push({"id": nodes[i]})
     }
 
     treeApp.ports.input.send(JSON.stringify({
         "name": "tree",
         "size": [treeNode.offsetWidth, treeNode.offsetHeight],
         "position": [treeNode.offsetLeft, treeNode.offsetTop],
-        "addNodes": sendNodes,
-        "addEdges": sendEdges
+        "setNodes": sendNodes,
+        "setEdges": sendEdges
     }));
 }
 
