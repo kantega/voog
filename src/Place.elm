@@ -7,7 +7,7 @@ nodeRadius =
     45
 
 
-distance =
+defaultDistance =
     4 * nodeRadius
 
 
@@ -37,12 +37,15 @@ reverseId id =
 place : Model -> Model
 place model =
     let
+        distance =
+            (Maybe.withDefault defaultDistance model.nodeDistance)
+
         placedNodes =
-            placeNodes model.nodes
+            List.map (setPos distance) model.nodes
     in
         { model
             | nodes = placedNodes
-            , edges = placeEdges model.edges placedNodes
+            , edges = List.map (placeEdge placedNodes distance model.edges) model.edges
         }
 
 
@@ -60,14 +63,8 @@ inEdges edges id =
         |> List.length
 
 
-placeNodes : Nodes -> Nodes
-placeNodes nodes =
-    nodes
-        |> List.map setPos
-
-
-setPos : Node -> Node
-setPos ({ position } as node) =
+setPos : Float -> Node -> Node
+setPos distance ({ position } as node) =
     let
         p =
             case position of
@@ -85,13 +82,8 @@ setPos ({ position } as node) =
         }
 
 
-placeEdges : Edges -> Nodes -> Edges
-placeEdges edges nodes =
-    List.map (placeEdge nodes edges) edges
-
-
-getLabelPosition : MultiLine -> Float -> Maybe Point
-getLabelPosition line offset =
+getLabelPosition : MultiLine -> Float -> Float -> Maybe Point
+getLabelPosition line offset distance =
     if List.length line % 2 == 0 then
         let
             mid =
@@ -144,13 +136,13 @@ getLabelPosition line offset =
             pos
 
 
-placeEdge : Nodes -> Edges -> Edge -> Edge
-placeEdge nodes edges edge =
+placeEdge : Nodes -> Float -> Edges -> Edge -> Edge
+placeEdge nodes distance edges edge =
     let
         ( position, labelPosition ) =
             case edge.position of
                 Just (Multi line) ->
-                    placeMultiLineEdge line edges edge
+                    placeMultiLineEdge line edges edge distance
 
                 _ ->
                     placeSingleLineEdge nodes edges edge
@@ -158,8 +150,8 @@ placeEdge nodes edges edge =
         { edge | position = position, labelPosition = labelPosition }
 
 
-placeMultiLineEdge : MultiLine -> Edges -> Edge -> ( Maybe Line, Maybe Point )
-placeMultiLineEdge line edges edge =
+placeMultiLineEdge : MultiLine -> Edges -> Edge -> Float -> ( Maybe Line, Maybe Point )
+placeMultiLineEdge line edges edge distance =
     let
         width =
             (Maybe.withDefault 8 edge.width) / 2
@@ -183,7 +175,7 @@ placeMultiLineEdge line edges edge =
                     line
                 )
             )
-        , getLabelPosition line offset
+        , getLabelPosition line offset distance
         )
 
 

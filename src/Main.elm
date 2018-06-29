@@ -40,6 +40,7 @@ empty =
     , windowSize = Nothing
     , zoom = 1
     , layout = Nothing
+    , nodeDistance = Nothing
     }
 
 

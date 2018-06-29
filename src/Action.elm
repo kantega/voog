@@ -231,6 +231,9 @@ centerGraph ({ nodes } as model) =
     case model.windowSize of
         Just ( windowWidth, windowHeight ) ->
             let
+                distance =
+                    Maybe.withDefault defaultDistance model.nodeDistance
+
                 width =
                     nodes
                         |> List.map .position

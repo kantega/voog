@@ -15,6 +15,7 @@ type alias Model =
     , windowSize : Maybe ( Int, Int )
     , zoom : Float
     , layout : Maybe String
+    , nodeDistance : Maybe Float
     }
 
 
@@ -56,6 +57,7 @@ type alias Input =
     , size : Maybe (Int, Int)
     , position : Maybe (Int, Int)
     , layout : Maybe String
+    , nodeDistance : Maybe Float
     , setNodes : List InputNode
     , setEdges : List InputEdge
     , removeNodes : List Int
