@@ -2,7 +2,7 @@
 layout: page
 title: Examples
 permalink: /examples/
-feature-img: "assets/img/sample_feature_img_3.png"
+feature-img: "assets/img/circles.jpg"
 ---
 
 ## Examples
@@ -10,7 +10,7 @@ feature-img: "assets/img/sample_feature_img_3.png"
 `addNodes` adds a list of node objects to the graph.
 The minimum requirements for a node is an identifying integer: `{"id": 0}`, but here we also provide a name.
 
-![Hello](/assets/img/hello.png)
+![Hello](/voog/assets/img/hello.png)
 ```
 {
     "addNodes": [
@@ -22,7 +22,7 @@ The minimum requirements for a node is an identifying integer: `{"id": 0}`, but 
 ### Basic Edge
 Nodes are connected with directed edges. The edge object only has two required fields, `from` and `to`.
 
-![Hello World](/assets/img/hello_world.png)
+![Hello World](/voog/assets/img/hello_world.png)
 ```
 {
     "addNodes": [

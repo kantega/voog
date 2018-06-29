@@ -6,7 +6,7 @@ url: "https://kantega.github.io/"
 theme_settings:
   # Meta
   title: Voog
-  avatar: assets/img/avatar.png
+  avatar: assets/img/logo.svg
   favicon: assets/img/favicon.ico
   gravatar: # Email MD5 hash
   description: "Stream network visualiser" # used by search engines
@@ -14,7 +14,7 @@ theme_settings:
   # Header and footer text
   header_text: >
      <p>Stream network visualiser</p>
-  header_text_feature_image:
+  header_text_feature_image: assets/img/circles.jpg
   footer_text: >
 
   # Icons
