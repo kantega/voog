@@ -41,6 +41,9 @@ will be assigned to the object.
             "minItems": 2,
             "maxItems": 2
         },
+        "layout": {
+            "type": "string"
+        },
         "setNodes": {
             "description": "List of nodes",
             "type": "array",
