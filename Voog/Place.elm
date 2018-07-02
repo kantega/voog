@@ -36,12 +36,17 @@ place model =
 
         nodeDict =
             placedNodes
-                |> List.map (\n -> (n.id, n))
+                |> List.map (\n -> ( n.id, n ))
+                |> Dict.fromList
+
+        edgeDict =
+            model.edges
+                |> List.map (\e -> ( e.id, e ))
                 |> Dict.fromList
     in
         { model
             | nodes = placedNodes
-            , edges = List.map (placeEdge nodeDict distance model.edges) model.edges
+            , edges = List.map (placeEdge nodeDict edgeDict distance) model.edges
         }
 
 
@@ -64,8 +69,8 @@ placeNode distance ({ position } as node) =
         }
 
 
-placeEdge : Dict Int Node -> Float -> Edges -> Edge -> Edge
-placeEdge nodes distance edges edge =
+placeEdge : Dict Int Node -> Dict (Int, Int) Edge -> Float -> Edge -> Edge
+placeEdge nodes edges distance edge =
     let
         ( position, labelPosition ) =
             case edge.position of
@@ -78,14 +83,14 @@ placeEdge nodes distance edges edge =
         { edge | position = position, labelPosition = labelPosition }
 
 
-placeMultiLineEdge : MultiLine -> Edges -> Edge -> Float -> ( Maybe Line, Maybe Point )
+placeMultiLineEdge : MultiLine -> Dict (Int, Int) Edge -> Edge -> Float -> ( Maybe Line, Maybe Point )
 placeMultiLineEdge line edges edge distance =
     let
         width =
             (Maybe.withDefault 8 edge.width) / 2
 
         offset =
-            if not (List.any (\e -> e.id == reverseId edge.id) edges) then
+            if Dict.get (reverseId edge.id) edges == Nothing then
                 0
             else if Tuple.first edge.id > Tuple.second edge.id then
                 -width - 1
@@ -107,7 +112,7 @@ placeMultiLineEdge line edges edge distance =
         )
 
 
-placeSingleLineEdge : Dict Int Node -> Edges -> Edge -> ( Maybe Line, Maybe Point )
+placeSingleLineEdge : Dict Int Node -> Dict (Int, Int) Edge -> Edge -> ( Maybe Line, Maybe Point )
 placeSingleLineEdge nodes edges edge =
     case ( Dict.get edge.from nodes, Dict.get edge.to nodes ) of
         ( Just fromNode, Just toNode ) ->
@@ -115,7 +120,7 @@ placeSingleLineEdge nodes edges edge =
                 ( Just from, Just to ) ->
                     if from == to then
                         ( Nothing, Nothing )
-                    else if List.any (\e -> e.id == ( toNode.id, fromNode.id )) edges then
+                    else if not <| Dict.get ( toNode.id, fromNode.id ) edges == Nothing then
                         let
                             width =
                                 (Maybe.withDefault 8 edge.width) / 2
