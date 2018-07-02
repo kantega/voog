@@ -122,17 +122,20 @@ setNodes nodes recalculate center model =
 
 removeNodes : List Int -> Model -> Model
 removeNodes nodes model =
-    let
-        newNodes =
-            List.filter (\n -> not (List.member n.id nodes)) model.nodes
+    if List.isEmpty nodes then
+        model
+    else
+        let
+            newNodes =
+                List.filter (\n -> not (List.member n.id nodes)) model.nodes
 
-        newEdges =
-            List.filter (\e -> (not (List.member e.from nodes)) && (not (List.member e.to nodes))) model.edges
+            newEdges =
+                List.filter (\e -> (not (List.member e.from nodes)) && (not (List.member e.to nodes))) model.edges
 
-        newModel =
-            layout { model | nodes = newNodes, edges = newEdges }
-    in
-        place newModel
+            newModel =
+                layout { model | nodes = newNodes, edges = newEdges }
+        in
+            place newModel
 
 
 setEdges : List InputEdge -> Bool -> Bool -> Model -> Model
@@ -287,14 +290,17 @@ centerGraph ({ nodes } as model) =
 
 removeEdges : List ( Int, Int ) -> Model -> Model
 removeEdges edges model =
-    let
-        newEdges =
-            List.filter (\e -> not (List.member e.id edges)) model.edges
+    if List.isEmpty edges then
+        model
+    else
+        let
+            newEdges =
+                List.filter (\e -> not (List.member e.id edges)) model.edges
 
-        newModel =
-            layout { model | edges = newEdges }
-    in
-        place newModel
+            newModel =
+                layout { model | edges = newEdges }
+        in
+            place newModel
 
 
 toggleNode : Model -> Int -> Model
