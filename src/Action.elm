@@ -345,15 +345,15 @@ layout model =
         "sugiyama" :: rest ->
             sugiyamaLayout rest model
 
-        "xy" :: rest ->
-            xyLayout rest model
+        "manual" :: rest ->
+            manualLayout rest model
 
         _ ->
             sugiyamaLayout [] model
 
 
-xyLayout : List String -> Model -> Model
-xyLayout layout ({ nodes, edges } as model) =
+manualLayout : List String -> Model -> Model
+manualLayout layout ({ nodes, edges } as model) =
     let
         minX =
             nodes
