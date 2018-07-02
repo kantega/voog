@@ -4,7 +4,7 @@ import Time
 import Voog.Model exposing (..)
 import Voog.Messages exposing (..)
 import Voog.Action exposing (..)
-import Voog.Input
+import Voog.Input exposing (..)
 
 
 update : Msg -> Model -> Model
@@ -20,7 +20,7 @@ update msg model =
             closeInfo model
 
         InputMsg msg ->
-            Voog.Input.handleInput model msg
+            handleInput model msg
 
         Tick diff ->
             let

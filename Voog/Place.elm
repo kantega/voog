@@ -1,37 +1,27 @@
 module Voog.Place exposing (..)
 
 import Voog.Model exposing (..)
+import Voog.Helpers exposing (..)
 
 
+nodeRadius : Float
 nodeRadius =
     45
 
 
+defaultDistance : Float
 defaultDistance =
     4 * nodeRadius
 
 
+labelWidth : Float
 labelWidth =
     60
 
 
+labelHeight : Float
 labelHeight =
     30
-
-
-sign : Float -> Float
-sign a =
-    if a < 0 then
-        -1
-    else if a > 0 then
-        1
-    else
-        0
-
-
-reverseId : ( Int, Int ) -> ( Int, Int )
-reverseId id =
-    ( Tuple.second id, Tuple.first id )
 
 
 place : Model -> Model
@@ -41,7 +31,7 @@ place model =
             (Maybe.withDefault defaultDistance model.nodeDistance)
 
         placedNodes =
-            List.map (setPos distance) model.nodes
+            List.map (placeNode distance) model.nodes
     in
         { model
             | nodes = placedNodes
@@ -49,22 +39,8 @@ place model =
         }
 
 
-outEdges : Edges -> Int -> Int
-outEdges edges id =
-    edges
-        |> List.filter (\e -> e.from == id && e.from /= e.to)
-        |> List.length
-
-
-inEdges : Edges -> Int -> Int
-inEdges edges id =
-    edges
-        |> List.filter (\e -> e.to == id && e.to /= e.from)
-        |> List.length
-
-
-setPos : Float -> Node -> Node
-setPos distance ({ position } as node) =
+placeNode : Float -> Node -> Node
+placeNode distance ({ position } as node) =
     let
         p =
             case position of
@@ -80,60 +56,6 @@ setPos distance ({ position } as node) =
         { node
             | position = p
         }
-
-
-getLabelPosition : MultiLine -> Float -> Float -> Maybe Point
-getLabelPosition line offset distance =
-    if List.length line % 2 == 0 then
-        let
-            mid =
-                round (toFloat (List.length line) / 2)
-
-            midPoints =
-                line
-                    |> List.indexedMap (\i p -> ( i, p ))
-                    |> List.filter (\( i, p ) -> i == mid || i == mid - 1)
-        in
-            case midPoints of
-                ( i, nodeA ) :: ( j, nodeB ) :: rest ->
-                    Just
-                        { x =
-                            distance
-                                * ((nodeA.x + nodeB.x) / 2)
-                                + nodeRadius
-                                + offset
-                        , y =
-                            distance
-                                * ((nodeA.y + nodeB.y) / 2)
-                                + nodeRadius
-                                + (sign offset * (toFloat labelHeight / 2) + 2)
-                        }
-
-                _ ->
-                    Nothing
-    else
-        let
-            mid =
-                round (toFloat (List.length line) / 2) - 1
-
-            midPoint =
-                line
-                    |> List.indexedMap (\i p -> ( i, p ))
-                    |> List.filter (\( i, p ) -> i == mid)
-                    |> List.head
-
-            pos =
-                case midPoint of
-                    Just ( i, p ) ->
-                        Just
-                            { x = distance * p.x + nodeRadius + offset
-                            , y = distance * p.y + nodeRadius + sign offset * ((toFloat labelHeight / 2) + 2)
-                            }
-
-                    _ ->
-                        Nothing
-        in
-            pos
 
 
 placeEdge : Nodes -> Float -> Edges -> Edge -> Edge
@@ -204,7 +126,7 @@ placeSingleLineEdge nodes edges edge =
 
                                 labelOffset =
                                     if Tuple.first edge.id > Tuple.second edge.id then
-                                        -(offset)
+                                        -offset
                                     else
                                         offset
 
@@ -264,3 +186,57 @@ placeSingleLineEdge nodes edges edge =
 
             _ ->
                 ( Nothing, Nothing )
+
+
+getLabelPosition : MultiLine -> Float -> Float -> Maybe Point
+getLabelPosition line offset distance =
+    if List.length line % 2 == 0 then
+        let
+            mid =
+                round (toFloat (List.length line) / 2)
+
+            midPoints =
+                line
+                    |> List.indexedMap (\i p -> ( i, p ))
+                    |> List.filter (\( i, p ) -> i == mid || i == mid - 1)
+        in
+            case midPoints of
+                ( i, nodeA ) :: ( j, nodeB ) :: rest ->
+                    Just
+                        { x =
+                            distance
+                                * ((nodeA.x + nodeB.x) / 2)
+                                + nodeRadius
+                                + offset
+                        , y =
+                            distance
+                                * ((nodeA.y + nodeB.y) / 2)
+                                + nodeRadius
+                                + (sign offset * (labelHeight / 2) + 2)
+                        }
+
+                _ ->
+                    Nothing
+    else
+        let
+            mid =
+                round (toFloat (List.length line) / 2) - 1
+
+            midPoint =
+                line
+                    |> List.indexedMap (\i p -> ( i, p ))
+                    |> List.filter (\( i, p ) -> i == mid)
+                    |> List.head
+
+            pos =
+                case midPoint of
+                    Just ( i, p ) ->
+                        Just
+                            { x = distance * p.x + nodeRadius + offset
+                            , y = distance * p.y + nodeRadius + sign offset * ((labelHeight / 2) + 2)
+                            }
+
+                    _ ->
+                        Nothing
+        in
+            pos

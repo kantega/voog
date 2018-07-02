@@ -6,9 +6,9 @@ import Voog.Model exposing (..)
 import Voog.Action exposing (..)
 
 
-stringStringListDecoder : Decoder (List ( String, String ))
-stringStringListDecoder =
-    (list (map2 (,) (index 0 string) (index 1 string)))
+stringStringTuple : Decoder ( String, String )
+stringStringTuple =
+    map2 (,) (index 0 string) (index 1 string)
 
 
 intIntTuple : Decoder ( Int, Int )
@@ -21,25 +21,25 @@ floatFloatTuple =
     map2 (,) (index 0 float) (index 1 float)
 
 
-inputDecoder : Decoder Input
-inputDecoder =
+input : Decoder Input
+input =
     decode Input
         |> optional "name" string ""
         |> optional "size" (maybe intIntTuple) Nothing
         |> optional "position" (maybe intIntTuple) Nothing
         |> optional "layout" (maybe string) Nothing
         |> optional "nodeDistance" (maybe float) Nothing
-        |> optional "setNodes" (list nodeDecoder) []
-        |> optional "setEdges" (list edgeDecoder) []
+        |> optional "setNodes" (list node) []
+        |> optional "setEdges" (list edge) []
         |> optional "removeNodes" (list int) []
         |> optional "removeEdges" (list (intIntTuple)) []
 
 
-nodeDecoder : Decoder InputNode
-nodeDecoder =
+node : Decoder InputNode
+node =
     decode InputNode
         |> required "id" int
-        |> optional "info" stringStringListDecoder []
+        |> optional "info" (list stringStringTuple) []
         |> optional "classes" (list string) []
         |> optional "name" (maybe string) Nothing
         |> optional "shape" (maybe string) Nothing
@@ -49,12 +49,12 @@ nodeDecoder =
         |> optional "y" (maybe float) Nothing
 
 
-edgeDecoder : Decoder InputEdge
-edgeDecoder =
+edge : Decoder InputEdge
+edge =
     decode InputEdge
         |> required "from" int
         |> required "to" int
-        |> optional "info" stringStringListDecoder []
+        |> optional "info" (list stringStringTuple) []
         |> optional "classes" (list string) []
         |> optional "label" (maybe string) Nothing
         |> optional "width" (maybe float) Nothing
@@ -63,10 +63,16 @@ edgeDecoder =
 
 handleInput : Model -> String -> Model
 handleInput model inputString =
-    case decodeString inputDecoder inputString of
+    case decodeString input inputString of
         Ok input ->
             model
-                |> (\m -> { m | name = input.name, layout = input.layout, nodeDistance = input.nodeDistance })
+                |> (\m ->
+                        { m
+                            | name = input.name
+                            , layout = input.layout
+                            , nodeDistance = input.nodeDistance
+                        }
+                   )
                 |> handleSize input.size
                 |> handlePosition input.position
                 |> removeNodes input.removeNodes
