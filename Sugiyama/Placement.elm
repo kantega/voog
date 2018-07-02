@@ -17,12 +17,21 @@ setPosition ({ nodes } as graph) =
                 |> Maybe.withDefault Nothing
                 |> Maybe.withDefault 0
 
+        height =
+            nodes
+                |> List.map (\n -> Maybe.withDefault -1 n.y)
+                |> List.maximum
+                |> Maybe.withDefault 0
+
         layerPos =
             getLayerPos graph
     in
         graph
-            |> setLayerPosition layerPos (wideLayer - 1) Up
-            |> setLayerPosition layerPos (wideLayer + 1) Down
+            |> setLayerPosition layerPos (wideLayer - 1) Up True True
+            |> setLayerPosition layerPos (wideLayer + 1) Down True True
+            |> setLayerPosition layerPos wideLayer Down False True
+            |> setLayerPosition layerPos height Up True False
+            |> setLayerPosition layerPos 0 Down True False
             |> makePositive
 
 
@@ -45,8 +54,8 @@ makePositive ({ nodes } as graph) =
         { graph | nodes = newNodes }
 
 
-setLayerPosition : Dict Int (Maybe Int) -> Int -> Direction -> Graph -> Graph
-setLayerPosition layerPos layer direction ({ nodes, edges } as graph) =
+setLayerPosition : Dict Int (Maybe Int) -> Int -> Direction -> Bool -> Bool -> Graph -> Graph
+setLayerPosition layerPos layer direction repeat resetX ({ nodes, edges } as graph) =
     let
         xPos =
             getXPos graph layer
@@ -67,13 +76,23 @@ setLayerPosition layerPos layer direction ({ nodes, edges } as graph) =
                     getXPos graph otherLayer
 
                 layerEdges =
-                    List.filter (\e -> Dict.get e.from layerPos == Just (Just (edgeLayer))) edges
+                    List.filter
+                        (\e ->
+                            Dict.get e.to layerPos
+                                == Just (Just (edgeLayer))
+                                || Dict.get e.from layerPos
+                                == Just (Just (edgeLayer))
+                        )
+                        edges
 
                 moveAmount =
                     round (toFloat (Dict.size xPos) / 2) + 1
 
                 movedXPos =
-                    Dict.map (\id x -> Just (Maybe.withDefault -1 x - moveAmount)) xPos
+                    if resetX then
+                        Dict.map (\id x -> Just (Maybe.withDefault -1 x - moveAmount)) xPos
+                    else
+                        xPos
 
                 newXPos =
                     setSubLayerPosition movedXPos xPosOther layerEdges layer (-moveAmount)
@@ -83,7 +102,10 @@ setLayerPosition layerPos layer direction ({ nodes, edges } as graph) =
                         (\n -> { n | x = Maybe.withDefault n.x (Dict.get n.id newXPos) })
                         nodes
             in
-                setLayerPosition layerPos nextLayer direction { graph | nodes = newNodes }
+                if repeat then
+                    setLayerPosition layerPos nextLayer direction repeat resetX { graph | nodes = newNodes }
+                else
+                    { graph | nodes = newNodes }
 
 
 setSubLayerPosition : Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Edges -> Int -> Int -> Dict Int (Maybe Int)
