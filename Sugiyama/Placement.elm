@@ -142,7 +142,7 @@ getOffset xPos xPosOther edge =
 
         x =
             if tryFindX == Nothing then
-                Dict.get edge.to xPosOther
+                Dict.get edge.from xPosOther
             else
                 tryFindX
 
