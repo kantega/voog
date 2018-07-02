@@ -129,23 +129,31 @@ bestCut edges xPos xPosOther pos =
 
 getTotalOffset : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int
 getTotalOffset edges xPos xPosOther =
-    let
-        union =
-            Dict.union xPos xPosOther
-    in
-        edges
-            |> List.map (getOffset union)
-            |> List.sum
+    edges
+        |> List.map (getOffset xPos xPosOther)
+        |> List.sum
 
 
-getOffset : Dict Int (Maybe Int) -> Edge -> Int
-getOffset xPos edge =
+getOffset : Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Edge -> Int
+getOffset xPos xPosOther edge =
     let
-        x =
+        tryFindX =
             Dict.get edge.from xPos
 
-        y =
+        x =
+            if tryFindX == Nothing then
+                Dict.get edge.to xPosOther
+            else
+                tryFindX
+
+        tryFindY =
             Dict.get edge.to xPos
+
+        y =
+            if tryFindY == Nothing then
+                Dict.get edge.to xPosOther
+            else
+                tryFindY
     in
         case ( x, y ) of
             ( Just (Just x), Just (Just y) ) ->
