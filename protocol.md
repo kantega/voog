@@ -44,6 +44,10 @@ will be assigned to the object.
         "layout": {
             "type": "string"
         },
+        "nodeDistance": {
+            "description": "Distance between nodes",
+            "type": "float"
+        },
         "setNodes": {
             "description": "List of nodes",
             "type": "array",
