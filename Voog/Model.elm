@@ -1,4 +1,4 @@
-module Model exposing (..)
+module Voog.Model exposing (..)
 
 import Time
 import Keyboard exposing (..)

@@ -1,6 +1,6 @@
-module Place exposing (..)
+module Voog.Place exposing (..)
 
-import Model exposing (..)
+import Voog.Model exposing (..)
 
 
 nodeRadius =

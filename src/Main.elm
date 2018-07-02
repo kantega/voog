@@ -6,18 +6,18 @@ import WebSocket
 import Window
 import Task
 import Ports exposing (..)
-import Model exposing (..)
-import Messages exposing (..)
-import View
-import Update
+import Voog.Model exposing (..)
+import Voog.Messages exposing (..)
+import Voog.View
+import Voog.Update
 
 
 main : Program Flags Model Msg
 main =
     Html.programWithFlags
         { init = init
-        , update = Update.update
-        , view = View.view
+        , update = update
+        , view = Voog.View.view
         , subscriptions = subscriptions
         }
 
@@ -60,3 +60,8 @@ subscriptions model =
                 , AnimationFrame.diffs Tick
                 , Window.resizes WindowSize
                 ]
+
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+    ( Voog.Update.update msg model, Cmd.none )

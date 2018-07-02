@@ -1,8 +1,8 @@
-module Action exposing (..)
+module Voog.Action exposing (..)
 
 import Dict
-import Model exposing (..)
-import Place exposing (..)
+import Voog.Model exposing (..)
+import Voog.Place exposing (..)
 import Sugiyama.CycleRemoval exposing (removeCycles)
 import Sugiyama.CycleRemovalSimple exposing (removeCyclesSimple)
 import Sugiyama.Sugiyama exposing (sugiyama, sugiyamaCustom)

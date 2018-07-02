@@ -1,26 +1,26 @@
-module Update exposing (..)
+module Voog.Update exposing (..)
 
 import Time
-import Model exposing (..)
-import Messages exposing (..)
-import Action exposing (..)
-import Input
+import Voog.Model exposing (..)
+import Voog.Messages exposing (..)
+import Voog.Action exposing (..)
+import Voog.Input
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         ClickNode id ->
-            ( toggleNode model id, Cmd.none )
+            toggleNode model id
 
         ClickEdge id ->
-            ( toggleEdge model id, Cmd.none )
+            toggleEdge model id
 
         CloseInfo _ ->
-            ( closeInfo model, Cmd.none )
+            closeInfo model
 
         InputMsg msg ->
-            ( Input.handleInput model msg, Cmd.none )
+            Voog.Input.handleInput model msg
 
         Tick diff ->
             let
@@ -36,10 +36,10 @@ update msg model =
                         )
                         model.edges
             in
-                ( { model | edges = newEdges }, Cmd.none )
+                { model | edges = newEdges }
 
         WindowSize size ->
-            ( updateWindow size model, Cmd.none )
+            updateWindow size model
 
         MouseMove ( xx, yy ) ->
             let
@@ -59,13 +59,13 @@ update msg model =
                             newPos =
                                 { pos | x = pos.x + dx, y = pos.y + dy }
                         in
-                            ( { model | position = newPos, mouse = Just { x = x, y = y } }, Cmd.none )
+                            { model | position = newPos, mouse = Just { x = x, y = y } }
 
                     _ ->
-                        ( { model | mouse = Just { x = x, y = y } }, Cmd.none )
+                        { model | mouse = Just { x = x, y = y } }
 
         MouseUp ( btn, x, y ) ->
-            ( { model | drag = False }, Cmd.none )
+            { model | drag = False }
 
         MouseDown ( btn, x, y ) ->
             let
@@ -75,7 +75,7 @@ update msg model =
                     else
                         False
             in
-                ( { model | drag = drag }, Cmd.none )
+                { model | drag = drag }
 
         MouseWheel wheelDelta ->
             let
@@ -110,4 +110,4 @@ update msg model =
                         _ ->
                             pos
             in
-                ( { model | zoom = clampedZoom, position = newPosition }, Cmd.none )
+                { model | zoom = clampedZoom, position = newPosition }

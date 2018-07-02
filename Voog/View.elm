@@ -1,12 +1,12 @@
-module View exposing (..)
+module Voog.View exposing (..)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Html exposing (..)
 import Html.Events exposing (..)
-import Model exposing (..)
-import Messages exposing (..)
-import Place exposing (..)
+import Voog.Model exposing (..)
+import Voog.Messages exposing (..)
+import Voog.Place exposing (..)
 
 
 view : Model -> Html Msg
@@ -18,10 +18,10 @@ view model =
         div [ class "voog" ]
             [ viewTooltip model
             , svg
-                [ Messages.onMouseWheel MouseWheel
-                , Messages.onMouseMove MouseMove
-                , Messages.onMouseUp MouseUp
-                , Messages.onMouseDown MouseDown
+                [ Voog.Messages.onMouseWheel MouseWheel
+                , Voog.Messages.onMouseMove MouseMove
+                , Voog.Messages.onMouseUp MouseUp
+                , Voog.Messages.onMouseDown MouseDown
                 , width (toString windowWidth)
                 , height (toString windowHeight)
                 , viewBox
@@ -81,7 +81,7 @@ viewInfoList model info maybeElementPos name ( offsetX, offsetY ) =
             [ div [ class "info-top" ]
                 [ h3 [ class "info-header" ] [ Html.text <| Maybe.withDefault "Info" name ]
                 , h3
-                    [ Messages.onMouseDown CloseInfo
+                    [ Voog.Messages.onMouseDown CloseInfo
                     , class "info-close"
                     ]
                     [ Html.text "✖" ]

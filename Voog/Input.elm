@@ -1,9 +1,9 @@
-module Input exposing (..)
+module Voog.Input exposing (..)
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
-import Model exposing (..)
-import Action exposing (..)
+import Voog.Model exposing (..)
+import Voog.Action exposing (..)
 
 
 stringStringListDecoder : Decoder (List ( String, String ))

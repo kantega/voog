@@ -1,9 +1,9 @@
-module Messages exposing (..)
+module Voog.Messages exposing (..)
 
 import Html.Events exposing (on)
 import Html
 import Json.Decode exposing (map, map2, map3, at, int)
-import Model exposing (..)
+import Voog.Model exposing (..)
 import Window
 import Time
 
