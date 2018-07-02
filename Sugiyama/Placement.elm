@@ -73,10 +73,7 @@ setLayerPosition layerPos layer direction ({ nodes, edges } as graph) =
                     round (toFloat (Dict.size xPos) / 2) + 1
 
                 movedXPos =
-                    xPos
-                        |> Dict.toList
-                        |> List.map (\( id, x ) -> ( id, Just (Maybe.withDefault -1 x - moveAmount) ))
-                        |> Dict.fromList
+                    Dict.map (\id x -> Just (Maybe.withDefault -1 x - moveAmount)) xPos
 
                 newXPos =
                     setSubLayerPosition movedXPos xPosOther layerEdges layer (-moveAmount)
@@ -105,16 +102,14 @@ bestCut : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int -> ( Int,
 bestCut edges xPos xPosOther pos =
     let
         testXPos =
-            xPos
-                |> Dict.toList
-                |> List.map
-                    (\( id, x ) ->
-                        if Maybe.withDefault -1 x >= pos then
-                            ( id, Just ((Maybe.withDefault -1 x) + 1) )
-                        else
-                            ( id, x )
-                    )
-                |> Dict.fromList
+            Dict.map
+                (\id x ->
+                    if Maybe.withDefault -1 x >= pos then
+                        Just ((Maybe.withDefault -1 x) + 1)
+                    else
+                        x
+                )
+                xPos
 
         offset =
             getTotalOffset edges testXPos xPosOther
