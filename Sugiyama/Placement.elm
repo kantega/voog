@@ -51,7 +51,7 @@ setLayerPosition layerPos layer direction ({ nodes, edges } as graph) =
         xPos =
             getXPos graph layer
     in
-        if Dict.size xPos == 0 then
+        if Dict.isEmpty xPos then
             graph
         else
             let
