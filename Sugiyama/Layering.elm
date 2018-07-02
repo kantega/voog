@@ -1,5 +1,6 @@
 module Sugiyama.Layering exposing (..)
 
+import Set
 import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)
 
@@ -7,33 +8,40 @@ import Sugiyama.Helpers exposing (..)
 layer : Graph -> Graph
 layer graph =
     graph
-        |> layerDown []
+        |> layerDown
         |> layerUp
 
 
-layerDown : List Int -> Graph -> Graph
-layerDown visited graph =
+layerDown : Graph -> Graph
+layerDown graph =
     let
-        root =
+        edges =
+            graph.edges
+                |> List.map (\e -> Tuple.second e.id)
+                |> Set.fromList
+
+        layerZeros =
             graph.nodes
-                |> List.filter (\n -> not (List.member n.id visited))
-                |> List.sortWith (\a b -> compare (childrenChainLength graph a) (childrenChainLength graph b))
-                |> List.reverse
-                |> List.head
+                |> List.filter (\n -> not <| Set.member n.id edges)
     in
-        case root of
-            Just root ->
-                let
-                    newGraph =
-                        setNodeDepth graph root.id 0
+        layerDownInner [] graph layerZeros
 
-                    ( newVisited, new2Graph ) =
-                        layerDownIteration newGraph [ { root | y = Just 0 } ] visited
-                in
-                    layerDown newVisited new2Graph
 
-            Nothing ->
-                graph
+layerDownInner : List Int -> Graph -> List Node -> Graph
+layerDownInner visited graph layerZeros =
+    case layerZeros of
+        head :: rest ->
+            let
+                newGraph =
+                    setNodeDepth graph head.id 0
+
+                ( newVisited, new2Graph ) =
+                    layerDownIteration newGraph [ { head | y = Just 0 } ] visited
+            in
+                layerDownInner newVisited new2Graph rest
+
+        _ ->
+            graph
 
 
 layerDownIteration : Graph -> Nodes -> List Int -> ( List Int, Graph )

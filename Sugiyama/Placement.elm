@@ -1,6 +1,5 @@
 module Sugiyama.Placement exposing (..)
 
-import Set
 import Dict exposing (..)
 import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)

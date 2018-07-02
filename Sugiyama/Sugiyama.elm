@@ -7,8 +7,6 @@ import Sugiyama.DummyNodes exposing (..)
 import Sugiyama.Layering exposing (..)
 import Sugiyama.Model exposing (..)
 import Sugiyama.CycleRemoval exposing (..)
-import Sugiyama.CycleRemovalSimple exposing (..)
-import Sugiyama.Helpers exposing (..)
 import Sugiyama.Placement exposing (..)
 
 
