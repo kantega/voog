@@ -1,5 +1,5 @@
 var treeNode = document.getElementById('tree');
-var treeApp = Elm.Main.embed(treeNode);
+var treeApp = Elm.Main.embed(treeNode, {'webSocket': null});
 
 function genTree(layers, minNodes, maxNodes, nextId, nodes, edges) {
     var thisId = nextId++;

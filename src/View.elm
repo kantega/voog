@@ -1,6 +1,5 @@
 module View exposing (..)
 
-import Dict
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Html exposing (..)
@@ -8,8 +7,6 @@ import Html.Events exposing (..)
 import Model exposing (..)
 import Messages exposing (..)
 import Place exposing (..)
-import Action exposing (..)
-import Attributes exposing (..)
 
 
 view : Model -> Html Msg

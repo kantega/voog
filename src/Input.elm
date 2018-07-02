@@ -2,7 +2,6 @@ module Input exposing (..)
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
-import Messages exposing (..)
 import Model exposing (..)
 import Action exposing (..)
 

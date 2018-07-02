@@ -5,10 +5,11 @@ import Keyboard exposing (..)
 
 
 type alias Model =
-    { name : String
+    { flags : Flags
+    , name : String
     , nodes : Nodes
     , edges : Edges
-    , elementPosition : (Float, Float)
+    , elementPosition : ( Float, Float )
     , position : { x : Float, y : Float }
     , mouse : Maybe Point
     , drag : Bool
@@ -16,6 +17,11 @@ type alias Model =
     , zoom : Float
     , layout : Maybe String
     , nodeDistance : Maybe Float
+    }
+
+
+type alias Flags =
+    { webSocket : Maybe String
     }
 
 
@@ -54,8 +60,8 @@ type alias SystemEdge a =
 
 type alias Input =
     { name : String
-    , size : Maybe (Int, Int)
-    , position : Maybe (Int, Int)
+    , size : Maybe ( Int, Int )
+    , position : Maybe ( Int, Int )
     , layout : Maybe String
     , nodeDistance : Maybe Float
     , setNodes : List InputNode

@@ -1,6 +1,5 @@
 module Update exposing (..)
 
-import Task
 import Time
 import Model exposing (..)
 import Messages exposing (..)

@@ -12,9 +12,9 @@ import View
 import Update
 
 
-main : Program Never Model Msg
+main : Program Flags Model Msg
 main =
-    Html.program
+    Html.programWithFlags
         { init = init
         , update = Update.update
         , view = View.view
@@ -22,32 +22,41 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( empty, Task.perform WindowSize Window.size )
-
-
-empty : Model
-empty =
-    { name = ""
-    , elementPosition = (0, 0)
-    , nodes = []
-    , edges = []
-    , position = { x = 0, y = 0 }
-    , mouse = Nothing
-    , drag = False
-    , windowSize = Nothing
-    , zoom = 1
-    , layout = Nothing
-    , nodeDistance = Nothing
-    }
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    let
+        model =
+            { flags = flags
+            , name = ""
+            , elementPosition = ( 0, 0 )
+            , nodes = []
+            , edges = []
+            , position = { x = 0, y = 0 }
+            , mouse = Nothing
+            , drag = False
+            , windowSize = Nothing
+            , zoom = 1
+            , layout = Nothing
+            , nodeDistance = Nothing
+            }
+    in
+        ( model, Task.perform WindowSize Window.size )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ WebSocket.listen "ws://127.0.0.1:8000/" InputMsg
-        , Ports.input InputMsg
-        , AnimationFrame.diffs Tick
-        , Window.resizes WindowSize
-        ]
+    let
+        ws =
+            case model.flags.webSocket of
+                Just webSocket ->
+                    [ WebSocket.listen webSocket InputMsg ]
+
+                _ ->
+                    []
+    in
+        Sub.batch <|
+            List.append ws
+                [ Ports.input InputMsg
+                , AnimationFrame.diffs Tick
+                , Window.resizes WindowSize
+                ]
