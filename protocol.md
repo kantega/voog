@@ -23,6 +23,10 @@ will be assigned to the object.
             "description": "Name of graph",
             "type": "string"
         },
+        "clear": {
+            "description": "Clear nodes and edges then apply current message",
+            "type": "bool"
+        },
         "size": {
             "description": "Width and height of graph",
             "type": "array",
