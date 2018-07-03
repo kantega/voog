@@ -5,6 +5,7 @@ import Voog.Model exposing (..)
 import Voog.Messages exposing (..)
 import Voog.Action exposing (..)
 import Voog.Input exposing (..)
+import Voog.Layouts.Forced exposing (forceTick)
 
 
 update : Msg -> Model -> Model
@@ -24,6 +25,12 @@ update msg model =
 
         Tick diff ->
             let
+                centered =
+                    if not model.initiallyCentered && (not <| List.isEmpty model.edges) && model.windowSize /= Nothing then
+                        centerGraph model
+                    else
+                        model
+
                 newEdges =
                     List.map
                         (\e ->
@@ -35,15 +42,23 @@ update msg model =
                                     e
                         )
                         model.edges
+
+                forced =
+                    if List.member "forced" (String.split "." <| Maybe.withDefault "" model.layout) then
+                        forceTick { centered | edges = newEdges }
+                    else
+                        { centered | edges = newEdges }
             in
-                { model | edges = newEdges }
+                forced
 
         WindowSize size ->
             updateWindow size model
 
         MouseMove ( xx, yy ) ->
             let
-                (x, y) = (toFloat xx, toFloat yy)
+                ( x, y ) =
+                    ( toFloat xx, toFloat yy )
+
                 pos =
                     model.position
             in

@@ -6,6 +6,7 @@ import Voog.Model exposing (..)
 import Voog.Place exposing (..)
 import Voog.Layouts.Manual exposing (manualLayout)
 import Voog.Layouts.Sugiyama exposing (sugiyamaLayout)
+import Voog.Layouts.Zero exposing (zeroLayout)
 
 
 updateWindow : Window.Size -> Model -> Model
@@ -56,8 +57,8 @@ updateInfo old new =
         List.append updated appended
 
 
-setNodes : List InputNode -> Bool -> Bool -> Model -> Model
-setNodes nodes recalculate center model =
+setNodes : List InputNode -> Bool -> Model -> Model
+setNodes nodes recalculate model =
     case nodes of
         node :: rest ->
             if not (List.any (\n -> n.id == node.id) model.nodes) then
@@ -77,7 +78,7 @@ setNodes nodes recalculate center model =
                         }
                             :: model.nodes
                 in
-                    setNodes rest True center { model | nodes = newNodes }
+                    setNodes rest True { model | nodes = newNodes }
             else
                 let
                     ( oldNode, oldNodes ) =
@@ -101,21 +102,15 @@ setNodes nodes recalculate center model =
                             _ ->
                                 model.nodes
                 in
-                    setNodes rest recalculate center { model | nodes = newNodes }
+                    setNodes rest recalculate { model | nodes = newNodes }
 
         _ ->
             if recalculate then
                 let
                     recalculated =
-                        layout model
-
-                    centered =
-                        if center then
-                            centerGraph recalculated
-                        else
-                            recalculated
+                        layout { model | doForce = True }
                 in
-                    place centered
+                    place recalculated
             else
                 model
 
@@ -138,8 +133,8 @@ removeNodes nodes model =
             place newModel
 
 
-setEdges : List InputEdge -> Bool -> Bool -> Model -> Model
-setEdges edges recalculate center model =
+setEdges : List InputEdge -> Bool -> Model -> Model
+setEdges edges recalculate model =
     case edges of
         edge :: rest ->
             if not (List.any (\e -> e.id == ( edge.from, edge.to )) model.edges) then
@@ -160,7 +155,7 @@ setEdges edges recalculate center model =
                         }
                             :: model.edges
                 in
-                    setEdges rest True center { model | edges = newEdges }
+                    setEdges rest True { model | edges = newEdges }
             else
                 let
                     ( oldEdge, oldEdges ) =
@@ -181,21 +176,15 @@ setEdges edges recalculate center model =
                             _ ->
                                 model.edges
                 in
-                    setEdges rest recalculate center { model | edges = newEdges }
+                    setEdges rest recalculate { model | edges = newEdges }
 
         _ ->
             if recalculate then
                 let
                     recalculated =
-                        layout model
-
-                    centered =
-                        if center then
-                            centerGraph recalculated
-                        else
-                            recalculated
+                        layout { model | doForce = True }
                 in
-                    place centered
+                    place recalculated
             else
                 model
 
@@ -224,7 +213,7 @@ setNodesWithEdges edges model =
                         }
                     )
     in
-        setNodes nodes False (model.nodes == []) model
+        setNodes nodes False model
 
 
 centerGraph : Model -> Model
@@ -232,9 +221,6 @@ centerGraph ({ nodes } as model) =
     case model.windowSize of
         Just ( windowWidth, windowHeight ) ->
             let
-                distance =
-                    Maybe.withDefault defaultDistance model.nodeDistance
-
                 width =
                     nodes
                         |> List.map .position
@@ -242,7 +228,7 @@ centerGraph ({ nodes } as model) =
                         |> List.map .x
                         |> List.maximum
                         |> Maybe.withDefault 0
-                        |> (+) 3
+                        |> (+) 200
 
                 height =
                     nodes
@@ -251,13 +237,13 @@ centerGraph ({ nodes } as model) =
                         |> List.map .y
                         |> List.maximum
                         |> Maybe.withDefault 0
-                        |> (+) 3
+                        |> (+) 200
 
                 widthZoom =
-                    toFloat windowWidth / (width * distance)
+                    toFloat windowWidth / width
 
                 heightZoom =
-                    toFloat windowHeight / (height * distance)
+                    toFloat windowHeight / height
 
                 zoom =
                     min widthZoom heightZoom
@@ -271,17 +257,18 @@ centerGraph ({ nodes } as model) =
                         zoom
 
                 extraWidth =
-                    (toFloat windowWidth - (finalZoom * width * distance)) / 2
+                    (toFloat windowWidth - (finalZoom * width)) / 2
 
                 extraHeight =
-                    (toFloat windowHeight - (finalZoom * height * distance)) / 2
+                    (toFloat windowHeight - (finalZoom * height)) / 2
             in
                 { model
                     | zoom = finalZoom
                     , position =
-                        { x = distance * finalZoom + extraWidth
-                        , y = distance * finalZoom + extraHeight
+                        { x = finalZoom * 100 + extraWidth
+                        , y = finalZoom * 100 + extraHeight
                         }
+                    , initiallyCentered = True
                 }
 
         _ ->
@@ -344,13 +331,13 @@ closeInfo model =
 
 
 layout : Model -> Model
-layout model =
+layout ({ nodes } as model) =
     case String.split "." <| Maybe.withDefault "" model.layout of
-        "sugiyama" :: rest ->
+        "layered" :: rest ->
             sugiyamaLayout rest model
 
         "manual" :: rest ->
             manualLayout rest model
 
         _ ->
-            sugiyamaLayout [] model
+            zeroLayout model

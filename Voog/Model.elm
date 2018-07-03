@@ -1,8 +1,5 @@
 module Voog.Model exposing (..)
 
-import Time
-import Keyboard exposing (..)
-
 
 type alias Model =
     { flags : Flags
@@ -17,6 +14,10 @@ type alias Model =
     , zoom : Float
     , layout : Maybe String
     , nodeDistance : Maybe Float
+    , attraction : Maybe Float
+    , repulsion : Maybe Float
+    , doForce : Bool
+    , initiallyCentered : Bool
     }
 
 
@@ -64,6 +65,9 @@ type alias Input =
     , position : Maybe ( Int, Int )
     , layout : Maybe String
     , nodeDistance : Maybe Float
+    , attraction : Maybe Float
+    , repulsion : Maybe Float
+    , center : Maybe Bool
     , setNodes : List InputNode
     , setEdges : List InputEdge
     , removeNodes : List Int

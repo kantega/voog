@@ -52,7 +52,7 @@ viewTooltip model =
                 node.info
                 node.position
                 node.name
-                (nodeRadius + (Maybe.withDefault nodeRadius node.size), nodeRadius - (Maybe.withDefault nodeRadius node.size) )
+                ((Maybe.withDefault nodeRadius node.size), nodeRadius - (Maybe.withDefault nodeRadius node.size) )
 
         _ ->
             case List.head (List.filter (\e -> e.selected) model.edges) of
@@ -155,8 +155,8 @@ viewNode modelName node =
                             rect
                                 [ onClick (ClickNode node.id)
                                 , class <| String.join " " <| "node rect" :: node.classes
-                                , Svg.Attributes.x (toString <| x + nodeRadius - radius)
-                                , Svg.Attributes.y (toString <| y + nodeRadius - radius)
+                                , Svg.Attributes.x (toString <| x - radius)
+                                , Svg.Attributes.y (toString <| y - radius)
                                 , width <| toString <| 2 * radius
                                 , height <| toString <| 2 * radius
                                 ]
@@ -165,8 +165,8 @@ viewNode modelName node =
                         circle
                             [ onClick (ClickNode node.id)
                             , class <| String.join " " <| "node circle" :: node.classes
-                            , cx (toString (x + nodeRadius))
-                            , cy (toString (y + nodeRadius))
+                            , cx (toString x)
+                            , cy (toString y)
                             , r (toString (Maybe.withDefault nodeRadius node.size))
                             ]
                   )
@@ -174,15 +174,15 @@ viewNode modelName node =
                 , circle
                     [ onClick (ClickNode node.id)
                     , class <| String.join " " <| "node-image" :: node.classes
-                    , cx (toString (x + nodeRadius))
-                    , cy (toString (y + 30))
+                    , cx (toString (x))
+                    , cy (toString (y - nodeRadius + 30))
                     , fill ("url(#" ++ modelName ++ "_img" ++ (toString node.id) ++ ")")
                     ]
                     []
                 , Svg.text_
                     [ onClick (ClickNode node.id)
                     , class <| String.join " " <| "node-text" :: node.classes
-                    , Svg.Attributes.x (toString (x + nodeRadius))
+                    , Svg.Attributes.x (toString x)
                     , Svg.Attributes.y <| textPosition y node.image
                     ]
                     [ Svg.text (Maybe.withDefault "" node.name) ]
@@ -196,10 +196,10 @@ textPosition : Float -> Maybe String -> String
 textPosition y image =
     case image of
         Just _ ->
-            (toString (y + nodeRadius * 3 / 2))
+            (toString (y + nodeRadius * 1 / 2))
 
         Nothing ->
-            (toString (y + nodeRadius))
+            (toString y)
 
 
 path : Line -> String

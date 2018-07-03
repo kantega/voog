@@ -6,6 +6,7 @@ import Sugiyama.Sugiyama exposing (sugiyama, sugiyamaCustom)
 import Sugiyama.Model
 import Voog.Model exposing (..)
 import Voog.Helpers exposing (reverseId)
+import Voog.Place exposing (..)
 
 
 sugiyamaLayout : List String -> Model -> Model
@@ -47,8 +48,14 @@ sugiyamaLayout layout ({ nodes, edges } as model) =
 
         mergedEdges =
             List.map (mergeEdge graph) edges
+
+        distance =
+            4 * (Maybe.withDefault nodeRadius model.nodeDistance)
+
+        placedNodes =
+            List.map (placeNode distance) mergedNodes
     in
-        { model | nodes = mergedNodes, edges = mergedEdges }
+        { model | nodes = placedNodes, edges = mergedEdges }
 
 
 getParts : Edge -> ( Int, Int ) -> Sugiyama.Model.Edges -> List { from : Int, to : Int, id : ( Int, Int ), num : Int }
@@ -135,3 +142,22 @@ getNodePosition nodes id =
 
             Nothing ->
                 { x = -1, y = -1 }
+
+
+placeNode : Float -> Node -> Node
+placeNode distance ({ position } as node) =
+    let
+        p =
+            case position of
+                Just position ->
+                    Just
+                        { x = position.x * distance
+                        , y = position.y * distance
+                        }
+
+                Nothing ->
+                    position
+    in
+        { node
+            | position = p
+        }

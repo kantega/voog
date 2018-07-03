@@ -28,14 +28,8 @@ labelHeight =
 place : Model -> Model
 place model =
     let
-        distance =
-            (Maybe.withDefault defaultDistance model.nodeDistance)
-
-        placedNodes =
-            List.map (placeNode distance) model.nodes
-
         nodeDict =
-            placedNodes
+            model.nodes
                 |> List.map (\n -> ( n.id, n ))
                 |> Dict.fromList
 
@@ -44,38 +38,16 @@ place model =
                 |> List.map (\e -> ( e.id, e ))
                 |> Dict.fromList
     in
-        { model
-            | nodes = placedNodes
-            , edges = List.map (placeEdge nodeDict edgeDict distance) model.edges
-        }
+        { model | edges = List.map (placeEdge nodeDict edgeDict) model.edges }
 
 
-placeNode : Float -> Node -> Node
-placeNode distance ({ position } as node) =
-    let
-        p =
-            case position of
-                Just position ->
-                    Just
-                        { x = position.x * distance
-                        , y = position.y * distance
-                        }
-
-                Nothing ->
-                    position
-    in
-        { node
-            | position = p
-        }
-
-
-placeEdge : Dict Int Node -> Dict (Int, Int) Edge -> Float -> Edge -> Edge
-placeEdge nodes edges distance edge =
+placeEdge : Dict Int Node -> Dict ( Int, Int ) Edge -> Edge -> Edge
+placeEdge nodes edges edge =
     let
         ( position, labelPosition ) =
             case edge.position of
                 Just (Multi line) ->
-                    placeMultiLineEdge line edges edge distance
+                    placeMultiLineEdge line edges edge
 
                 _ ->
                     placeSingleLineEdge nodes edges edge
@@ -83,8 +55,8 @@ placeEdge nodes edges distance edge =
         { edge | position = position, labelPosition = labelPosition }
 
 
-placeMultiLineEdge : MultiLine -> Dict (Int, Int) Edge -> Edge -> Float -> ( Maybe Line, Maybe Point )
-placeMultiLineEdge line edges edge distance =
+placeMultiLineEdge : MultiLine -> Dict ( Int, Int ) Edge -> Edge -> ( Maybe Line, Maybe Point )
+placeMultiLineEdge line edges edge =
     let
         width =
             (Maybe.withDefault 8 edge.width) / 2
@@ -101,18 +73,18 @@ placeMultiLineEdge line edges edge distance =
             (Multi
                 (List.map
                     (\{ x, y } ->
-                        { x = distance * x + nodeRadius + offset
-                        , y = distance * y + nodeRadius
+                        { x = x + offset
+                        , y = y
                         }
                     )
                     line
                 )
             )
-        , getLabelPosition line offset distance
+        , getLabelPosition line offset
         )
 
 
-placeSingleLineEdge : Dict Int Node -> Dict (Int, Int) Edge -> Edge -> ( Maybe Line, Maybe Point )
+placeSingleLineEdge : Dict Int Node -> Dict ( Int, Int ) Edge -> Edge -> ( Maybe Line, Maybe Point )
 placeSingleLineEdge nodes edges edge =
     case ( Dict.get edge.from nodes, Dict.get edge.to nodes ) of
         ( Just fromNode, Just toNode ) ->
@@ -146,42 +118,34 @@ placeSingleLineEdge nodes edges edge =
                             ( Just
                                 (Straight
                                     { from =
-                                        { x = from.x + nodeRadius + offset * cos (angle + 3.1415 / 2)
-                                        , y = from.y + nodeRadius + offset * sin (angle + 3.1415 / 2)
+                                        { x = from.x + offset * cos (angle + 3.1415 / 2)
+                                        , y = from.y + offset * sin (angle + 3.1415 / 2)
                                         }
                                     , to =
-                                        { x = to.x + nodeRadius + offset * cos (angle + 3.1415 / 2)
-                                        , y = to.y + nodeRadius + offset * sin (angle + 3.1415 / 2)
+                                        { x = to.x + offset * cos (angle + 3.1415 / 2)
+                                        , y = to.y + offset * sin (angle + 3.1415 / 2)
                                         }
                                     }
                                 )
                             , Just
                                 { x =
-                                    nodeRadius
-                                        + ((from.x + to.x) / 2)
-                                        + labelOffset
+                                    (from.x + to.x) / 2 + labelOffset
                                 , y =
-                                    nodeRadius
-                                        + ((from.y + to.y) / 2)
-                                        + (sign (direction) * (labelHeight / 2) + 2)
+                                    (from.y + to.y) / 2 + (sign (direction) * (labelHeight / 2) + 2)
                                 }
                             )
                     else
                         ( Just
                             (Straight
                                 { from =
-                                    { x = from.x + nodeRadius
-                                    , y = from.y + nodeRadius
-                                    }
+                                    from
                                 , to =
-                                    { x = to.x + nodeRadius
-                                    , y = to.y + nodeRadius
-                                    }
+                                    to
                                 }
                             )
                         , Just
-                            { x = nodeRadius + (from.x + to.x) / 2
-                            , y = nodeRadius + (from.y + to.y) / 2
+                            { x = (from.x + to.x) / 2
+                            , y = (from.y + to.y) / 2
                             }
                         )
 
@@ -192,8 +156,8 @@ placeSingleLineEdge nodes edges edge =
             ( Nothing, Nothing )
 
 
-getLabelPosition : MultiLine -> Float -> Float -> Maybe Point
-getLabelPosition line offset distance =
+getLabelPosition : MultiLine -> Float -> Maybe Point
+getLabelPosition line offset =
     if List.length line % 2 == 0 then
         let
             mid =
@@ -208,15 +172,9 @@ getLabelPosition line offset distance =
                 ( i, nodeA ) :: ( j, nodeB ) :: rest ->
                     Just
                         { x =
-                            distance
-                                * ((nodeA.x + nodeB.x) / 2)
-                                + nodeRadius
-                                + offset
+                            (nodeA.x + nodeB.x) / 2 + offset
                         , y =
-                            distance
-                                * ((nodeA.y + nodeB.y) / 2)
-                                + nodeRadius
-                                + (sign offset * (labelHeight / 2) + 2)
+                            (nodeA.y + nodeB.y) / 2 + sign offset * (labelHeight / 2) + 2
                         }
 
                 _ ->
@@ -236,8 +194,8 @@ getLabelPosition line offset distance =
                 case midPoint of
                     Just ( i, p ) ->
                         Just
-                            { x = distance * p.x + nodeRadius + offset
-                            , y = distance * p.y + nodeRadius + sign offset * ((labelHeight / 2) + 2)
+                            { x = p.x + offset
+                            , y = p.y + sign offset * ((labelHeight / 2) + 2)
                             }
 
                     _ ->

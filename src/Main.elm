@@ -38,6 +38,10 @@ init flags =
             , zoom = 1
             , layout = Nothing
             , nodeDistance = Nothing
+            , attraction = Nothing
+            , repulsion = Nothing
+            , doForce = False
+            , initiallyCentered = False
             }
     in
         ( model, Task.perform WindowSize Window.size )
@@ -62,6 +66,6 @@ subscriptions model =
                 ]
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     ( Voog.Update.update msg model, Cmd.none )

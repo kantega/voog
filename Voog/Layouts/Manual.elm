@@ -1,11 +1,15 @@
 module Voog.Layouts.Manual exposing (..)
 
 import Voog.Model exposing (..)
+import Voog.Place exposing (..)
 
 
 manualLayout : List String -> Model -> Model
 manualLayout layout ({ nodes, edges } as model) =
     let
+        distance =
+            4 * (Maybe.withDefault nodeRadius model.nodeDistance)
+
         minX =
             nodes
                 |> List.map .x
@@ -57,7 +61,10 @@ manualLayout layout ({ nodes, edges } as model) =
                         | position =
                             case ( n.x, n.y ) of
                                 ( Just x, Just y ) ->
-                                    Just { x = (x - minX) / minDistnace, y = (-y - minY) / minDistnace }
+                                    Just
+                                        { x = (x - minX) * distance / minDistnace
+                                        , y = (-y - minY) * distance / minDistnace
+                                        }
 
                                 _ ->
                                     Nothing

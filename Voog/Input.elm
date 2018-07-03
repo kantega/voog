@@ -29,6 +29,9 @@ input =
         |> optional "position" (maybe intIntTuple) Nothing
         |> optional "layout" (maybe string) Nothing
         |> optional "nodeDistance" (maybe float) Nothing
+        |> optional "attraction" (maybe float) Nothing
+        |> optional "repulsion" (maybe float) Nothing
+        |> optional "center" (maybe bool) Nothing
         |> optional "setNodes" (list node) []
         |> optional "setEdges" (list edge) []
         |> optional "removeNodes" (list int) []
@@ -71,15 +74,24 @@ handleInput model inputString =
                             | name = input.name
                             , layout = input.layout
                             , nodeDistance = input.nodeDistance
+                            , attraction = input.attraction
+                            , repulsion = input.repulsion
                         }
                    )
                 |> handleSize input.size
                 |> handlePosition input.position
                 |> removeNodes input.removeNodes
                 |> removeEdges input.removeEdges
-                |> setNodes input.setNodes False (model.nodes == [])
-                |> setEdges input.setEdges False (model.edges == [])
+                |> setNodes input.setNodes False
+                |> setEdges input.setEdges False
                 |> setNodesWithEdges input.setEdges
+                |> (\model ->
+                        case input.center of
+                            Just True ->
+                                centerGraph model
+                            _ ->
+                                model
+                   )
 
         _ ->
             model
