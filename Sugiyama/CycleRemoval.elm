@@ -1,9 +1,16 @@
 module Sugiyama.CycleRemoval exposing (removeCycles)
 
+{-| A modification of
+GreedyFAS as described in <http://www.vldb.org/pvldb/vol10/p133-simpson.pdf>
+-}
+
 import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)
 
 
+{-| Identify minimal set of edges that needs to be flipped and flip them
+Store that they have been flipped for later restoration
+-}
 removeCycles : Graph -> Graph
 removeCycles ({ edges } as graph) =
     let
@@ -23,6 +30,8 @@ removeCycles ({ edges } as graph) =
         { graph | edges = newEdges }
 
 
+{-| Modified GreedyFAS
+-}
 findFlipEdges : Graph -> List ( Int, Int )
 findFlipEdges ({ nodes, edges } as graph) =
     if List.length nodes <= 1 then

@@ -1,14 +1,22 @@
 module Sugiyama.CycleRemovalSimple exposing (removeCyclesSimple)
 
+{-| A DFS search, reversing all edges opposite of the traversal direction
+-}
+
 import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)
 
 
+{-| Initialize with no visited nodes
+-}
 removeCyclesSimple : Graph -> Graph
 removeCyclesSimple graph =
     removeCyclesIteration graph []
 
 
+{-| Find the "root", the unvisited node with longest children chain length and start the search
+If there exists multiple unconnected subgraphs it will search from "root" of each subgraph
+-}
 removeCyclesIteration : Graph -> List Int -> Graph
 removeCyclesIteration graph visited =
     let
@@ -31,6 +39,9 @@ removeCyclesIteration graph visited =
                 graph
 
 
+{-| Traverse graph
+Whenever a node with edges pointing in to it is encountered reverse the edges so that they point out
+-}
 removeCyclesInConnectedGraph : Graph -> Nodes -> List Int -> ( List Int, Graph )
 removeCyclesInConnectedGraph graph nodes visited =
     case nodes of

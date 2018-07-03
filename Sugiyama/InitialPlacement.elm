@@ -1,16 +1,14 @@
 module Sugiyama.InitialPlacement exposing (..)
 
+{-| Place the nodes from 0 to width of layer
+-}
+
 import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)
 
 
-nodesInLayer : Graph -> Int -> Nodes
-nodesInLayer { nodes } layer =
-    List.filter
-        (\n -> n.y == Just layer)
-        nodes
-
-
+{-| Find all layers and place nodes in each layer
+-}
 setInitialPosition : Graph -> Graph
 setInitialPosition ({ nodes, edges } as graph) =
     let
@@ -29,13 +27,16 @@ setInitialPosition ({ nodes, edges } as graph) =
         setInitialPositionForLayer layers { graph | nodes = sortedNodes }
 
 
+{-| Place all nodes in this layer
+-}
 setInitialPositionForLayer : List Int -> Graph -> Graph
 setInitialPositionForLayer layers ({ nodes } as graph) =
     case layers of
         layer :: rest ->
             let
                 ids =
-                    nodesInLayer graph layer
+                    graph.nodes
+                        |> List.filter (\n -> n.y == Just layer)
                         |> List.map (\n -> n.id)
             in
                 setInitialPositionForLayer rest { graph | nodes = setInitialPositionIteration 0 ids nodes }
@@ -44,6 +45,9 @@ setInitialPositionForLayer layers ({ nodes } as graph) =
             graph
 
 
+{-| Kind of mapping of each node
+Place the node at the next x position if it is in this layer
+-}
 setInitialPositionIteration : Int -> List Int -> Nodes -> Nodes
 setInitialPositionIteration x ids nodes =
     case nodes of

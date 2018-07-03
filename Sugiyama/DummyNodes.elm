@@ -1,15 +1,21 @@
 module Sugiyama.DummyNodes exposing (..)
 
-import Dict
+{-| Whenever an edge is spanning multiple layers, create dummy nodes and edges between each layer instead
+-}
+
 import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)
 
 
+{-| Call with all edges
+-}
 addDummies : Graph -> Graph
 addDummies ({ edges } as graph) =
     addDummiesIteration graph edges
 
 
+{-| Repeat for each edge
+-}
 addDummiesIteration : Graph -> Edges -> Graph
 addDummiesIteration graph iterationEdges =
     case iterationEdges of
@@ -24,6 +30,8 @@ addDummiesIteration graph iterationEdges =
             graph
 
 
+{-| Find missing layers between start end end point of edge and fill them with dummies
+-}
 addDummy : Graph -> Edge -> Graph
 addDummy ({ nodes, edges } as graph) ({ from, to, reversed } as edge) =
     let
@@ -89,6 +97,8 @@ addDummy ({ nodes, edges } as graph) ({ from, to, reversed } as edge) =
                 graph
 
 
+{-| Create dummy nodes in the missing layers between the edge start and end layer
+-}
 createDummyNodes : Int -> List Int -> Nodes
 createDummyNodes id missingLayers =
     case missingLayers of
@@ -107,6 +117,8 @@ createDummyNodes id missingLayers =
             []
 
 
+{-| Create dummy edges between missing layers between the edge start and end layer
+-}
 createDummyEdges : ( Int, Int ) -> Int -> List Int -> Bool -> Edges
 createDummyEdges originalId num ids reversed =
     case ids of

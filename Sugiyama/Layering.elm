@@ -1,10 +1,16 @@
 module Sugiyama.Layering exposing (..)
 
+{-| Assign a layer to each node
+-}
+
 import Set
 import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)
 
 
+{-| Iterate down placing each child under its parent
+Iterate up pulling parents down just above their children
+-}
 layer : Graph -> Graph
 layer graph =
     graph
@@ -12,6 +18,8 @@ layer graph =
         |> layerUp
 
 
+{-| Find edges of all nodes without parents and run down iteration
+-}
 layerDown : Graph -> Graph
 layerDown graph =
     let
@@ -27,6 +35,8 @@ layerDown graph =
         layerDownInner [] graph layerZeros
 
 
+{-| Start iteration from each of the layerZero nodes
+-}
 layerDownInner : List Int -> Graph -> List Node -> Graph
 layerDownInner visited graph layerZeros =
     case layerZeros of
@@ -44,6 +54,8 @@ layerDownInner visited graph layerZeros =
             graph
 
 
+{-| Update all children of this node and add them to iteration list
+-}
 layerDownIteration : Graph -> Nodes -> List Int -> ( List Int, Graph )
 layerDownIteration graph iterationNodes visited =
     case iterationNodes of
@@ -54,19 +66,19 @@ layerDownIteration graph iterationNodes visited =
 
                 childrenIds =
                     getChildren graph head.id
-                        |> List.map (\n -> n.id)
+                        |> List.map .id
 
                 updatedNodes =
                     List.map (updateChild head childrenIds) graph.nodes
 
                 newNodes =
                     updatedNodes
-                        |> List.map (\( b, n ) -> n)
+                        |> List.map (\( _, n ) -> n)
 
                 nextNodes =
                     updatedNodes
-                        |> List.filter (\( b, n ) -> b)
-                        |> List.map (\( b, n ) -> n)
+                        |> List.filter (\( wasUpdated, _ ) -> wasUpdated)
+                        |> List.map (\( _, n ) -> n)
                         |> List.append rest
 
                 newGraph =
@@ -78,6 +90,8 @@ layerDownIteration graph iterationNodes visited =
             ( visited, graph )
 
 
+{-| Move child under parent
+-}
 updateChild : Node -> List Int -> Node -> ( Bool, Node )
 updateChild parent children node =
     if List.member node.id children then
@@ -96,6 +110,9 @@ updateChild parent children node =
         ( False, node )
 
 
+{-| layerUp drags parents of nodes down to the lowers layer above its children
+Starts at bottom and iterates upwards
+-}
 layerUp : Graph -> Graph
 layerUp graph =
     let
@@ -108,6 +125,8 @@ layerUp graph =
         layerUpIteration (layers - 1) graph
 
 
+{-| Update all parents of this layer then call next layer
+-}
 layerUpIteration : Int -> Graph -> Graph
 layerUpIteration layer ({ nodes } as graph) =
     if layer < 0 then
@@ -115,24 +134,29 @@ layerUpIteration layer ({ nodes } as graph) =
     else
         let
             newGraph =
-                { graph | nodes = List.map (updateParent graph) nodes }
+                { graph | nodes = List.map (updateParent graph layer) nodes }
         in
             layerUpIteration (layer - 1) newGraph
 
 
-updateParent : Graph -> Node -> Node
-updateParent graph node =
-    let
-        children =
-            getChildren graph node.id
+{-| Place parent just above children
+-}
+updateParent : Graph -> Int -> Node -> Node
+updateParent graph layer node =
+    if node.y == Just layer then
+        let
+            children =
+                getChildren graph node.id
 
-        minChildLayer =
-            children
-                |> List.map (\n -> Maybe.withDefault -1 n.y)
-                |> List.minimum
-                |> Maybe.withDefault 1
-    in
-        if Maybe.withDefault -1 node.y < minChildLayer - 1 then
-            { node | y = Just (minChildLayer - 1) }
-        else
-            node
+            minChildLayer =
+                children
+                    |> List.map (\n -> Maybe.withDefault -1 n.y)
+                    |> List.minimum
+                    |> Maybe.withDefault 1
+        in
+            if Maybe.withDefault -1 node.y < minChildLayer - 1 then
+                { node | y = Just (minChildLayer - 1) }
+            else
+                node
+    else
+        node

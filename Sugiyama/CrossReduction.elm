@@ -1,10 +1,24 @@
 module Sugiyama.CrossReduction exposing (..)
 
+{- | Reduce crossings in each layer
+   The data structure used in this algorithm is Dict.Dict ( Int, Int, Int ) (Dict.Dict Int Int),
+   where the key is (x, y, direction) and the value is a dictionary with key x and value id
+
+   With this approach it is possible to search for all edges connected to a point (x, y) either
+   going up to the layer above or down to the layer below, specified by the direction. The returned
+   value consists of the ids of edges connected to the point and their opposite x position in the
+   layer above or below.
+-}
+
 import Dict exposing (..)
 import Sugiyama.Model exposing (..)
-import Sugiyama.Helpers exposing (..)
 
 
+{-| Create new data structure
+Reduce crossings
+Extract new x position of each node
+Apply new positions to graph
+-}
 reduceCrossing : Graph -> Graph
 reduceCrossing ({ nodes } as graph) =
     let
@@ -51,6 +65,8 @@ reduceCrossing ({ nodes } as graph) =
         { graph | nodes = newNodes }
 
 
+{-| Alternate between up and down reduction until no further improvements
+-}
 reduceCrossingsWithEdgesUpDown : CrossEdges -> CrossEdges
 reduceCrossingsWithEdgesUpDown crossEdges =
     let
@@ -65,6 +81,8 @@ reduceCrossingsWithEdgesUpDown crossEdges =
             reduceCrossingsWithEdgesUpDown newCrossEdges
 
 
+{-| Run one iteration of either up or down cross reduction
+-}
 reduceCrossingsWithEdges : Direction -> CrossEdges -> CrossEdges
 reduceCrossingsWithEdges direction crossEdges =
     let
@@ -84,6 +102,8 @@ reduceCrossingsWithEdges direction crossEdges =
         reduceCrossingAtLayer direction startLayer crossEdges
 
 
+{-| Iterate down or upwards reducing crossings in each layer
+-}
 reduceCrossingAtLayer : Direction -> Int -> CrossEdges -> CrossEdges
 reduceCrossingAtLayer direction layer crossEdges =
     let
@@ -97,13 +117,15 @@ reduceCrossingAtLayer direction layer crossEdges =
                 |> Dict.size
     in
         if size > 0 then
-            reduceCrossingAtLayer direction (layer + dirInt direction) (tryFlipLayer crossEdges layer direction)
+            reduceCrossingAtLayer direction (layer + dirInt direction) (tryFlipAllInLayer crossEdges layer direction)
         else
             crossEdges
 
 
-tryFlipLayer : CrossEdges -> Int -> Direction -> CrossEdges
-tryFlipLayer crossEdges y direction =
+{-| Repeatedly try to flip all pairs in layer until no further improvements
+-}
+tryFlipAllInLayer : CrossEdges -> Int -> Direction -> CrossEdges
+tryFlipAllInLayer crossEdges y direction =
     let
         newCrossEdges =
             tryFlip crossEdges 0 y direction
@@ -111,9 +133,12 @@ tryFlipLayer crossEdges y direction =
         if newCrossEdges == crossEdges then
             crossEdges
         else
-            tryFlipLayer newCrossEdges y direction
+            tryFlipAllInLayer newCrossEdges y direction
 
 
+{-| Try to flip a single pair of nodes at x and x+1 in layer y
+Recursively call x+1 and x+2 to iterate over whole length of layer
+-}
 tryFlip : CrossEdges -> Int -> Int -> Direction -> CrossEdges
 tryFlip crossEdges x y direction =
     let
@@ -200,6 +225,8 @@ tryFlip crossEdges x y direction =
             crossEdges
 
 
+{-| Collect all the required reverse-updates required when swapping to points
+-}
 getUpdates : ( Int, Int, Int ) -> Int -> Dict Int Int -> List ( ( Int, Int, Int ), Int, Int, Int ) -> List ( ( Int, Int, Int ), Int, Int, Int )
 getUpdates ( x, y, dir ) move updateDict otherUpdates =
     List.append
@@ -211,6 +238,9 @@ getUpdates ( x, y, dir ) move updateDict otherUpdates =
         )
 
 
+{-| Update all the points this point is pointing at
+First remove all old values then insert all the new in order to avoid collisions
+-}
 reverseUpdate : List ( ( Int, Int, Int ), Int, Int, Int ) -> CrossEdges -> CrossEdges
 reverseUpdate updates crossEdges =
     crossEdges
@@ -240,6 +270,8 @@ foldUpdate updates remove crossEdges =
             crossEdges
 
 
+{-| Convert the graph to desired data structure
+-}
 getCrossEdges : Graph -> ( Dict Int Edge, CrossEdges )
 getCrossEdges ({ nodes, edges } as graph) =
     let
@@ -263,6 +295,8 @@ getCrossEdges ({ nodes, edges } as graph) =
         ( Dict.fromList oldEdges, crossEdges )
 
 
+{-| Iterate over all edges and insert them into CrossEdges
+-}
 createCrossEdgeDict : CrossEdges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> List ( Int, Edge ) -> CrossEdges
 createCrossEdgeDict crossEdges xPos yPos oldEdges =
     case oldEdges of
@@ -312,6 +346,8 @@ createCrossEdgeDict crossEdges xPos yPos oldEdges =
             crossEdges
 
 
+{-| Elm does not support Bool as key in dictionary, simply convert to Int for comparability
+-}
 dirInt : Direction -> Int
 dirInt direction =
     case direction of
