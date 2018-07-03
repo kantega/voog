@@ -61,6 +61,7 @@ type alias SystemEdge a =
 
 type alias Input =
     { name : String
+    , clear : Bool
     , size : Maybe ( Int, Int )
     , position : Maybe ( Int, Int )
     , layout : Maybe String

@@ -25,6 +25,7 @@ input : Decoder Input
 input =
     decode Input
         |> optional "name" string ""
+        |> optional "clear" bool False
         |> optional "size" (maybe intIntTuple) Nothing
         |> optional "position" (maybe intIntTuple) Nothing
         |> optional "layout" (maybe string) Nothing
@@ -70,6 +71,12 @@ handleInput model inputString =
         Ok input ->
             model
                 |> (\m ->
+                        if input.clear then
+                            { m | nodes = [], edges = [] }
+                        else
+                            m
+                   )
+                |> (\m ->
                         { m
                             | name = input.name
                             , layout = input.layout
@@ -89,6 +96,7 @@ handleInput model inputString =
                         case input.center of
                             Just True ->
                                 centerGraph model
+
                             _ ->
                                 model
                    )
