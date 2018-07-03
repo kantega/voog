@@ -48,6 +48,18 @@ will be assigned to the object.
             "description": "Distance between nodes",
             "type": "float"
         },
+        "attraction": {
+            "description": "Edge spring coefficient in forced layout",
+            "type": "float"
+        },
+        "repulsion": {
+            "description": "Node repulsion coefficient in forced layout",
+            "type": "float"
+        },
+        "center": {
+            "description": "Center the graph on screen",
+            "type": "bool"
+        },
         "setNodes": {
             "description": "List of nodes",
             "type": "array",
