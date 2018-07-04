@@ -52,10 +52,13 @@ sugiyamaLayout layout ({ nodes, edges } as model) =
         distance =
             4 * (Maybe.withDefault nodeRadius model.nodeDistance)
 
-        placedNodes =
-            List.map (placeNode distance) mergedNodes
+        scaledNodes =
+            List.map (scaleNode distance) mergedNodes
+
+        scaledEdges =
+            List.map (scaleEdge distance) mergedEdges
     in
-        { model | nodes = placedNodes, edges = mergedEdges }
+        { model | nodes = scaledNodes, edges = scaledEdges }
 
 
 getParts : Edge -> ( Int, Int ) -> Sugiyama.Model.Edges -> List { from : Int, to : Int, id : ( Int, Int ), num : Int }
@@ -144,8 +147,8 @@ getNodePosition nodes id =
                 { x = -1, y = -1 }
 
 
-placeNode : Float -> Node -> Node
-placeNode distance ({ position } as node) =
+scaleNode : Float -> Node -> Node
+scaleNode distance ({ position } as node) =
     let
         p =
             case position of
@@ -159,5 +162,31 @@ placeNode distance ({ position } as node) =
                     position
     in
         { node
+            | position = p
+        }
+
+
+scaleEdge : Float -> Edge -> Edge
+scaleEdge distance ({ position } as edge) =
+    let
+        p =
+            case position of
+                Just (Straight { from, to }) ->
+                    let
+                        f =
+                            { x = from.x * distance, y = from.y * distance }
+
+                        t =
+                            { x = to.x * distance, y = to.y * distance }
+                    in
+                        Just <| Straight { from = f, to = t }
+
+                Just (Multi points) ->
+                    Just <| Multi <| List.map (\{ x, y } -> { x = x * distance, y = y * distance }) points
+
+                _ ->
+                    position
+    in
+        { edge
             | position = p
         }
