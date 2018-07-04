@@ -23,6 +23,7 @@ type alias Model =
 
 type alias Flags =
     { webSocket : Maybe String
+    , disableWindowResize : Bool
     }
 
 

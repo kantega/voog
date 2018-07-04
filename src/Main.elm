@@ -57,13 +57,20 @@ subscriptions model =
 
                 _ ->
                     []
+
+        resize =
+            if model.flags.disableWindowResize then
+                []
+            else
+                [ Window.resizes WindowSize ]
     in
         Sub.batch <|
-            List.append ws
-                [ Ports.input InputMsg
-                , AnimationFrame.diffs Tick
-                , Window.resizes WindowSize
-                ]
+            ([ Ports.input InputMsg
+             , AnimationFrame.diffs Tick
+             ]
+                |> List.append ws
+                |> List.append resize
+            )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
