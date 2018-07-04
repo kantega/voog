@@ -5,13 +5,41 @@ permalink: /protocol/
 feature-img: "assets/img/protocol.jpg"
 ---
 
-The protocol is based on delta messages. The `setNodes` and `setEdges` commands are used when adding or updating elements.
-To remove a node or edge the `removeNodes` and `removeEdges` commands are used.
-Although the node and edge objects are based on deltas, their attributes are not. When updating an existing object
-with the add command the object will be totally overwritten. All attributes will be cleared and only the new attributes
-will be assigned to the object.
+The nodes and edges are based on delta messages. The `setNodes` and `setEdges` commands are used when adding or updating
+elements. To remove a node or edge the `removeNodes` and `removeEdges` commands are used. Node and edge objects are the
+only ones based on updates. All properties for both the general model, nodes and edges will be totally overwritten by new
+messages. All properties will be cleared and only the new properties will be assigned to the object. If you want a manual
+layout you will have to send this in every message. If you want a node to have a specific class, the class has to be
+present in the nodes class list every time an object with the node id is present in the `setNodes` command. If the
+properties are not present anymore they will be reset to their default values.
 
-## Schema
+## Flags
+All flag properties must be included when initializing the voog module.
+
+`Elm.Main.embed(node, flags);`
+
+## Flags Schema
+```
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Input",
+    "description": "Voog input object",
+    "type": "object",
+    "properties": {
+        "webSocket": {
+            "description": "Listen to inputs from a websocket, null if disabled",
+            "type": "string"
+        },
+        "disableWindowResize": {
+            "description": "Disable voogs built in resize detection",
+            "type": "bool"
+        }
+    }
+    "required": ["webSocket", "disableWindowResize"]
+}
+```
+
+## Input Schema
 ```
 {
     "$schema": "http://json-schema.org/draft-06/schema#",
