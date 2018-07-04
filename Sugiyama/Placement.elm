@@ -1,28 +1,16 @@
 module Sugiyama.Placement exposing (..)
 
 {-| Space nodes out visually aesthetic horizontally
-This algorithm starts with all nodes on the left, with position x = - width/2 to x = width/2 of layer
+This algorithm starts with all nodes on the left, with position x = -width/2 to x = width/2 of layer
 
-Best cut: Given a position A it is the the position B that is to the right of or at A, where
-moving all nodes right of, or at, B one step to the right results in the lowers horizontal edge offsets
+For each layer with initial position A = -width/2:
 
-For each layer with initial position 0:
-Locate the best cut given position
-Move all right of or at best cut to the right
-Repeat for same layer and position + 1
-
-Discussion:
-
-1.  The best cut will always be a reduction in offset because the final cut where none is moved is a candidate.
-
-2.  Lets compare two cuts A < B. They both move all nodes right of or at B one step. If moving all the nodes
-    between them and the one at A will reduce the total offset then A is the better cut. If A is not a better
-    cut, that proves the nodes between them should stay.
-
-3.  The best cut is the leftmost cut A where moving everything to the right of or at A is a reduction in offset.
-    By then repeating for each position from 0 to W we find an optimal solution.
-
-4.  Although this is optimal for this layer it might not be for the graph as a whole.
+1.  Evaluate three options inclusive move, exclusive move or no move
+    Exclusive: move all nodes to the right of position A one step right
+    Inclusive: move all nodes to the right of A and the one at position A
+    No move: keep all positions
+2.  If inclusive is the best then do the inclusive move
+3.  Move to next position
 
 -}
 
@@ -57,9 +45,9 @@ setPosition ({ nodes } as graph) =
             getLayerPos graph
     in
         graph
-            |> setLayerPosition layerPos (wideLayer - 1) Up True True
-            |> setLayerPosition layerPos (wideLayer + 1) Down True True
-            |> setLayerPosition layerPos wideLayer Down False True
+            |> setLayerPosition layerPos (wideLayer - 1) Up True
+            |> setLayerPosition layerPos (wideLayer + 1) Down True
+            |> setLayerPosition layerPos wideLayer Down False
             |> makePositive
 
 
@@ -89,8 +77,8 @@ makePositive ({ nodes } as graph) =
 to first node of the layer above
 Then iteratively move a subsection of it to the right
 -}
-setLayerPosition : Dict Int (Maybe Int) -> Int -> Direction -> Bool -> Bool -> Graph -> Graph
-setLayerPosition layerPos layer direction repeat resetX ({ nodes, edges } as graph) =
+setLayerPosition : Dict Int (Maybe Int) -> Int -> Direction -> Bool -> Graph -> Graph
+setLayerPosition layerPos layer direction repeat ({ nodes, edges } as graph) =
     let
         xPos =
             getXPos graph layer
@@ -117,10 +105,7 @@ setLayerPosition layerPos layer direction repeat resetX ({ nodes, edges } as gra
                     round (toFloat (Dict.size xPos) / 2) + 1
 
                 movedXPos =
-                    if resetX then
-                        Dict.map (\id x -> Just (Maybe.withDefault -1 x - moveAmount)) xPos
-                    else
-                        xPos
+                    Dict.map (\id x -> Just (Maybe.withDefault -1 x - moveAmount)) xPos
 
                 newXPos =
                     setSubLayerPosition movedXPos xPosOther layerEdges layer (-moveAmount)
@@ -131,57 +116,78 @@ setLayerPosition layerPos layer direction repeat resetX ({ nodes, edges } as gra
                         nodes
             in
                 if repeat then
-                    setLayerPosition layerPos nextLayer direction repeat resetX { graph | nodes = newNodes }
+                    setLayerPosition layerPos nextLayer direction repeat { graph | nodes = newNodes }
                 else
                     { graph | nodes = newNodes }
 
 
-{-| Find the best cut
-If it is better then apply the right shift
-Recursively call next on x+1
+{-| By calculating offset at the beginning and passing it along in every operation we avoid doing the same work twice
 -}
 setSubLayerPosition : Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Edges -> Int -> Int -> Dict Int (Maybe Int)
 setSubLayerPosition xPos xPosOther edges layer pos =
     let
-        ( offset, newPos, newXPos ) =
-            bestCut edges xPos xPosOther pos
+        offset =
+            getTotalOffset edges xPos xPosOther
     in
-        if offset == getTotalOffset edges xPos xPosOther then
-            xPos
-        else
-            setSubLayerPosition newXPos xPosOther edges layer (pos + 1)
+        setSubLayerPositionInner xPos xPosOther offset edges layer pos
 
 
-{-| Find the optimal position to move all nodes right of it left one position
-The optimal is the one with lowest total offset
+{-| Select bet option; inclusive move, exclusive move or no move
+Recursively call next on position
 -}
-bestCut : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int -> ( Int, Int, Dict Int (Maybe Int) )
-bestCut edges xPos xPosOther pos =
+setSubLayerPositionInner : Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int -> Edges -> Int -> Int -> Dict Int (Maybe Int)
+setSubLayerPositionInner xPos xPosOther offset edges layer pos =
     let
-        testXPos =
+        xPosInclusive =
             Dict.map
                 (\id x ->
-                    if Maybe.withDefault -1 x >= pos then
+                    if (Maybe.withDefault -1 x) >= pos then
                         Just ((Maybe.withDefault -1 x) + 1)
                     else
                         x
                 )
                 xPos
 
-        offset =
-            getTotalOffset edges testXPos xPosOther
+        xPosExclusive =
+            Dict.map
+                (\id x ->
+                    if (Maybe.withDefault -1 x) > pos then
+                        Just ((Maybe.withDefault -1 x) + 1)
+                    else
+                        x
+                )
+                xPos
+
+        xValues =
+            xPos
+                |> Dict.toList
+                |> List.map (\( id, x ) -> Maybe.withDefault -1 x)
+
+        maxX =
+            xValues
+                |> List.maximum
+                |> Maybe.withDefault -1
+
+        minX =
+            xValues
+                |> List.minimum
+                |> Maybe.withDefault -1
+
+        offsetInclusive =
+            getTotalOffset edges xPosInclusive xPosOther
+
+        offsetExclusive =
+            getTotalOffset edges xPosExclusive xPosOther
     in
-        if testXPos == xPos then
-            ( offset, pos, testXPos )
+        if pos > maxX || pos < minX then
+            xPos
+        else if
+            (offset > offsetInclusive || offset > offsetExclusive)
+                && ((offsetInclusive == offsetExclusive && pos < 0) || (offsetInclusive < offsetExclusive))
+        then
+            setSubLayerPositionInner xPosInclusive xPosOther offsetInclusive edges layer (pos + 1)
         else
-            let
-                ( nextOffset, nextPos, nextXPos ) =
-                    bestCut edges xPos xPosOther (pos + 1)
-            in
-                if offset > nextOffset then
-                    ( nextOffset, nextPos, nextXPos )
-                else
-                    ( offset, pos, testXPos )
+            setSubLayerPositionInner xPos xPosOther offset edges layer (pos + 1)
 
 
 {-| Find offset of all edges in layer
