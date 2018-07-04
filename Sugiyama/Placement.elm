@@ -77,7 +77,7 @@ makePositive ({ nodes } as graph) =
 to first node of the layer above
 Then iteratively move a subsection of it to the right
 -}
-setLayerPosition : Dict Int (Maybe Int) -> Int -> Direction -> Bool -> Graph -> Graph
+setLayerPosition : IdPos -> Int -> Direction -> Bool -> Graph -> Graph
 setLayerPosition layerPos layer direction repeat ({ nodes, edges } as graph) =
     let
         xPos =
@@ -98,6 +98,9 @@ setLayerPosition layerPos layer direction repeat ({ nodes, edges } as graph) =
                 xPosOther =
                     getXPos graph otherLayer
 
+                xPosNext =
+                    getXPos graph nextLayer
+
                 layerEdges =
                     List.filter (\e -> Dict.get e.from layerPos == Just (Just (edgeLayer))) edges
 
@@ -107,8 +110,9 @@ setLayerPosition layerPos layer direction repeat ({ nodes, edges } as graph) =
                 movedXPos =
                     Dict.map (\id x -> Just (Maybe.withDefault -1 x - moveAmount)) xPos
 
+                -- Dont move
                 newXPos =
-                    setSubLayerPosition movedXPos xPosOther layerEdges layer (-moveAmount)
+                    setSubLayerPosition xPos xPosOther xPosNext layerEdges layer 0
 
                 newNodes =
                     List.map
@@ -123,20 +127,20 @@ setLayerPosition layerPos layer direction repeat ({ nodes, edges } as graph) =
 
 {-| By calculating offset at the beginning and passing it along in every operation we avoid doing the same work twice
 -}
-setSubLayerPosition : Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Edges -> Int -> Int -> Dict Int (Maybe Int)
-setSubLayerPosition xPos xPosOther edges layer pos =
+setSubLayerPosition : IdPos -> IdPos -> IdPos -> Edges -> Int -> Int -> IdPos
+setSubLayerPosition xPos xPosOther xPosNext edges layer pos =
     let
         offset =
             getTotalOffset edges xPos xPosOther
     in
-        setSubLayerPositionInner xPos xPosOther offset edges layer pos
+        setSubLayerPositionInner xPos xPosOther xPosNext offset edges layer pos
 
 
 {-| Select bet option; inclusive move, exclusive move or no move
 Recursively call next on position
 -}
-setSubLayerPositionInner : Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int -> Edges -> Int -> Int -> Dict Int (Maybe Int)
-setSubLayerPositionInner xPos xPosOther offset edges layer pos =
+setSubLayerPositionInner : IdPos -> IdPos -> IdPos -> Int -> Edges -> Int -> Int -> IdPos
+setSubLayerPositionInner xPos xPosOther xPosNext offset edges layer pos =
     let
         xPosInclusive =
             Dict.map
@@ -181,18 +185,30 @@ setSubLayerPositionInner xPos xPosOther offset edges layer pos =
     in
         if pos > maxX || pos < minX then
             xPos
-        else if
-            (offset > offsetInclusive || offset > offsetExclusive)
-                && ((offsetInclusive == offsetExclusive && pos < 0) || (offsetInclusive < offsetExclusive))
-        then
-            setSubLayerPositionInner xPosInclusive xPosOther offsetInclusive edges layer (pos + 1)
+        else if offset >= offsetExclusive || offset >= offsetInclusive then
+            if offsetInclusive < offsetExclusive then
+                setSubLayerPositionInner xPosInclusive xPosOther xPosNext offsetInclusive edges layer (pos + 1)
+            else if offsetInclusive == offsetExclusive then
+                let
+                    offsetInclusiveOther =
+                        getTotalOffset edges xPosInclusive xPosNext
+
+                    offsetExclusiveOther =
+                        getTotalOffset edges xPosExclusive xPosNext
+                in
+                    if offsetInclusiveOther < offsetExclusiveOther then
+                        setSubLayerPositionInner xPosInclusive xPosOther xPosNext offsetInclusive edges layer (pos + 1)
+                    else
+                        setSubLayerPositionInner xPos xPosOther xPosNext offset edges layer (pos + 1)
+            else
+                setSubLayerPositionInner xPos xPosOther xPosNext offset edges layer (pos + 1)
         else
-            setSubLayerPositionInner xPos xPosOther offset edges layer (pos + 1)
+            setSubLayerPositionInner xPos xPosOther xPosNext offset edges layer (pos + 1)
 
 
 {-| Find offset of all edges in layer
 -}
-getTotalOffset : Edges -> Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Int
+getTotalOffset : Edges -> IdPos -> IdPos -> Int
 getTotalOffset edges xPos xPosOther =
     edges
         |> List.map (getOffset xPos xPosOther)
@@ -201,7 +217,7 @@ getTotalOffset edges xPos xPosOther =
 
 {-| Find horizontal (squared) offset between start and end of an edge
 -}
-getOffset : Dict Int (Maybe Int) -> Dict Int (Maybe Int) -> Edge -> Int
+getOffset : IdPos -> IdPos -> Edge -> Int
 getOffset xPos xPosOther edge =
     let
         tryFindX =
