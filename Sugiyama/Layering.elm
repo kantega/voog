@@ -25,7 +25,7 @@ layerDown graph =
     let
         edges =
             graph.edges
-                |> List.map (\e -> Tuple.second e.id)
+                |> List.map .to
                 |> Set.fromList
 
         layerZeros =
