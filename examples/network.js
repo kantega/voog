@@ -1,5 +1,5 @@
 var networkNode = document.getElementById('network');
-var networkApp = Elm.Main.embed(networkNode, {'webSocket': null});
+var networkApp = Elm.Main.embed(networkNode, {'webSocket': null, 'disableWindowResize': false});
 
 var server_img = "";
 var router_img = "";
