@@ -43,7 +43,8 @@ function createGraph(minNodes, maxNodes) {
         "size": [treeNode.offsetWidth, treeNode.offsetHeight],
         "position": [treeNode.offsetLeft, treeNode.offsetTop],
         "setNodes": sendNodes,
-        "setEdges": sendEdges
+        "setEdges": sendEdges,
+        "center": true
     }));
 }
 
