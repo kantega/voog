@@ -26,7 +26,11 @@ update msg model =
         Tick diff ->
             let
                 centered =
-                    if not model.initiallyCentered && (not <| List.isEmpty model.edges) && model.windowSize /= Nothing then
+                    if
+                        not model.initiallyCentered
+                            && (not <| (List.isEmpty model.edges && List.isEmpty model.nodes))
+                            && (model.windowSize /= Nothing)
+                    then
                         centerGraph model
                     else
                         model
