@@ -53,3 +53,11 @@ function createTest(name) {
         }, 100);
     });
 }
+
+function edges(edges) {
+    var voogEdges = [];
+    for (var i=0; i<edges.length; i++) {
+        voogEdges.push({'from': edges[i][0], 'to': edges[i][1]});
+    }
+    return voogEdges;
+}

@@ -98,9 +98,6 @@ setLayerPosition layerPos layer direction repeat ({ nodes, edges } as graph) =
                 xPosOther =
                     getXPos graph otherLayer
 
-                xPosNext =
-                    getXPos graph nextLayer
-
                 layerEdges =
                     List.filter (\e -> Dict.get e.from layerPos == Just (Just (edgeLayer))) edges
 
@@ -110,9 +107,8 @@ setLayerPosition layerPos layer direction repeat ({ nodes, edges } as graph) =
                 movedXPos =
                     Dict.map (\id x -> Just (Maybe.withDefault -1 x - moveAmount)) xPos
 
-                -- Dont move
                 newXPos =
-                    setSubLayerPosition xPos xPosOther xPosNext layerEdges layer 0
+                    setSubLayerPosition movedXPos xPosOther layerEdges layer (-moveAmount)
 
                 newNodes =
                     List.map
@@ -127,20 +123,20 @@ setLayerPosition layerPos layer direction repeat ({ nodes, edges } as graph) =
 
 {-| By calculating offset at the beginning and passing it along in every operation we avoid doing the same work twice
 -}
-setSubLayerPosition : IdPos -> IdPos -> IdPos -> Edges -> Int -> Int -> IdPos
-setSubLayerPosition xPos xPosOther xPosNext edges layer pos =
+setSubLayerPosition : IdPos -> IdPos -> Edges -> Int -> Int -> IdPos
+setSubLayerPosition xPos xPosOther edges layer pos =
     let
         offset =
             getTotalOffset edges xPos xPosOther
     in
-        setSubLayerPositionInner xPos xPosOther xPosNext offset edges layer pos
+        setSubLayerPositionInner xPos xPosOther offset edges layer pos
 
 
 {-| Select bet option; inclusive move, exclusive move or no move
 Recursively call next on position
 -}
-setSubLayerPositionInner : IdPos -> IdPos -> IdPos -> Int -> Edges -> Int -> Int -> IdPos
-setSubLayerPositionInner xPos xPosOther xPosNext offset edges layer pos =
+setSubLayerPositionInner : IdPos -> IdPos-> Int -> Edges -> Int -> Int -> IdPos
+setSubLayerPositionInner xPos xPosOther offset edges layer pos =
     let
         xPosInclusive =
             Dict.map
@@ -187,23 +183,11 @@ setSubLayerPositionInner xPos xPosOther xPosNext offset edges layer pos =
             xPos
         else if offset >= offsetExclusive || offset >= offsetInclusive then
             if offsetInclusive < offsetExclusive then
-                setSubLayerPositionInner xPosInclusive xPosOther xPosNext offsetInclusive edges layer (pos + 1)
-            else if offsetInclusive == offsetExclusive then
-                let
-                    offsetInclusiveOther =
-                        getTotalOffset edges xPosInclusive xPosNext
-
-                    offsetExclusiveOther =
-                        getTotalOffset edges xPosExclusive xPosNext
-                in
-                    if offsetInclusiveOther < offsetExclusiveOther then
-                        setSubLayerPositionInner xPosInclusive xPosOther xPosNext offsetInclusive edges layer (pos + 1)
-                    else
-                        setSubLayerPositionInner xPos xPosOther xPosNext offset edges layer (pos + 1)
+                setSubLayerPositionInner xPosInclusive xPosOther offsetInclusive edges layer (pos + 1)
             else
-                setSubLayerPositionInner xPos xPosOther xPosNext offset edges layer (pos + 1)
+                setSubLayerPositionInner xPos xPosOther offset edges layer (pos + 1)
         else
-            setSubLayerPositionInner xPos xPosOther xPosNext offset edges layer (pos + 1)
+            setSubLayerPositionInner xPos xPosOther offset edges layer (pos + 1)
 
 
 {-| Find offset of all edges in layer
