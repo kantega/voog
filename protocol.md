@@ -92,6 +92,39 @@ All flag properties must be included when initializing the voog module.
             "description": "Center the graph on screen",
             "type": "bool"
         },
+        "addMovement": {
+            "description": "Objects moving along edges",
+            "type": "array",
+            "items": {
+                "type": "object"
+                "properties" : {
+                    "from": {
+                        "description": "Outgoing node id"
+                        "type": "integer"
+                    },
+                    "to": {
+                        "description": "Incoming node id"
+                        "type": "integer"
+                    },
+                    "duration": {
+                        "description": "Time in seconds from a to b"
+                        "type": "float"
+                    },
+                    "icon": {
+                        "description": "Icon of moving element"
+                        "type": "string"
+                    },
+                    "classes": {
+                        "description": "List of html classes",
+                        "type": "array",
+                        "items: {
+                            "type": "string"
+                        }
+                    },
+                },
+                "required": ["from", "to", "duration", "icon"]
+            }
+        }
         "setNodes": {
             "description": "List of nodes",
             "type": "array",
