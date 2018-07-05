@@ -248,23 +248,37 @@ centerGraph ({ nodes } as model) =
     case model.windowSize of
         Just ( windowWidth, windowHeight ) ->
             let
-                width =
+                posNodes =
                     nodes
                         |> List.map .position
                         |> List.filterMap identity
+
+                minX =
+                    posNodes
+                        |> List.map .x
+                        |> List.minimum
+                        |> Maybe.withDefault 0
+
+                maxX =
+                    posNodes
                         |> List.map .x
                         |> List.maximum
                         |> Maybe.withDefault 0
-                        |> (+) 200
 
-                height =
-                    nodes
-                        |> List.map .position
-                        |> List.filterMap identity
+                minY =
+                    posNodes
+                        |> List.map .y
+                        |> List.minimum
+                        |> Maybe.withDefault 0
+
+                maxY =
+                    posNodes
                         |> List.map .y
                         |> List.maximum
                         |> Maybe.withDefault 0
-                        |> (+) 200
+
+                width = maxX - minX + 200
+                height = maxY - minY + 200
 
                 widthZoom =
                     toFloat windowWidth / width
@@ -292,8 +306,8 @@ centerGraph ({ nodes } as model) =
                 { model
                     | zoom = finalZoom
                     , position =
-                        { x = finalZoom * 100 + extraWidth
-                        , y = finalZoom * 100 + extraHeight
+                        { x = -minX + finalZoom * 100 + extraWidth
+                        , y = -minY + finalZoom * 100 + extraHeight
                         }
                     , initiallyCentered = True
                 }
