@@ -6,7 +6,7 @@ class Test {
         this.lastInput = {};
     }
 
-    resize() {
+    update() {
         this.app.ports.input.send(JSON.stringify(Object.assign({}, this.defaults(), this.lastInput)));
     }
 
@@ -19,7 +19,8 @@ class Test {
         return {
             "name": this.name,
             "size": [this.node.offsetWidth, this.node.offsetHeight],
-            "position": [this.node.offsetLeft, this.node.offsetTop]
+            "position": [this.node.offsetLeft - (window.pageXOffset || document.documentElement.scrollLeft)
+                        , this.node.offsetTop - (window.pageYOffset || document.documentElement.scrollTop)]
         };
     }
 }
@@ -43,20 +44,25 @@ function createTest(name) {
         e.preventDefault();
     });
 
-    window.addEventListener('resize', function(event){
-        test.resize();
+    window.addEventListener('resize', function (event) {
+        test.update();
+    });
+    window.addEventListener('scroll', function (event) {
+        test.update();
     });
 
     return new Promise(function (callback) {
-        setTimeout(function() {
-            callback(function(input) {test.send(input)});
+        setTimeout(function () {
+            callback(function (input) {
+                test.send(input)
+            });
         }, 100);
     });
 }
 
 function edges(edges) {
     var voogEdges = [];
-    for (var i=0; i<edges.length; i++) {
+    for (var i = 0; i < edges.length; i++) {
         voogEdges.push({'from': edges[i][0], 'to': edges[i][1]});
     }
     return voogEdges;
