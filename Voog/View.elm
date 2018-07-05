@@ -1,5 +1,6 @@
 module Voog.View exposing (..)
 
+import Dict exposing (Dict)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Html exposing (..)
@@ -14,6 +15,11 @@ view model =
     let
         ( windowWidth, windowHeight ) =
             Maybe.withDefault ( 0, 0 ) model.windowSize
+
+        edgeDict =
+            model.edges
+                |> List.map (\e -> ( e.id, e ))
+                |> Dict.fromList
     in
         div [ class "voog" ]
             [ viewTooltip model
@@ -37,8 +43,9 @@ view model =
                 (List.concat
                     [ [ defs model ]
                     , (List.foldr List.append [] (List.filterMap viewEdge model.edges))
-                    , (List.foldr List.append [] (List.filterMap (viewNode model.name) model.nodes))
                     , (List.foldr List.append [] (List.filterMap viewLabel model.edges))
+                    , (List.map (viewMovement edgeDict) model.movements)
+                    , (List.foldr List.append [] (List.filterMap (viewNode model.name) model.nodes))
                     ]
                 )
             ]
@@ -52,7 +59,7 @@ viewTooltip model =
                 node.info
                 node.position
                 node.name
-                ((Maybe.withDefault nodeRadius node.size), nodeRadius - (Maybe.withDefault nodeRadius node.size) )
+                ( (Maybe.withDefault nodeRadius node.size), nodeRadius - (Maybe.withDefault nodeRadius node.size) )
 
         _ ->
             case List.head (List.filter (\e -> e.selected) model.edges) of
@@ -139,6 +146,33 @@ defs model =
                 )
                 imageNodes
             )
+
+
+viewMovement : Dict ( Int, Int ) Edge -> Movement InputMovement -> Svg Msg
+viewMovement edges movement =
+    let
+        pathString =
+            case Dict.get ( movement.from, movement.to ) edges of
+                Just edge ->
+                    case edge.position of
+                        Just line ->
+                            path line
+
+                        Nothing ->
+                            ""
+
+                Nothing ->
+                    ""
+
+        distance =
+            toString <| movement.runningTime / movement.duration * 100
+    in
+        g
+            [ class <| String.join " " <| "movement" :: movement.classes
+            , Svg.Attributes.style <| "offset-path: path(\"" ++ pathString ++ "\"); offset-distance: " ++ distance ++ "%;"
+            ]
+            [ use [ xlinkHref <| "#" ++ movement.icon ] []
+            ]
 
 
 viewNode : String -> Node -> Maybe (List (Svg Msg))

@@ -18,6 +18,7 @@ type alias Model =
     , repulsion : Maybe Float
     , doForce : Bool
     , initiallyCentered : Bool
+    , movements : List (Movement InputMovement)
     }
 
 
@@ -70,6 +71,7 @@ type alias Input =
     , attraction : Maybe Float
     , repulsion : Maybe Float
     , center : Maybe Bool
+    , addMovement : List InputMovement
     , setNodes : List InputNode
     , setEdges : List InputEdge
     , removeNodes : List Int
@@ -127,4 +129,19 @@ type alias MultiLine =
 type alias Point =
     { x : Float
     , y : Float
+    }
+
+
+type alias InputMovement =
+    { from : Int
+    , to : Int
+    , duration : Float
+    , icon : String
+    , classes : List String
+    }
+
+
+type alias Movement a =
+    { a
+        | runningTime : Float
     }

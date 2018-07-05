@@ -33,10 +33,21 @@ input =
         |> optional "attraction" (maybe float) Nothing
         |> optional "repulsion" (maybe float) Nothing
         |> optional "center" (maybe bool) Nothing
+        |> optional "addMovement" (list movement) []
         |> optional "setNodes" (list node) []
         |> optional "setEdges" (list edge) []
         |> optional "removeNodes" (list int) []
         |> optional "removeEdges" (list (intIntTuple)) []
+
+
+movement : Decoder InputMovement
+movement =
+    decode InputMovement
+        |> required "from" int
+        |> required "to" int
+        |> required "duration" float
+        |> required "icon" string
+        |> optional "classes" (list string) []
 
 
 node : Decoder InputNode
@@ -87,6 +98,7 @@ handleInput model inputString =
                    )
                 |> handleSize input.size
                 |> handlePosition input.position
+                |> addMovement input.addMovement
                 |> removeNodes input.removeNodes
                 |> removeEdges input.removeEdges
                 |> setNodes input.setNodes False

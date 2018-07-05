@@ -29,6 +29,7 @@ init flags =
             { flags = flags
             , name = ""
             , elementPosition = ( 0, 0 )
+            , movements = []
             , nodes = []
             , edges = []
             , position = { x = 0, y = 0 }

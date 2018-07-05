@@ -24,36 +24,11 @@ update msg model =
             handleInput model msg
 
         Tick diff ->
-            let
-                centered =
-                    if
-                        not model.initiallyCentered
-                            && (not <| (List.isEmpty model.edges && List.isEmpty model.nodes))
-                            && (model.windowSize /= Nothing)
-                    then
-                        centerGraph model
-                    else
-                        model
-
-                newEdges =
-                    List.map
-                        (\e ->
-                            case e.speed of
-                                Just speed ->
-                                    { e | dashOffset = e.dashOffset - speed * (Time.inSeconds diff) }
-
-                                Nothing ->
-                                    e
-                        )
-                        model.edges
-
-                forced =
-                    if List.member "forced" (String.split "." <| Maybe.withDefault "" model.layout) then
-                        forceTick { centered | edges = newEdges }
-                    else
-                        { centered | edges = newEdges }
-            in
-                forced
+            model
+                |> center
+                |> moveEdges diff
+                |> force
+                |> movement diff
 
         WindowSize size ->
             updateWindow size model
@@ -130,3 +105,61 @@ update msg model =
                             pos
             in
                 { model | zoom = clampedZoom, position = newPosition }
+
+
+center : Model -> Model
+center model =
+    if
+        not model.initiallyCentered
+            && (not <| (List.isEmpty model.edges && List.isEmpty model.nodes))
+            && (model.windowSize /= Nothing)
+    then
+        centerGraph model
+    else
+        model
+
+
+moveEdges : Time.Time -> Model -> Model
+moveEdges diff model =
+    let
+        newEdges =
+            List.map
+                (\e ->
+                    case e.speed of
+                        Just speed ->
+                            { e | dashOffset = e.dashOffset - speed * (Time.inSeconds diff) }
+
+                        Nothing ->
+                            e
+                )
+                model.edges
+    in
+        { model | edges = newEdges }
+
+
+force : Model -> Model
+force model =
+    if List.member "forced" (String.split "." <| Maybe.withDefault "" model.layout) then
+        forceTick model
+    else
+        model
+
+
+movement : Time.Time -> Model -> Model
+movement diff ({ movements } as model) =
+    let
+        newMovements =
+            List.filterMap
+                (\m ->
+                    let
+                        newRunning =
+                            m.runningTime + (Time.inSeconds diff)
+                    in
+                        if newRunning > m.duration then
+                            Nothing
+                        else
+                            Just { m | runningTime = newRunning }
+                )
+                movements
+    in
+        { model | movements = newMovements }

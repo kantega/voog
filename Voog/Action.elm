@@ -56,6 +56,34 @@ updateInfo old new =
         List.append updated appended
 
 
+addMovement : List InputMovement -> Model -> Model
+addMovement inputMovements model =
+    let
+        movements =
+            List.map
+                (\m ->
+                    { from = m.from
+                    , to = m.to
+                    , classes = m.classes
+                    , duration = m.duration
+                    , icon = m.icon
+                    , runningTime = 0
+                    }
+                )
+                inputMovements
+
+        newMovements =
+            List.append model.movements movements
+    in
+        { model | movements = newMovements }
+
+
+type alias Movement a =
+    { a
+        | runningTime : Float
+    }
+
+
 setNodes : List InputNode -> Bool -> Model -> Model
 setNodes nodes recalculate model =
     case nodes of
