@@ -60,7 +60,7 @@ type alias CrossEdges =
     Dict.Dict ( Int, Int, Int ) (Dict.Dict Int Int)
 
 type alias IdPos =
-    Dict.Dict Int (Maybe Int)
+    Dict.Dict Int Int
 
 type Direction
     = Down
