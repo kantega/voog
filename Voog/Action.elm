@@ -289,25 +289,17 @@ centerGraph ({ nodes } as model) =
                 zoom =
                     min widthZoom heightZoom
 
-                finalZoom =
-                    if zoom > 3 then
-                        3
-                    else if zoom < 0.1 then
-                        0.1
-                    else
-                        zoom
-
                 extraWidth =
-                    (toFloat windowWidth - (finalZoom * width)) / 2
+                    (toFloat windowWidth - (zoom * width)) / 2
 
                 extraHeight =
-                    (toFloat windowHeight - (finalZoom * height)) / 2
+                    (toFloat windowHeight - (zoom * height)) / 2
             in
                 { model
-                    | zoom = finalZoom
+                    | zoom = zoom
                     , position =
-                        { x = -minX + finalZoom * 100 + extraWidth
-                        , y = -minY + finalZoom * 100 + extraHeight
+                        { x = zoom * (100 - minX) + extraWidth
+                        , y = zoom * (100 - minY) + extraHeight
                         }
                     , initiallyCentered = True
                 }
@@ -373,12 +365,19 @@ closeInfo model =
 
 layout : Model -> Model
 layout ({ nodes } as model) =
-    case String.split "." <| Maybe.withDefault "" model.layout of
-        "layered" :: rest ->
-            sugiyamaLayout rest model
+    let
+        newModel =
+            case String.split "." <| Maybe.withDefault "" model.layout of
+                "layered" :: rest ->
+                    sugiyamaLayout rest model
 
-        "manual" :: rest ->
-            manualLayout rest model
+                "manual" :: rest ->
+                    manualLayout rest model
 
-        _ ->
-            sugiyamaLayout [] model
+                _ ->
+                    sugiyamaLayout [] model
+    in
+        if model.center then
+            centerGraph newModel
+        else
+            newModel

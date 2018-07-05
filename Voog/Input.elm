@@ -94,6 +94,7 @@ handleInput model inputString =
                             , nodeDistance = input.nodeDistance
                             , attraction = input.attraction
                             , repulsion = input.repulsion
+                            , center = Maybe.withDefault False input.center
                         }
                    )
                 |> handleSize input.size
@@ -104,14 +105,6 @@ handleInput model inputString =
                 |> setNodes input.setNodes False
                 |> setEdges input.setEdges False
                 |> setNodesWithEdges input.setEdges
-                |> (\model ->
-                        case input.center of
-                            Just True ->
-                                centerGraph model
-
-                            _ ->
-                                model
-                   )
 
         _ ->
             model

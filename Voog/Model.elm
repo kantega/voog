@@ -19,6 +19,7 @@ type alias Model =
     , doForce : Bool
     , initiallyCentered : Bool
     , movements : List (Movement InputMovement)
+    , center : Bool
     }
 
 

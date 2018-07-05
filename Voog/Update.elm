@@ -140,7 +140,10 @@ moveEdges diff model =
 force : Model -> Model
 force model =
     if List.member "forced" (String.split "." <| Maybe.withDefault "" model.layout) then
-        forceTick model
+        if model.center && model.doForce then
+            centerGraph <| forceTick model
+        else
+            forceTick model
     else
         model
 
