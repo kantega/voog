@@ -14326,8 +14326,8 @@ var _kantega$voog$Voog_Input$handleInput = F2(
 		}
 	});
 
-var _kantega$voog$Voog_Layouts_Forced$repulsion = F4(
-	function (coefficient, nodePositions, nodeA, nodeB) {
+var _kantega$voog$Voog_Layouts_Forced$repulsion = F5(
+	function (coefficient, nodeDistanceSquared, nodePositions, nodeA, nodeB) {
 		var posB = A2(_elm_lang$core$Dict$get, nodeB.id, nodePositions);
 		var posA = A2(_elm_lang$core$Dict$get, nodeA.id, nodePositions);
 		var _p0 = {ctor: '_Tuple2', _0: posA, _1: posB};
@@ -14335,13 +14335,17 @@ var _kantega$voog$Voog_Layouts_Forced$repulsion = F4(
 			var _p2 = _p0._1._0._0;
 			var _p1 = _p0._0._0._0;
 			var distanceSquared = Math.pow(_p2.y - _p1.y, 2) + Math.pow(_p2.x - _p1.x, 2);
-			var force = coefficient / distanceSquared;
 			var angle = A2(_elm_lang$core$Basics$atan2, _p1.y - _p2.y, _p1.x - _p2.x);
-			return (_elm_lang$core$Native_Utils.cmp(distanceSquared, 0) > 0) ? {
-				ctor: '_Tuple2',
-				_0: force * _elm_lang$core$Basics$cos(angle),
-				_1: force * _elm_lang$core$Basics$sin(angle)
-			} : {ctor: '_Tuple2', _0: 0, _1: 0};
+			if ((_elm_lang$core$Native_Utils.cmp(distanceSquared, 0) > 0) && (_elm_lang$core$Native_Utils.cmp(distanceSquared, 3 * nodeDistanceSquared) < 0)) {
+				var force = coefficient / distanceSquared;
+				return {
+					ctor: '_Tuple2',
+					_0: force * _elm_lang$core$Basics$cos(angle),
+					_1: force * _elm_lang$core$Basics$sin(angle)
+				};
+			} else {
+				return {ctor: '_Tuple2', _0: 0, _1: 0};
+			}
 		} else {
 			return {ctor: '_Tuple2', _0: 0, _1: 0};
 		}
@@ -14404,10 +14408,6 @@ var _kantega$voog$Voog_Layouts_Forced$moveNodes = F3(
 		var _p9 = node.position;
 		if (_p9.ctor === 'Just') {
 			var _p10 = _p9._0;
-			var repulsions = A2(
-				_elm_lang$core$List$map,
-				A3(_kantega$voog$Voog_Layouts_Forced$repulsion, _p11.repulsion, nodePositions, node),
-				_p8.nodes);
 			var connections = A2(
 				_elm_lang$core$List$filter,
 				function (e) {
@@ -14419,6 +14419,15 @@ var _kantega$voog$Voog_Layouts_Forced$moveNodes = F3(
 				_elm_lang$core$List$map,
 				A4(_kantega$voog$Voog_Layouts_Forced$attraction, _p11.attraction, nodeDistance, nodePositions, node),
 				connections);
+			var repulsions = A2(
+				_elm_lang$core$List$map,
+				A4(
+					_kantega$voog$Voog_Layouts_Forced$repulsion,
+					_p11.repulsion,
+					Math.pow(nodeDistance, 2),
+					nodePositions,
+					node),
+				_p8.nodes);
 			var forces = A2(_elm_lang$core$List$append, attractions, repulsions);
 			var dx = A2(
 				F2(
@@ -14487,7 +14496,10 @@ var _kantega$voog$Voog_Layouts_Forced$forceTick = function (_p12) {
 					}),
 				_elm_lang$core$Dict$toList(newNodePositions),
 				_elm_lang$core$Dict$toList(nodePositions)));
-		var force = (_elm_lang$core$Native_Utils.cmp(movement, 10) > 0) ? (_p21.force * _p21.forceDampFactor) : 0;
+		var force = (_elm_lang$core$Native_Utils.cmp(
+			movement,
+			_elm_lang$core$Basics$toFloat(
+				_elm_lang$core$List$length(_p22))) > 0) ? (_p21.force * _p21.forceDampFactor) : 0;
 		return _elm_lang$core$Native_Utils.update(
 			_p21,
 			{nodes: newNodes, edges: newEdges, force: force});
