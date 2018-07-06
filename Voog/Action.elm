@@ -145,7 +145,7 @@ setNodes nodes recalculate model =
 recalculated : Model -> Model
 recalculated model =
     model
-        |> (\m -> { m | doForce = True })
+        |> (\m -> { m | force = 1 })
         |> layout
         |> (\m ->
                 if m.center then

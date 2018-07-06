@@ -16,9 +16,10 @@ type alias Model =
     , zoom : Float
     , layout : Maybe String
     , nodeDistance : Maybe Float
-    , attraction : Maybe Float
-    , repulsion : Maybe Float
-    , doForce : Bool
+    , attraction : Float
+    , repulsion : Float
+    , forceDampFactor : Float
+    , force : Float
     , initiallyCentered : Bool
     , movements : List (Movement InputMovement)
     , center : Bool
@@ -73,8 +74,9 @@ type alias Input =
     , position : Maybe ( Int, Int )
     , layout : Maybe String
     , nodeDistance : Maybe Float
-    , attraction : Maybe Float
-    , repulsion : Maybe Float
+    , attraction : Float
+    , repulsion : Float
+    , forceDampFactor : Float
     , center : Maybe Bool
     , addMovement : List InputMovement
     , setNodes : List InputNode

@@ -7,7 +7,7 @@ import Voog.Place exposing (placeSingleLineEdge)
 
 forceTick : Model -> Model
 forceTick ({ nodes, edges } as model) =
-    if model.doForce then
+    if model.force > 0 then
         let
             nodePositions =
                 nodes
@@ -39,13 +39,13 @@ forceTick ({ nodes, edges } as model) =
                     (Dict.toList nodePositions)
                     |> List.sum
 
-            doForce =
-                if movement > 1 then
-                    True
+            force =
+                if movement > 10 then
+                    model.force * model.forceDampFactor
                 else
-                    False
+                    0
         in
-            { model | nodes = newNodes, edges = newEdges, doForce = doForce }
+            { model | nodes = newNodes, edges = newEdges, force = force }
     else
         model
 
@@ -61,17 +61,11 @@ moveNodes ({ nodes, edges } as model) nodePositions node =
                 connections =
                     List.filter (\e -> e.from == node.id || e.to == node.id) edges
 
-                attractionCoeff =
-                    Maybe.withDefault 0.1 model.attraction
-
-                repulsionCoeff =
-                    Maybe.withDefault 300000 model.repulsion
-
                 attractions =
-                    List.map (attraction attractionCoeff nodeDistance nodePositions node) connections
+                    List.map (attraction model.attraction nodeDistance nodePositions node) connections
 
                 repulsions =
-                    List.map (repulsion repulsionCoeff nodePositions node) nodes
+                    List.map (repulsion model.repulsion nodePositions node) nodes
 
                 forces =
                     List.append attractions repulsions
@@ -80,11 +74,13 @@ moveNodes ({ nodes, edges } as model) nodePositions node =
                     forces
                         |> List.map Tuple.first
                         |> List.sum
+                        |> (*) model.force
 
                 dy =
                     forces
                         |> List.map Tuple.second
                         |> List.sum
+                        |> (*) model.force
 
                 newPos =
                     Just { x = pos.x + dx, y = pos.y + dy }

@@ -30,8 +30,9 @@ input =
         |> optional "position" (maybe intIntTuple) Nothing
         |> optional "layout" (maybe string) Nothing
         |> optional "nodeDistance" (maybe float) Nothing
-        |> optional "attraction" (maybe float) Nothing
-        |> optional "repulsion" (maybe float) Nothing
+        |> optional "attraction" float 0.1
+        |> optional "repulsion" float 300000
+        |> optional "forceDampFactor" float 0.99
         |> optional "center" (maybe bool) Nothing
         |> optional "addMovement" (list movement) []
         |> optional "setNodes" (list node) []
@@ -94,6 +95,7 @@ handleInput model inputString =
                             , nodeDistance = input.nodeDistance
                             , attraction = input.attraction
                             , repulsion = input.repulsion
+                            , forceDampFactor = input.forceDampFactor
                             , center = Maybe.withDefault False input.center
                         }
                    )
