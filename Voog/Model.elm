@@ -1,5 +1,7 @@
 module Voog.Model exposing (..)
 
+import Svg exposing (Svg)
+import Voog.Messages exposing (..)
 
 type alias Model =
     { flags : Flags
@@ -50,6 +52,7 @@ type alias SystemNode a =
     { a
         | selected : Bool
         , position : Maybe Point
+        , viewNode : Maybe (List (Svg Msg))
     }
 
 

@@ -93,6 +93,7 @@ setNodes nodes recalculate model =
                     newNodes =
                         { selected = False
                         , position = Nothing
+                        , viewNode = Nothing
                         , id = node.id
                         , info = node.info
                         , classes = node.classes
@@ -116,6 +117,7 @@ setNodes nodes recalculate model =
                             Just oldNode ->
                                 { oldNode
                                     | info = updateInfo oldNode.info node.info
+                                    , viewNode = Nothing
                                     , classes = node.classes
                                     , name = node.name
                                     , shape = node.shape
@@ -133,13 +135,24 @@ setNodes nodes recalculate model =
 
         _ ->
             if recalculate then
-                let
-                    recalculated =
-                        layout { model | doForce = True }
-                in
-                    place recalculated
+                model
+                    |> recalculated
+                    |> place
             else
                 model
+
+
+recalculated : Model -> Model
+recalculated model =
+    model
+        |> (\m -> { m | doForce = True })
+        |> layout
+        |> (\m ->
+                if m.center then
+                    centerGraph m
+                else
+                    m
+           )
 
 
 removeNodes : List Int -> Model -> Model
@@ -207,11 +220,9 @@ setEdges edges recalculate model =
 
         _ ->
             if recalculate then
-                let
-                    recalculated =
-                        layout { model | doForce = True }
-                in
-                    place recalculated
+                model
+                    |> recalculated
+                    |> place
             else
                 model
 
@@ -277,8 +288,11 @@ centerGraph ({ nodes } as model) =
                         |> List.maximum
                         |> Maybe.withDefault 0
 
-                width = maxX - minX + 200
-                height = maxY - minY + 200
+                width =
+                    maxX - minX + 200
+
+                height =
+                    maxY - minY + 200
 
                 widthZoom =
                     toFloat windowWidth / width
@@ -365,19 +379,12 @@ closeInfo model =
 
 layout : Model -> Model
 layout ({ nodes } as model) =
-    let
-        newModel =
-            case String.split "." <| Maybe.withDefault "" model.layout of
-                "layered" :: rest ->
-                    sugiyamaLayout rest model
+    case String.split "." <| Maybe.withDefault "" model.layout of
+        "layered" :: rest ->
+            sugiyamaLayout rest model
 
-                "manual" :: rest ->
-                    manualLayout rest model
+        "manual" :: rest ->
+            manualLayout rest model
 
-                _ ->
-                    sugiyamaLayout [] model
-    in
-        if model.center then
-            centerGraph newModel
-        else
-            newModel
+        _ ->
+            sugiyamaLayout [] model

@@ -1,7 +1,7 @@
 module Voog.Layouts.Manual exposing (..)
 
 import Voog.Model exposing (..)
-import Voog.Place exposing (..)
+import Voog.View exposing (..)
 
 
 manualLayout : List String -> Model -> Model

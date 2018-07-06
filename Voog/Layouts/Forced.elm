@@ -2,8 +2,8 @@ module Voog.Layouts.Forced exposing (..)
 
 import Dict exposing (Dict)
 import Voog.Model exposing (..)
-import Voog.Place exposing (placeSingleLineEdge, defaultDistance, nodeRadius)
-
+import Voog.View exposing (defaultDistance, nodeRadius)
+import Voog.Place exposing (placeSingleLineEdge)
 
 forceTick : Model -> Model
 forceTick ({ nodes, edges } as model) =
@@ -89,7 +89,7 @@ moveNodes ({ nodes, edges } as model) nodePositions node =
                 newPos =
                     Just { x = pos.x + dx, y = pos.y + dy }
             in
-                { node | position = newPos }
+                { node | viewNode = Nothing, position = newPos }
 
         _ ->
             node

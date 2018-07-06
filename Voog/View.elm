@@ -7,7 +7,26 @@ import Html exposing (..)
 import Html.Events exposing (..)
 import Voog.Model exposing (..)
 import Voog.Messages exposing (..)
-import Voog.Place exposing (..)
+
+
+nodeRadius : Float
+nodeRadius =
+    45
+
+
+defaultDistance : Float
+defaultDistance =
+    4 * nodeRadius
+
+
+labelWidth : Float
+labelWidth =
+    60
+
+
+labelHeight : Float
+labelHeight =
+    30
 
 
 view : Model -> Html Msg
@@ -45,7 +64,7 @@ view model =
                     , (List.foldr List.append [] (List.filterMap viewEdge model.edges))
                     , (List.foldr List.append [] (List.filterMap viewLabel model.edges))
                     , (List.map (viewMovement edgeDict) model.movements)
-                    , (List.foldr List.append [] (List.filterMap (viewNode model.name) model.nodes))
+                    , (List.foldr List.append [] (List.filterMap (getViewNode model.name) model.nodes))
                     , invalidInput model
                     ]
                 )
@@ -205,6 +224,16 @@ viewMovement edges movement =
             ]
             [ use [ xlinkHref <| "#" ++ movement.icon ] []
             ]
+
+
+getViewNode : String -> Node -> Maybe (List (Svg Msg))
+getViewNode modelName node =
+    case node.viewNode of
+        Just vn ->
+            Just vn
+
+        Nothing ->
+            viewNode modelName node
 
 
 viewNode : String -> Node -> Maybe (List (Svg Msg))

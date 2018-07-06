@@ -3,42 +3,28 @@ module Voog.Place exposing (..)
 import Dict exposing (Dict)
 import Voog.Model exposing (..)
 import Voog.Helpers exposing (..)
-
-
-nodeRadius : Float
-nodeRadius =
-    45
-
-
-defaultDistance : Float
-defaultDistance =
-    4 * nodeRadius
-
-
-labelWidth : Float
-labelWidth =
-    60
-
-
-labelHeight : Float
-labelHeight =
-    30
+import Voog.View exposing (..)
 
 
 place : Model -> Model
-place model =
+place ({ nodes, edges } as model) =
     let
         nodeDict =
-            model.nodes
+            nodes
                 |> List.map (\n -> ( n.id, n ))
                 |> Dict.fromList
 
         edgeDict =
-            model.edges
+            edges
                 |> List.map (\e -> ( e.id, e ))
                 |> Dict.fromList
+
+        newNodes =
+            List.map
+                (\n -> { n | viewNode = viewNode model.name n })
+                nodes
     in
-        { model | edges = List.map (placeEdge nodeDict edgeDict) model.edges }
+        { model | edges = List.map (placeEdge nodeDict edgeDict) model.edges, nodes = newNodes }
 
 
 placeEdge : Dict Int Node -> Dict ( Int, Int ) Edge -> Edge -> Edge

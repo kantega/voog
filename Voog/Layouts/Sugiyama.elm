@@ -6,7 +6,7 @@ import Sugiyama.Sugiyama exposing (sugiyama, sugiyamaCustom)
 import Sugiyama.Model
 import Voog.Model exposing (..)
 import Voog.Helpers exposing (reverseId)
-import Voog.Place exposing (..)
+import Voog.View exposing (..)
 
 
 sugiyamaLayout : List String -> Model -> Model
