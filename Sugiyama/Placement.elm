@@ -1,13 +1,13 @@
 module Sugiyama.Placement exposing (..)
 
 {-| Space nodes out visually aesthetic horizontally
-This algorithm starts with all nodes on the left, with position x = -width/2 to x = width/2 of layer
+This algorithm starts by centering the nodes in each layer along the middle of the widest layer
 
-For each layer with initial position A = -width/2:
+For each layer, starting on the left or rightmost node:
 
 1.  Evaluate three options inclusive move, exclusive move or no move
-    Exclusive: move all nodes to the right of position A one step right
-    Inclusive: move all nodes to the right of A and the one at position A
+    Exclusive: move all nodes to the right/left of position A one step right/left
+    Inclusive: move all nodes to the right/left of A and the one at position A
     No move: keep all positions
 2.  If inclusive is the best then do the inclusive move
 3.  Move to next position
@@ -26,13 +26,19 @@ Finally move whole graph to position
 setPosition : Graph -> Graph
 setPosition ({ nodes } as graph) =
     let
+        maxWidth =
+            nodes
+                |> List.map .x
+                |> List.filterMap identity
+                |> List.maximum
+                |> Maybe.withDefault 0
+
         wideLayer =
             nodes
-                |> List.sortWith (\a b -> compare (Maybe.withDefault -1 a.x) (Maybe.withDefault -1 b.x))
+                |> List.filter (\n -> n.x == Just maxWidth)
                 |> List.map .y
-                |> List.reverse
+                |> List.filterMap identity
                 |> List.head
-                |> Maybe.withDefault Nothing
                 |> Maybe.withDefault 0
 
         height =
@@ -45,9 +51,9 @@ setPosition ({ nodes } as graph) =
             getLayerPos graph
     in
         graph
-            |> setLayerPosition layerPos (wideLayer - 1) Up False
-            |> setLayerPosition layerPos (wideLayer + 1) Down False
-            |> setLayerPosition layerPos wideLayer Up True
+            |> setLayerPosition layerPos (wideLayer - 1) maxWidth Up False
+            |> setLayerPosition layerPos (wideLayer + 1) maxWidth Down False
+            |> setLayerPosition layerPos wideLayer maxWidth Up True
             |> makePositive
 
 
@@ -73,12 +79,11 @@ makePositive ({ nodes } as graph) =
         { graph | nodes = newNodes }
 
 
-{-| Move whole layer to the left to make space space for worst case scenario where each node is connected
-to first node of the layer above
-Then iteratively move a subsection of it to the right
+{-| Move whole layer to center of widest layer
+Then iteratively move a subsection of it to the left then repeat to the right
 -}
-setLayerPosition : IdPos -> Int -> Direction -> Bool -> Graph -> Graph
-setLayerPosition layerPos layer direction isMiddle ({ nodes, edges } as graph) =
+setLayerPosition : IdPos -> Int -> Int -> Direction -> Bool -> Graph -> Graph
+setLayerPosition layerPos layer maxWidth direction isMiddle ({ nodes, edges } as graph) =
     let
         xPos =
             getXPos graph layer
@@ -112,14 +117,19 @@ setLayerPosition layerPos layer direction isMiddle ({ nodes, edges } as graph) =
                             )
                             edges
 
-                moveAmount =
-                    round (toFloat (Dict.size xPos) / 2) + 1
-
-                movedXPos =
-                    Dict.map (\id x -> x - moveAmount) xPos
+                layerMaxWidth =
+                    nodes
+                        |> List.filter (\n -> n.y == Just layer)
+                        |> List.map .x
+                        |> List.filterMap identity
+                        |> List.maximum
+                        |> Maybe.withDefault 0
 
                 newXPos =
-                    setSubLayerPosition movedXPos xPosOther xPosOpposite isMiddle layerEdges layer (-moveAmount)
+                    xPos
+                        |> Dict.map (\id x -> x + floor (toFloat (maxWidth - layerMaxWidth) / 2))
+                        |> setSubLayerPositionRight xPosOther xPosOpposite isMiddle layerEdges layer
+                        |> setSubLayerPositionLeft xPosOther xPosOpposite isMiddle layerEdges layer
 
                 newNodes =
                     List.map
@@ -137,65 +147,93 @@ setLayerPosition layerPos layer direction isMiddle ({ nodes, edges } as graph) =
                         nodes
             in
                 if not isMiddle then
-                    setLayerPosition layerPos nextLayer direction isMiddle { graph | nodes = newNodes }
+                    setLayerPosition layerPos nextLayer maxWidth direction isMiddle { graph | nodes = newNodes }
                 else
                     { graph | nodes = newNodes }
 
 
 {-| By calculating offset at the beginning and passing it along in every operation we avoid doing the same work twice
 -}
-setSubLayerPosition : IdPos -> IdPos -> IdPos -> Bool -> Edges -> Int -> Int -> IdPos
-setSubLayerPosition xPos xPosOther xPosOpposite isMiddle edges layer pos =
+setSubLayerPositionRight : IdPos -> IdPos -> Bool -> Edges -> Int -> IdPos -> IdPos
+setSubLayerPositionRight xPosOther xPosOpposite isMiddle edges layer xPos =
     let
-        offset =
-            getTotalOffset edges xPos xPosOther
-                + (if isMiddle then
-                    getTotalOffset edges xPos xPosOpposite
-                   else
-                    0
-                  )
+        minX =
+            xPos
+                |> Dict.toList
+                |> List.map (\( id, x ) -> x)
+                |> List.minimum
+                |> Maybe.withDefault -1
     in
-        setSubLayerPositionInner xPos xPosOther xPosOpposite isMiddle offset edges layer pos
+        setSubLayerPositionInner xPos xPosOther xPosOpposite isMiddle edges layer minX 1
+
+
+setSubLayerPositionLeft : IdPos -> IdPos -> Bool -> Edges -> Int -> IdPos -> IdPos
+setSubLayerPositionLeft xPosOther xPosOpposite isMiddle edges layer xPos =
+    let
+        maxX =
+            xPos
+                |> Dict.toList
+                |> List.map (\( id, x ) -> x)
+                |> List.maximum
+                |> Maybe.withDefault -1
+    in
+        setSubLayerPositionInner xPos xPosOther xPosOpposite isMiddle edges layer maxX -1
 
 
 {-| Select bet option; inclusive move, exclusive move or no move
 Recursively call next on position
 -}
-setSubLayerPositionInner : IdPos -> IdPos -> IdPos -> Bool -> Int -> Edges -> Int -> Int -> IdPos
-setSubLayerPositionInner xPos xPosOther xPosOpposite isMiddle offset edges layer pos =
+setSubLayerPositionInner : IdPos -> IdPos -> IdPos -> Bool -> Edges -> Int -> Int -> Int -> IdPos
+setSubLayerPositionInner xPos xPosOther xPosOpposite isMiddle edges layer pos dir =
     let
-        xPosInclusive =
+        getNewXPos condition =
             xPos
                 |> Dict.map
                     (\id x ->
-                        if x >= pos then
-                            x + 1
+                        if condition x pos then
+                            x + dir
                         else
                             x
                     )
 
-        xPosExclusive =
-            xPos
-                |> Dict.map
-                    (\id x ->
-                        if x > pos then
-                            x + 1
-                        else
-                            x
-                    )
-
-        newEdges =
+        getNewEdges default condition =
             List.filter
                 (\e ->
-                    (Maybe.withDefault -100000 (Dict.get e.from xPos) >= pos)
-                        || (Maybe.withDefault -100000 (Dict.get e.to xPos) >= pos)
+                    (condition (Maybe.withDefault default (Dict.get e.from xPos)) pos)
+                        || (condition (Maybe.withDefault default (Dict.get e.to xPos)) pos)
                 )
                 edges
+
+        xPosInclusive =
+            if dir > 0 then
+                getNewXPos (>=)
+            else
+                getNewXPos (<=)
+
+        xPosExclusive =
+            if dir > 0 then
+                getNewXPos (>)
+            else
+                getNewXPos (<)
+
+        newEdges =
+            if dir > 0 then
+                getNewEdges -10000 (>=)
+            else
+                getNewEdges 10000 (<=)
+
+        offset =
+            getTotalOffset newEdges xPos xPosOther
+                + (if isMiddle then
+                    getTotalOffset newEdges xPos xPosOpposite
+                   else
+                    0
+                  )
 
         offsetInclusive =
             getTotalOffset newEdges xPosInclusive xPosOther
                 + (if isMiddle then
-                    getTotalOffset edges xPosInclusive xPosOpposite
+                    getTotalOffset newEdges xPosInclusive xPosOpposite
                    else
                     0
                   )
@@ -203,7 +241,7 @@ setSubLayerPositionInner xPos xPosOther xPosOpposite isMiddle offset edges layer
         offsetExclusive =
             getTotalOffset newEdges xPosExclusive xPosOther
                 + (if isMiddle then
-                    getTotalOffset edges xPosExclusive xPosOpposite
+                    getTotalOffset newEdges xPosExclusive xPosOpposite
                    else
                     0
                   )
@@ -211,9 +249,9 @@ setSubLayerPositionInner xPos xPosOther xPosOpposite isMiddle offset edges layer
         if List.isEmpty newEdges then
             xPos
         else if offset >= offsetExclusive && offsetInclusive < offsetExclusive then
-            setSubLayerPositionInner xPosInclusive xPosOther xPosOpposite isMiddle offsetInclusive newEdges layer (pos + 1)
+            setSubLayerPositionInner xPosInclusive xPosOther xPosOpposite isMiddle newEdges layer (pos + dir) dir
         else
-            setSubLayerPositionInner xPos xPosOther xPosOpposite isMiddle offset newEdges layer (pos + 1)
+            setSubLayerPositionInner xPos xPosOther xPosOpposite isMiddle newEdges layer (pos + dir) dir
 
 
 {-| Find offset of all edges in layer
