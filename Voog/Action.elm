@@ -6,6 +6,7 @@ import Voog.Model exposing (..)
 import Voog.Place exposing (..)
 import Voog.Layouts.Manual exposing (manualLayout)
 import Voog.Layouts.Sugiyama exposing (sugiyamaLayout)
+import Voog.Layouts.Zero exposing (zeroLayout)
 
 
 updateWindow : Window.Size -> Model -> Model
@@ -388,6 +389,9 @@ layout ({ nodes } as model) =
 
         "manual" :: rest ->
             manualLayout rest model
+
+        "zero" :: rest ->
+            zeroLayout model
 
         _ ->
             sugiyamaLayout [] model
