@@ -9905,7 +9905,9 @@ var _kantega$voog$Voog_Model$Model = function (a) {
 														return function (o) {
 															return function (p) {
 																return function (q) {
-																	return {flags: a, name: b, nodes: c, edges: d, elementPosition: e, position: f, mouse: g, drag: h, windowSize: i, zoom: j, layout: k, nodeDistance: l, attraction: m, repulsion: n, doForce: o, initiallyCentered: p, movements: q};
+																	return function (r) {
+																		return {flags: a, name: b, nodes: c, edges: d, elementPosition: e, position: f, mouse: g, drag: h, windowSize: i, zoom: j, layout: k, nodeDistance: l, attraction: m, repulsion: n, doForce: o, initiallyCentered: p, movements: q, center: r};
+																	};
 																};
 															};
 														};
@@ -11357,20 +11359,32 @@ var _kantega$voog$Sugiyama_Helpers$getLayerPos = function (_p0) {
 	var _p1 = _p0;
 	return _elm_lang$core$Dict$fromList(
 		A2(
-			_elm_lang$core$List$map,
+			_elm_lang$core$List$filterMap,
 			function (n) {
-				return {ctor: '_Tuple2', _0: n.id, _1: n.y};
+				var _p2 = n.y;
+				if (_p2.ctor === 'Just') {
+					return _elm_lang$core$Maybe$Just(
+						{ctor: '_Tuple2', _0: n.id, _1: _p2._0});
+				} else {
+					return _elm_lang$core$Maybe$Nothing;
+				}
 			},
 			_p1.nodes));
 };
 var _kantega$voog$Sugiyama_Helpers$getXPos = F2(
-	function (_p2, layer) {
-		var _p3 = _p2;
+	function (_p3, layer) {
+		var _p4 = _p3;
 		return _elm_lang$core$Dict$fromList(
 			A2(
-				_elm_lang$core$List$map,
+				_elm_lang$core$List$filterMap,
 				function (n) {
-					return {ctor: '_Tuple2', _0: n.id, _1: n.x};
+					var _p5 = n.x;
+					if (_p5.ctor === 'Just') {
+						return _elm_lang$core$Maybe$Just(
+							{ctor: '_Tuple2', _0: n.id, _1: _p5._0});
+					} else {
+						return _elm_lang$core$Maybe$Nothing;
+					}
 				},
 				A2(
 					_elm_lang$core$List$filter,
@@ -11379,7 +11393,7 @@ var _kantega$voog$Sugiyama_Helpers$getXPos = F2(
 							n.y,
 							_elm_lang$core$Maybe$Just(layer));
 					},
-					_p3.nodes)));
+					_p4.nodes)));
 	});
 var _kantega$voog$Sugiyama_Helpers$setNodeDepth = F3(
 	function (graph, id, depth) {
@@ -11402,15 +11416,15 @@ var _kantega$voog$Sugiyama_Helpers$getParents = F2(
 	function (graph, nodeId) {
 		var ids = A2(
 			_elm_lang$core$List$map,
-			function (_p4) {
-				var _p5 = _p4;
-				return _p5.from;
+			function (_p6) {
+				var _p7 = _p6;
+				return _p7.from;
 			},
 			A2(
 				_elm_lang$core$List$filter,
-				function (_p6) {
-					var _p7 = _p6;
-					return _elm_lang$core$Native_Utils.eq(_p7.to, nodeId);
+				function (_p8) {
+					var _p9 = _p8;
+					return _elm_lang$core$Native_Utils.eq(_p9.to, nodeId);
 				},
 				graph.edges));
 		return A2(
@@ -11424,15 +11438,15 @@ var _kantega$voog$Sugiyama_Helpers$getChildren = F2(
 	function (graph, nodeId) {
 		var ids = A2(
 			_elm_lang$core$List$map,
-			function (_p8) {
-				var _p9 = _p8;
-				return _p9.to;
+			function (_p10) {
+				var _p11 = _p10;
+				return _p11.to;
 			},
 			A2(
 				_elm_lang$core$List$filter,
-				function (_p10) {
-					var _p11 = _p10;
-					return _elm_lang$core$Native_Utils.eq(_p11.from, nodeId);
+				function (_p12) {
+					var _p13 = _p12;
+					return _elm_lang$core$Native_Utils.eq(_p13.from, nodeId);
 				},
 				graph.edges));
 		return A2(
@@ -11471,15 +11485,15 @@ var _kantega$voog$Sugiyama_Helpers$childrenChainLength = F2(
 			{ctor: '[]'});
 	});
 var _kantega$voog$Sugiyama_Helpers$getNode = F2(
-	function (_p12, id) {
-		var _p13 = _p12;
+	function (_p14, id) {
+		var _p15 = _p14;
 		return _elm_lang$core$List$head(
 			A2(
 				_elm_lang$core$List$filter,
 				function (n) {
 					return _elm_lang$core$Native_Utils.eq(n.id, id);
 				},
-				_p13.nodes));
+				_p15.nodes));
 	});
 var _kantega$voog$Sugiyama_Helpers$inEdges = F2(
 	function (edges, id) {
@@ -11501,18 +11515,18 @@ var _kantega$voog$Sugiyama_Helpers$outEdges = F2(
 				},
 				edges));
 	});
-var _kantega$voog$Sugiyama_Helpers$reverse = function (_p14) {
-	var _p15 = _p14;
-	return _elm_lang$core$Native_Utils.update(
-		_p15,
-		{to: _p15.from, from: _p15.to, reversed: !_p15.reversed});
-};
-var _kantega$voog$Sugiyama_Helpers$reverseAll = function (_p16) {
+var _kantega$voog$Sugiyama_Helpers$reverse = function (_p16) {
 	var _p17 = _p16;
 	return _elm_lang$core$Native_Utils.update(
 		_p17,
+		{to: _p17.from, from: _p17.to, reversed: !_p17.reversed});
+};
+var _kantega$voog$Sugiyama_Helpers$reverseAll = function (_p18) {
+	var _p19 = _p18;
+	return _elm_lang$core$Native_Utils.update(
+		_p19,
 		{
-			edges: A2(_elm_lang$core$List$map, _kantega$voog$Sugiyama_Helpers$reverse, _p17.edges)
+			edges: A2(_elm_lang$core$List$map, _kantega$voog$Sugiyama_Helpers$reverse, _p19.edges)
 		});
 };
 var _kantega$voog$Sugiyama_Helpers$toBasic = function (graph) {
@@ -11525,9 +11539,9 @@ var _kantega$voog$Sugiyama_Helpers$toBasic = function (graph) {
 			graph.nodes),
 		edges: A2(
 			_elm_lang$core$List$map,
-			function (_p18) {
-				var _p19 = _p18;
-				return {ctor: '_Tuple2', _0: _p19.from, _1: _p19.to};
+			function (_p20) {
+				var _p21 = _p20;
+				return {ctor: '_Tuple2', _0: _p21.from, _1: _p21.to};
 			},
 			graph.edges)
 	};
@@ -12684,8 +12698,8 @@ var _kantega$voog$Sugiyama_Placement$getOffset = F3(
 		var tryFindX = A2(_elm_lang$core$Dict$get, edge.from, xPos);
 		var x = _elm_lang$core$Native_Utils.eq(tryFindX, _elm_lang$core$Maybe$Nothing) ? A2(_elm_lang$core$Dict$get, edge.from, xPosOther) : tryFindX;
 		var _p0 = {ctor: '_Tuple2', _0: x, _1: y};
-		if (((((_p0.ctor === '_Tuple2') && (_p0._0.ctor === 'Just')) && (_p0._0._0.ctor === 'Just')) && (_p0._1.ctor === 'Just')) && (_p0._1._0.ctor === 'Just')) {
-			return Math.pow(_p0._0._0._0 - _p0._1._0._0, 2);
+		if (((_p0.ctor === '_Tuple2') && (_p0._0.ctor === 'Just')) && (_p0._1.ctor === 'Just')) {
+			return Math.pow(_p0._0._0 - _p0._1._0, 2);
 		} else {
 			return 0;
 		}
@@ -12698,184 +12712,275 @@ var _kantega$voog$Sugiyama_Placement$getTotalOffset = F3(
 				A2(_kantega$voog$Sugiyama_Placement$getOffset, xPos, xPosOther),
 				edges));
 	});
-var _kantega$voog$Sugiyama_Placement$setSubLayerPositionInner = F6(
-	function (xPos, xPosOther, offset, edges, layer, pos) {
+var _kantega$voog$Sugiyama_Placement$setSubLayerPositionInner = F8(
+	function (xPos, xPosOther, xPosOpposite, isMiddle, edges, layer, pos, dir) {
 		setSubLayerPositionInner:
 		while (true) {
-			var xValues = A2(
-				_elm_lang$core$List$map,
-				function (_p1) {
-					var _p2 = _p1;
-					return A2(_elm_lang$core$Maybe$withDefault, -1, _p2._1);
-				},
-				_elm_lang$core$Dict$toList(xPos));
-			var maxX = A2(
-				_elm_lang$core$Maybe$withDefault,
-				-1,
-				_elm_lang$core$List$maximum(xValues));
-			var minX = A2(
-				_elm_lang$core$Maybe$withDefault,
-				-1,
-				_elm_lang$core$List$minimum(xValues));
-			var xPosExclusive = A2(
-				_elm_lang$core$Dict$map,
+			var getNewEdges = F2(
+				function ($default, condition) {
+					return A2(
+						_elm_lang$core$List$filter,
+						function (e) {
+							return A2(
+								condition,
+								A2(
+									_elm_lang$core$Maybe$withDefault,
+									$default,
+									A2(_elm_lang$core$Dict$get, e.from, xPos)),
+								pos) || A2(
+								condition,
+								A2(
+									_elm_lang$core$Maybe$withDefault,
+									$default,
+									A2(_elm_lang$core$Dict$get, e.to, xPos)),
+								pos);
+						},
+						edges);
+				});
+			var newEdges = (_elm_lang$core$Native_Utils.cmp(dir, 0) > 0) ? A2(
+				getNewEdges,
+				-10000,
 				F2(
-					function (id, x) {
-						return (_elm_lang$core$Native_Utils.cmp(
-							A2(_elm_lang$core$Maybe$withDefault, -1, x),
-							pos) > 0) ? _elm_lang$core$Maybe$Just(
-							A2(_elm_lang$core$Maybe$withDefault, -1, x) + 1) : x;
-					}),
-				xPos);
-			var offsetExclusive = A3(_kantega$voog$Sugiyama_Placement$getTotalOffset, edges, xPosExclusive, xPosOther);
-			var xPosInclusive = A2(
-				_elm_lang$core$Dict$map,
+					function (x, y) {
+						return _elm_lang$core$Native_Utils.cmp(x, y) > -1;
+					})) : A2(
+				getNewEdges,
+				10000,
 				F2(
-					function (id, x) {
-						return (_elm_lang$core$Native_Utils.cmp(
-							A2(_elm_lang$core$Maybe$withDefault, -1, x),
-							pos) > -1) ? _elm_lang$core$Maybe$Just(
-							A2(_elm_lang$core$Maybe$withDefault, -1, x) + 1) : x;
-					}),
-				xPos);
-			var offsetInclusive = A3(_kantega$voog$Sugiyama_Placement$getTotalOffset, edges, xPosInclusive, xPosOther);
-			if ((_elm_lang$core$Native_Utils.cmp(pos, maxX) > 0) || (_elm_lang$core$Native_Utils.cmp(pos, minX) < 0)) {
+					function (x, y) {
+						return _elm_lang$core$Native_Utils.cmp(x, y) < 1;
+					}));
+			var offset = A3(_kantega$voog$Sugiyama_Placement$getTotalOffset, newEdges, xPos, xPosOther) + (isMiddle ? A3(_kantega$voog$Sugiyama_Placement$getTotalOffset, newEdges, xPos, xPosOpposite) : 0);
+			var getNewXPos = function (condition) {
+				return A2(
+					_elm_lang$core$Dict$map,
+					F2(
+						function (id, x) {
+							return A2(condition, x, pos) ? (x + dir) : x;
+						}),
+					xPos);
+			};
+			var xPosInclusive = (_elm_lang$core$Native_Utils.cmp(dir, 0) > 0) ? getNewXPos(
+				F2(
+					function (x, y) {
+						return _elm_lang$core$Native_Utils.cmp(x, y) > -1;
+					})) : getNewXPos(
+				F2(
+					function (x, y) {
+						return _elm_lang$core$Native_Utils.cmp(x, y) < 1;
+					}));
+			var offsetInclusive = A3(_kantega$voog$Sugiyama_Placement$getTotalOffset, newEdges, xPosInclusive, xPosOther) + (isMiddle ? A3(_kantega$voog$Sugiyama_Placement$getTotalOffset, newEdges, xPosInclusive, xPosOpposite) : 0);
+			var xPosExclusive = (_elm_lang$core$Native_Utils.cmp(dir, 0) > 0) ? getNewXPos(
+				F2(
+					function (x, y) {
+						return _elm_lang$core$Native_Utils.cmp(x, y) > 0;
+					})) : getNewXPos(
+				F2(
+					function (x, y) {
+						return _elm_lang$core$Native_Utils.cmp(x, y) < 0;
+					}));
+			var offsetExclusive = A3(_kantega$voog$Sugiyama_Placement$getTotalOffset, newEdges, xPosExclusive, xPosOther) + (isMiddle ? A3(_kantega$voog$Sugiyama_Placement$getTotalOffset, newEdges, xPosExclusive, xPosOpposite) : 0);
+			if (_elm_lang$core$List$isEmpty(newEdges)) {
 				return xPos;
 			} else {
-				if ((_elm_lang$core$Native_Utils.cmp(offset, offsetExclusive) > -1) || (_elm_lang$core$Native_Utils.cmp(offset, offsetInclusive) > -1)) {
-					if (_elm_lang$core$Native_Utils.cmp(offsetInclusive, offsetExclusive) < 0) {
-						var _v2 = xPosInclusive,
-							_v3 = xPosOther,
-							_v4 = offsetInclusive,
-							_v5 = edges,
-							_v6 = layer,
-							_v7 = pos + 1;
-						xPos = _v2;
-						xPosOther = _v3;
-						offset = _v4;
-						edges = _v5;
-						layer = _v6;
-						pos = _v7;
-						continue setSubLayerPositionInner;
-					} else {
-						var _v8 = xPos,
-							_v9 = xPosOther,
-							_v10 = offset,
-							_v11 = edges,
-							_v12 = layer,
-							_v13 = pos + 1;
-						xPos = _v8;
-						xPosOther = _v9;
-						offset = _v10;
-						edges = _v11;
-						layer = _v12;
-						pos = _v13;
-						continue setSubLayerPositionInner;
-					}
+				if ((_elm_lang$core$Native_Utils.cmp(offset, offsetExclusive) > -1) && (_elm_lang$core$Native_Utils.cmp(offsetInclusive, offsetExclusive) < 0)) {
+					var _v1 = xPosInclusive,
+						_v2 = xPosOther,
+						_v3 = xPosOpposite,
+						_v4 = isMiddle,
+						_v5 = newEdges,
+						_v6 = layer,
+						_v7 = pos + dir,
+						_v8 = dir;
+					xPos = _v1;
+					xPosOther = _v2;
+					xPosOpposite = _v3;
+					isMiddle = _v4;
+					edges = _v5;
+					layer = _v6;
+					pos = _v7;
+					dir = _v8;
+					continue setSubLayerPositionInner;
 				} else {
-					var _v14 = xPos,
-						_v15 = xPosOther,
-						_v16 = offset,
-						_v17 = edges,
-						_v18 = layer,
-						_v19 = pos + 1;
-					xPos = _v14;
-					xPosOther = _v15;
-					offset = _v16;
-					edges = _v17;
-					layer = _v18;
-					pos = _v19;
+					var _v9 = xPos,
+						_v10 = xPosOther,
+						_v11 = xPosOpposite,
+						_v12 = isMiddle,
+						_v13 = newEdges,
+						_v14 = layer,
+						_v15 = pos + dir,
+						_v16 = dir;
+					xPos = _v9;
+					xPosOther = _v10;
+					xPosOpposite = _v11;
+					isMiddle = _v12;
+					edges = _v13;
+					layer = _v14;
+					pos = _v15;
+					dir = _v16;
 					continue setSubLayerPositionInner;
 				}
 			}
 		}
 	});
-var _kantega$voog$Sugiyama_Placement$setSubLayerPosition = F5(
-	function (xPos, xPosOther, edges, layer, pos) {
-		var offset = A3(_kantega$voog$Sugiyama_Placement$getTotalOffset, edges, xPos, xPosOther);
-		return A6(_kantega$voog$Sugiyama_Placement$setSubLayerPositionInner, xPos, xPosOther, offset, edges, layer, pos);
+var _kantega$voog$Sugiyama_Placement$setSubLayerPositionLeft = F6(
+	function (xPosOther, xPosOpposite, isMiddle, edges, layer, xPos) {
+		var maxX = A2(
+			_elm_lang$core$Maybe$withDefault,
+			-1,
+			_elm_lang$core$List$maximum(
+				A2(
+					_elm_lang$core$List$map,
+					function (_p1) {
+						var _p2 = _p1;
+						return _p2._1;
+					},
+					_elm_lang$core$Dict$toList(xPos))));
+		return A8(_kantega$voog$Sugiyama_Placement$setSubLayerPositionInner, xPos, xPosOther, xPosOpposite, isMiddle, edges, layer, maxX, -1);
 	});
-var _kantega$voog$Sugiyama_Placement$setLayerPosition = F5(
-	function (layerPos, layer, direction, repeat, _p3) {
+var _kantega$voog$Sugiyama_Placement$setSubLayerPositionRight = F6(
+	function (xPosOther, xPosOpposite, isMiddle, edges, layer, xPos) {
+		var minX = A2(
+			_elm_lang$core$Maybe$withDefault,
+			-1,
+			_elm_lang$core$List$minimum(
+				A2(
+					_elm_lang$core$List$map,
+					function (_p3) {
+						var _p4 = _p3;
+						return _p4._1;
+					},
+					_elm_lang$core$Dict$toList(xPos))));
+		return A8(_kantega$voog$Sugiyama_Placement$setSubLayerPositionInner, xPos, xPosOther, xPosOpposite, isMiddle, edges, layer, minX, 1);
+	});
+var _kantega$voog$Sugiyama_Placement$setLayerPosition = F6(
+	function (layerPos, layer, maxWidth, direction, isMiddle, _p5) {
 		setLayerPosition:
 		while (true) {
-			var _p4 = _p3;
-			var _p7 = _p4;
-			var xPos = A2(_kantega$voog$Sugiyama_Helpers$getXPos, _p7, layer);
+			var _p6 = _p5;
+			var _p12 = _p6.nodes;
+			var _p11 = _p6;
+			var _p10 = _p6.edges;
+			var xPos = A2(_kantega$voog$Sugiyama_Helpers$getXPos, _p11, layer);
 			if (_elm_lang$core$Dict$isEmpty(xPos)) {
-				return _p7;
+				return _p11;
 			} else {
-				var moveAmount = _elm_lang$core$Basics$round(
-					_elm_lang$core$Basics$toFloat(
-						_elm_lang$core$Dict$size(xPos)) / 2) + 1;
-				var movedXPos = A2(
-					_elm_lang$core$Dict$map,
-					F2(
-						function (id, x) {
-							return _elm_lang$core$Maybe$Just(
-								A2(_elm_lang$core$Maybe$withDefault, -1, x) - moveAmount);
-						}),
-					xPos);
-				var _p5 = function () {
-					var _p6 = direction;
-					if (_p6.ctor === 'Down') {
+				var layerMaxWidth = A2(
+					_elm_lang$core$Maybe$withDefault,
+					0,
+					_elm_lang$core$List$maximum(
+						A2(
+							_elm_lang$core$List$filterMap,
+							_elm_lang$core$Basics$identity,
+							A2(
+								_elm_lang$core$List$map,
+								function (_) {
+									return _.x;
+								},
+								A2(
+									_elm_lang$core$List$filter,
+									function (n) {
+										return _elm_lang$core$Native_Utils.eq(
+											n.y,
+											_elm_lang$core$Maybe$Just(layer));
+									},
+									_p12)))));
+				var _p7 = function () {
+					var _p8 = direction;
+					if (_p8.ctor === 'Down') {
 						return {ctor: '_Tuple3', _0: layer - 1, _1: layer - 1, _2: layer + 1};
 					} else {
 						return {ctor: '_Tuple3', _0: layer, _1: layer + 1, _2: layer - 1};
 					}
 				}();
-				var edgeLayer = _p5._0;
-				var otherLayer = _p5._1;
-				var nextLayer = _p5._2;
-				var xPosOther = A2(_kantega$voog$Sugiyama_Helpers$getXPos, _p7, otherLayer);
-				var layerEdges = A2(
+				var edgeLayer = _p7._0;
+				var otherLayer = _p7._1;
+				var nextLayer = _p7._2;
+				var xPosOther = A2(_kantega$voog$Sugiyama_Helpers$getXPos, _p11, otherLayer);
+				var xPosOpposite = A2(_kantega$voog$Sugiyama_Helpers$getXPos, _p11, nextLayer);
+				var layerEdges = (!isMiddle) ? A2(
 					_elm_lang$core$List$filter,
 					function (e) {
 						return _elm_lang$core$Native_Utils.eq(
 							A2(_elm_lang$core$Dict$get, e.from, layerPos),
-							_elm_lang$core$Maybe$Just(
-								_elm_lang$core$Maybe$Just(edgeLayer)));
+							_elm_lang$core$Maybe$Just(edgeLayer));
 					},
-					_p4.edges);
-				var newXPos = A5(_kantega$voog$Sugiyama_Placement$setSubLayerPosition, movedXPos, xPosOther, layerEdges, layer, 0 - moveAmount);
+					_p10) : A2(
+					_elm_lang$core$List$filter,
+					function (e) {
+						return _elm_lang$core$Native_Utils.eq(
+							A2(_elm_lang$core$Dict$get, e.from, layerPos),
+							_elm_lang$core$Maybe$Just(layer)) || _elm_lang$core$Native_Utils.eq(
+							A2(_elm_lang$core$Dict$get, e.to, layerPos),
+							_elm_lang$core$Maybe$Just(layer));
+					},
+					_p10);
+				var newXPos = A6(
+					_kantega$voog$Sugiyama_Placement$setSubLayerPositionLeft,
+					xPosOther,
+					xPosOpposite,
+					isMiddle,
+					layerEdges,
+					layer,
+					A6(
+						_kantega$voog$Sugiyama_Placement$setSubLayerPositionRight,
+						xPosOther,
+						xPosOpposite,
+						isMiddle,
+						layerEdges,
+						layer,
+						A2(
+							_elm_lang$core$Dict$map,
+							F2(
+								function (id, x) {
+									return x + _elm_lang$core$Basics$floor(
+										_elm_lang$core$Basics$toFloat(maxWidth - layerMaxWidth) / 2);
+								}),
+							xPos)));
 				var newNodes = A2(
 					_elm_lang$core$List$map,
 					function (n) {
 						return _elm_lang$core$Native_Utils.update(
 							n,
 							{
-								x: A2(
-									_elm_lang$core$Maybe$withDefault,
-									n.x,
-									A2(_elm_lang$core$Dict$get, n.id, newXPos))
+								x: function () {
+									var _p9 = A2(_elm_lang$core$Dict$get, n.id, newXPos);
+									if (_p9.ctor === 'Just') {
+										return _elm_lang$core$Maybe$Just(_p9._0);
+									} else {
+										return n.x;
+									}
+								}()
 							});
 					},
-					_p4.nodes);
-				if (repeat) {
+					_p12);
+				if (!isMiddle) {
 					var _v22 = layerPos,
 						_v23 = nextLayer,
-						_v24 = direction,
-						_v25 = repeat,
-						_v26 = _elm_lang$core$Native_Utils.update(
-						_p7,
+						_v24 = maxWidth,
+						_v25 = direction,
+						_v26 = isMiddle,
+						_v27 = _elm_lang$core$Native_Utils.update(
+						_p11,
 						{nodes: newNodes});
 					layerPos = _v22;
 					layer = _v23;
-					direction = _v24;
-					repeat = _v25;
-					_p3 = _v26;
+					maxWidth = _v24;
+					direction = _v25;
+					isMiddle = _v26;
+					_p5 = _v27;
 					continue setLayerPosition;
 				} else {
 					return _elm_lang$core$Native_Utils.update(
-						_p7,
+						_p11,
 						{nodes: newNodes});
 				}
 			}
 		}
 	});
-var _kantega$voog$Sugiyama_Placement$makePositive = function (_p8) {
-	var _p9 = _p8;
-	var _p10 = _p9.nodes;
+var _kantega$voog$Sugiyama_Placement$makePositive = function (_p13) {
+	var _p14 = _p13;
+	var _p15 = _p14.nodes;
 	var minVal = A2(
 		_elm_lang$core$Maybe$withDefault,
 		0,
@@ -12897,7 +13002,7 @@ var _kantega$voog$Sugiyama_Placement$makePositive = function (_p8) {
 									A2(_elm_lang$core$Maybe$withDefault, -1, a.x),
 									A2(_elm_lang$core$Maybe$withDefault, -1, b.x));
 							}),
-						_p10)))));
+						_p15)))));
 	var newNodes = A2(
 		_elm_lang$core$List$map,
 		function (n) {
@@ -12908,16 +13013,16 @@ var _kantega$voog$Sugiyama_Placement$makePositive = function (_p8) {
 						A2(_elm_lang$core$Maybe$withDefault, -1, n.x) - minVal)
 				});
 		},
-		_p10);
+		_p15);
 	return _elm_lang$core$Native_Utils.update(
-		_p9,
+		_p14,
 		{nodes: newNodes});
 };
-var _kantega$voog$Sugiyama_Placement$setPosition = function (_p11) {
-	var _p12 = _p11;
-	var _p14 = _p12.nodes;
-	var _p13 = _p12;
-	var layerPos = _kantega$voog$Sugiyama_Helpers$getLayerPos(_p13);
+var _kantega$voog$Sugiyama_Placement$setPosition = function (_p16) {
+	var _p17 = _p16;
+	var _p19 = _p17.nodes;
+	var _p18 = _p17;
+	var layerPos = _kantega$voog$Sugiyama_Helpers$getLayerPos(_p18);
 	var height = A2(
 		_elm_lang$core$Maybe$withDefault,
 		0,
@@ -12927,44 +13032,56 @@ var _kantega$voog$Sugiyama_Placement$setPosition = function (_p11) {
 				function (n) {
 					return A2(_elm_lang$core$Maybe$withDefault, -1, n.y);
 				},
-				_p14)));
+				_p19)));
+	var maxWidth = A2(
+		_elm_lang$core$Maybe$withDefault,
+		0,
+		_elm_lang$core$List$maximum(
+			A2(
+				_elm_lang$core$List$filterMap,
+				_elm_lang$core$Basics$identity,
+				A2(
+					_elm_lang$core$List$map,
+					function (_) {
+						return _.x;
+					},
+					_p19))));
 	var wideLayer = A2(
 		_elm_lang$core$Maybe$withDefault,
 		0,
-		A2(
-			_elm_lang$core$Maybe$withDefault,
-			_elm_lang$core$Maybe$Nothing,
-			_elm_lang$core$List$head(
-				_elm_lang$core$List$reverse(
+		_elm_lang$core$List$head(
+			A2(
+				_elm_lang$core$List$filterMap,
+				_elm_lang$core$Basics$identity,
+				A2(
+					_elm_lang$core$List$map,
+					function (_) {
+						return _.y;
+					},
 					A2(
-						_elm_lang$core$List$map,
-						function (_) {
-							return _.y;
+						_elm_lang$core$List$filter,
+						function (n) {
+							return _elm_lang$core$Native_Utils.eq(
+								n.x,
+								_elm_lang$core$Maybe$Just(maxWidth));
 						},
-						A2(
-							_elm_lang$core$List$sortWith,
-							F2(
-								function (a, b) {
-									return A2(
-										_elm_lang$core$Basics$compare,
-										A2(_elm_lang$core$Maybe$withDefault, -1, a.x),
-										A2(_elm_lang$core$Maybe$withDefault, -1, b.x));
-								}),
-							_p14))))));
+						_p19)))));
 	return _kantega$voog$Sugiyama_Placement$makePositive(
-		A5(
+		A6(
 			_kantega$voog$Sugiyama_Placement$setLayerPosition,
 			layerPos,
 			wideLayer,
-			_kantega$voog$Sugiyama_Model$Down,
-			false,
-			A5(
+			maxWidth,
+			_kantega$voog$Sugiyama_Model$Up,
+			true,
+			A6(
 				_kantega$voog$Sugiyama_Placement$setLayerPosition,
 				layerPos,
 				wideLayer + 1,
+				maxWidth,
 				_kantega$voog$Sugiyama_Model$Down,
-				true,
-				A5(_kantega$voog$Sugiyama_Placement$setLayerPosition, layerPos, wideLayer - 1, _kantega$voog$Sugiyama_Model$Up, true, _p13))));
+				false,
+				A6(_kantega$voog$Sugiyama_Placement$setLayerPosition, layerPos, wideLayer - 1, maxWidth, _kantega$voog$Sugiyama_Model$Up, false, _p18))));
 };
 
 var _kantega$voog$Sugiyama_Sugiyama$initialize = function (_p0) {
@@ -13290,33 +13407,6 @@ var _kantega$voog$Voog_Layouts_Sugiyama$sugiyamaLayout = F2(
 			{nodes: scaledNodes, edges: scaledEdges});
 	});
 
-var _kantega$voog$Voog_Action$layout = function (_p0) {
-	var _p1 = _p0;
-	var _p3 = _p1;
-	var _p2 = A2(
-		_elm_lang$core$String$split,
-		'.',
-		A2(_elm_lang$core$Maybe$withDefault, '', _p3.layout));
-	_v1_2:
-	do {
-		if (_p2.ctor === '::') {
-			switch (_p2._0) {
-				case 'layered':
-					return A2(_kantega$voog$Voog_Layouts_Sugiyama$sugiyamaLayout, _p2._1, _p3);
-				case 'manual':
-					return A2(_kantega$voog$Voog_Layouts_Manual$manualLayout, _p2._1, _p3);
-				default:
-					break _v1_2;
-			}
-		} else {
-			break _v1_2;
-		}
-	} while(false);
-	return A2(
-		_kantega$voog$Voog_Layouts_Sugiyama$sugiyamaLayout,
-		{ctor: '[]'},
-		_p3);
-};
 var _kantega$voog$Voog_Action$closeInfo = function (model) {
 	return _elm_lang$core$Native_Utils.update(
 		model,
@@ -13389,6 +13479,110 @@ var _kantega$voog$Voog_Action$toggleNode = F2(
 					model.edges)
 			});
 	});
+var _kantega$voog$Voog_Action$centerGraph = function (_p0) {
+	var _p1 = _p0;
+	var _p5 = _p1;
+	var _p2 = _p5.windowSize;
+	if ((_p2.ctor === 'Just') && (_p2._0.ctor === '_Tuple2')) {
+		var _p4 = _p2._0._0;
+		var _p3 = _p2._0._1;
+		var posNodes = A2(
+			_elm_lang$core$List$filterMap,
+			_elm_lang$core$Basics$identity,
+			A2(
+				_elm_lang$core$List$map,
+				function (_) {
+					return _.position;
+				},
+				_p1.nodes));
+		var minX = A2(
+			_elm_lang$core$Maybe$withDefault,
+			0,
+			_elm_lang$core$List$minimum(
+				A2(
+					_elm_lang$core$List$map,
+					function (_) {
+						return _.x;
+					},
+					posNodes)));
+		var maxX = A2(
+			_elm_lang$core$Maybe$withDefault,
+			0,
+			_elm_lang$core$List$maximum(
+				A2(
+					_elm_lang$core$List$map,
+					function (_) {
+						return _.x;
+					},
+					posNodes)));
+		var width = (maxX - minX) + 200;
+		var widthZoom = _elm_lang$core$Basics$toFloat(_p4) / width;
+		var minY = A2(
+			_elm_lang$core$Maybe$withDefault,
+			0,
+			_elm_lang$core$List$minimum(
+				A2(
+					_elm_lang$core$List$map,
+					function (_) {
+						return _.y;
+					},
+					posNodes)));
+		var maxY = A2(
+			_elm_lang$core$Maybe$withDefault,
+			0,
+			_elm_lang$core$List$maximum(
+				A2(
+					_elm_lang$core$List$map,
+					function (_) {
+						return _.y;
+					},
+					posNodes)));
+		var height = (maxY - minY) + 200;
+		var heightZoom = _elm_lang$core$Basics$toFloat(_p3) / height;
+		var zoom = A2(_elm_lang$core$Basics$min, widthZoom, heightZoom);
+		var extraWidth = (_elm_lang$core$Basics$toFloat(_p4) - (zoom * width)) / 2;
+		var extraHeight = (_elm_lang$core$Basics$toFloat(_p3) - (zoom * height)) / 2;
+		return _elm_lang$core$Native_Utils.update(
+			_p5,
+			{
+				zoom: zoom,
+				position: {x: (zoom * (100 - minX)) + extraWidth, y: (zoom * (100 - minY)) + extraHeight},
+				initiallyCentered: true
+			});
+	} else {
+		return _p5;
+	}
+};
+var _kantega$voog$Voog_Action$layout = function (_p6) {
+	var _p7 = _p6;
+	var _p9 = _p7;
+	var newModel = function () {
+		var _p8 = A2(
+			_elm_lang$core$String$split,
+			'.',
+			A2(_elm_lang$core$Maybe$withDefault, '', _p9.layout));
+		_v3_2:
+		do {
+			if (_p8.ctor === '::') {
+				switch (_p8._0) {
+					case 'layered':
+						return A2(_kantega$voog$Voog_Layouts_Sugiyama$sugiyamaLayout, _p8._1, _p9);
+					case 'manual':
+						return A2(_kantega$voog$Voog_Layouts_Manual$manualLayout, _p8._1, _p9);
+					default:
+						break _v3_2;
+				}
+			} else {
+				break _v3_2;
+			}
+		} while(false);
+		return A2(
+			_kantega$voog$Voog_Layouts_Sugiyama$sugiyamaLayout,
+			{ctor: '[]'},
+			_p9);
+	}();
+	return _p9.center ? _kantega$voog$Voog_Action$centerGraph(newModel) : newModel;
+};
 var _kantega$voog$Voog_Action$removeEdges = F2(
 	function (edges, model) {
 		if (_elm_lang$core$List$isEmpty(edges)) {
@@ -13407,79 +13601,6 @@ var _kantega$voog$Voog_Action$removeEdges = F2(
 			return _kantega$voog$Voog_Place$place(newModel);
 		}
 	});
-var _kantega$voog$Voog_Action$centerGraph = function (_p4) {
-	var _p5 = _p4;
-	var _p10 = _p5.nodes;
-	var _p9 = _p5;
-	var _p6 = _p9.windowSize;
-	if ((_p6.ctor === 'Just') && (_p6._0.ctor === '_Tuple2')) {
-		var _p8 = _p6._0._0;
-		var _p7 = _p6._0._1;
-		var height = A2(
-			F2(
-				function (x, y) {
-					return x + y;
-				}),
-			200,
-			A2(
-				_elm_lang$core$Maybe$withDefault,
-				0,
-				_elm_lang$core$List$maximum(
-					A2(
-						_elm_lang$core$List$map,
-						function (_) {
-							return _.y;
-						},
-						A2(
-							_elm_lang$core$List$filterMap,
-							_elm_lang$core$Basics$identity,
-							A2(
-								_elm_lang$core$List$map,
-								function (_) {
-									return _.position;
-								},
-								_p10))))));
-		var heightZoom = _elm_lang$core$Basics$toFloat(_p7) / height;
-		var width = A2(
-			F2(
-				function (x, y) {
-					return x + y;
-				}),
-			200,
-			A2(
-				_elm_lang$core$Maybe$withDefault,
-				0,
-				_elm_lang$core$List$maximum(
-					A2(
-						_elm_lang$core$List$map,
-						function (_) {
-							return _.x;
-						},
-						A2(
-							_elm_lang$core$List$filterMap,
-							_elm_lang$core$Basics$identity,
-							A2(
-								_elm_lang$core$List$map,
-								function (_) {
-									return _.position;
-								},
-								_p10))))));
-		var widthZoom = _elm_lang$core$Basics$toFloat(_p8) / width;
-		var zoom = A2(_elm_lang$core$Basics$min, widthZoom, heightZoom);
-		var finalZoom = (_elm_lang$core$Native_Utils.cmp(zoom, 3) > 0) ? 3 : ((_elm_lang$core$Native_Utils.cmp(zoom, 0.1) < 0) ? 0.1 : zoom);
-		var extraHeight = (_elm_lang$core$Basics$toFloat(_p7) - (finalZoom * height)) / 2;
-		var extraWidth = (_elm_lang$core$Basics$toFloat(_p8) - (finalZoom * width)) / 2;
-		return _elm_lang$core$Native_Utils.update(
-			_p9,
-			{
-				zoom: finalZoom,
-				position: {x: (finalZoom * 100) + extraWidth, y: (finalZoom * 100) + extraHeight},
-				initiallyCentered: true
-			});
-	} else {
-		return _p9;
-	}
-};
 var _kantega$voog$Voog_Action$removeNodes = F2(
 	function (nodes, model) {
 		if (_elm_lang$core$List$isEmpty(nodes)) {
@@ -13522,22 +13643,22 @@ var _kantega$voog$Voog_Action$updateInfo = F2(
 		var oldKeys = A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$first, old);
 		var appended = A2(
 			_elm_lang$core$List$filter,
-			function (_p11) {
-				var _p12 = _p11;
-				return !A2(_elm_lang$core$List$member, _p12._0, oldKeys);
+			function (_p10) {
+				var _p11 = _p10;
+				return !A2(_elm_lang$core$List$member, _p11._0, oldKeys);
 			},
 			$new);
 		var newItems = _elm_lang$core$Dict$fromList($new);
 		var updated = A2(
 			_elm_lang$core$List$map,
-			function (_p13) {
-				var _p14 = _p13;
-				var _p16 = _p14._0;
-				var _p15 = A2(_elm_lang$core$Dict$get, _p16, newItems);
-				if (_p15.ctor === 'Just') {
-					return {ctor: '_Tuple2', _0: _p16, _1: _p15._0};
+			function (_p12) {
+				var _p13 = _p12;
+				var _p15 = _p13._0;
+				var _p14 = A2(_elm_lang$core$Dict$get, _p15, newItems);
+				if (_p14.ctor === 'Just') {
+					return {ctor: '_Tuple2', _0: _p15, _1: _p14._0};
 				} else {
-					return {ctor: '_Tuple2', _0: _p16, _1: _p14._1};
+					return {ctor: '_Tuple2', _0: _p15, _1: _p13._1};
 				}
 			},
 			old);
@@ -13547,22 +13668,22 @@ var _kantega$voog$Voog_Action$setNodes = F3(
 	function (nodes, recalculate, model) {
 		setNodes:
 		while (true) {
-			var _p17 = nodes;
-			if (_p17.ctor === '::') {
-				var _p22 = _p17._1;
-				var _p21 = _p17._0;
+			var _p16 = nodes;
+			if (_p16.ctor === '::') {
+				var _p21 = _p16._1;
+				var _p20 = _p16._0;
 				if (!A2(
 					_elm_lang$core$List$any,
 					function (n) {
-						return _elm_lang$core$Native_Utils.eq(n.id, _p21.id);
+						return _elm_lang$core$Native_Utils.eq(n.id, _p20.id);
 					},
 					model.nodes)) {
 					var newNodes = {
 						ctor: '::',
-						_0: {selected: false, position: _elm_lang$core$Maybe$Nothing, id: _p21.id, info: _p21.info, classes: _p21.classes, name: _p21.name, shape: _p21.shape, image: _p21.image, size: _p21.size, x: _p21.x, y: _p21.y},
+						_0: {selected: false, position: _elm_lang$core$Maybe$Nothing, id: _p20.id, info: _p20.info, classes: _p20.classes, name: _p20.name, shape: _p20.shape, image: _p20.image, size: _p20.size, x: _p20.x, y: _p20.y},
 						_1: model.nodes
 					};
-					var _v8 = _p22,
+					var _v8 = _p21,
 						_v9 = true,
 						_v10 = _elm_lang$core$Native_Utils.update(
 						model,
@@ -13572,31 +13693,31 @@ var _kantega$voog$Voog_Action$setNodes = F3(
 					model = _v10;
 					continue setNodes;
 				} else {
-					var _p18 = A2(
+					var _p17 = A2(
 						_elm_lang$core$List$partition,
 						function (n) {
-							return _elm_lang$core$Native_Utils.eq(n.id, _p21.id);
+							return _elm_lang$core$Native_Utils.eq(n.id, _p20.id);
 						},
 						model.nodes);
-					var oldNode = _p18._0;
-					var oldNodes = _p18._1;
+					var oldNode = _p17._0;
+					var oldNodes = _p17._1;
 					var newNodes = function () {
-						var _p19 = _elm_lang$core$List$head(oldNode);
-						if (_p19.ctor === 'Just') {
-							var _p20 = _p19._0;
+						var _p18 = _elm_lang$core$List$head(oldNode);
+						if (_p18.ctor === 'Just') {
+							var _p19 = _p18._0;
 							return {
 								ctor: '::',
 								_0: _elm_lang$core$Native_Utils.update(
-									_p20,
+									_p19,
 									{
-										info: A2(_kantega$voog$Voog_Action$updateInfo, _p20.info, _p21.info),
-										classes: _p21.classes,
-										name: _p21.name,
-										shape: _p21.shape,
-										image: _p21.image,
-										size: _p21.size,
-										x: _p21.x,
-										y: _p21.y
+										info: A2(_kantega$voog$Voog_Action$updateInfo, _p19.info, _p20.info),
+										classes: _p20.classes,
+										name: _p20.name,
+										shape: _p20.shape,
+										image: _p20.image,
+										size: _p20.size,
+										x: _p20.x,
+										y: _p20.y
 									}),
 								_1: oldNodes
 							};
@@ -13604,7 +13725,7 @@ var _kantega$voog$Voog_Action$setNodes = F3(
 							return model.nodes;
 						}
 					}();
-					var _v12 = _p22,
+					var _v12 = _p21,
 						_v13 = recalculate,
 						_v14 = _elm_lang$core$Native_Utils.update(
 						model,
@@ -13675,37 +13796,37 @@ var _kantega$voog$Voog_Action$setEdges = F3(
 	function (edges, recalculate, model) {
 		setEdges:
 		while (true) {
-			var _p23 = edges;
-			if (_p23.ctor === '::') {
-				var _p28 = _p23._1;
-				var _p27 = _p23._0;
+			var _p22 = edges;
+			if (_p22.ctor === '::') {
+				var _p27 = _p22._1;
+				var _p26 = _p22._0;
 				if (!A2(
 					_elm_lang$core$List$any,
 					function (e) {
 						return _elm_lang$core$Native_Utils.eq(
 							e.id,
-							{ctor: '_Tuple2', _0: _p27.from, _1: _p27.to});
+							{ctor: '_Tuple2', _0: _p26.from, _1: _p26.to});
 					},
 					model.edges)) {
 					var newEdges = {
 						ctor: '::',
 						_0: {
-							id: {ctor: '_Tuple2', _0: _p27.from, _1: _p27.to},
+							id: {ctor: '_Tuple2', _0: _p26.from, _1: _p26.to},
 							selected: false,
 							position: _elm_lang$core$Maybe$Nothing,
 							labelPosition: _elm_lang$core$Maybe$Nothing,
 							dashOffset: 0,
-							from: _p27.from,
-							to: _p27.to,
-							info: _p27.info,
-							classes: _p27.classes,
-							label: _p27.label,
-							width: _p27.width,
-							speed: _p27.speed
+							from: _p26.from,
+							to: _p26.to,
+							info: _p26.info,
+							classes: _p26.classes,
+							label: _p26.label,
+							width: _p26.width,
+							speed: _p26.speed
 						},
 						_1: model.edges
 					};
-					var _v16 = _p28,
+					var _v16 = _p27,
 						_v17 = true,
 						_v18 = _elm_lang$core$Native_Utils.update(
 						model,
@@ -13715,30 +13836,30 @@ var _kantega$voog$Voog_Action$setEdges = F3(
 					model = _v18;
 					continue setEdges;
 				} else {
-					var _p24 = A2(
+					var _p23 = A2(
 						_elm_lang$core$List$partition,
 						function (e) {
 							return _elm_lang$core$Native_Utils.eq(
 								e.id,
-								{ctor: '_Tuple2', _0: _p27.from, _1: _p27.to});
+								{ctor: '_Tuple2', _0: _p26.from, _1: _p26.to});
 						},
 						model.edges);
-					var oldEdge = _p24._0;
-					var oldEdges = _p24._1;
+					var oldEdge = _p23._0;
+					var oldEdges = _p23._1;
 					var newEdges = function () {
-						var _p25 = _elm_lang$core$List$head(oldEdge);
-						if (_p25.ctor === 'Just') {
-							var _p26 = _p25._0;
+						var _p24 = _elm_lang$core$List$head(oldEdge);
+						if (_p24.ctor === 'Just') {
+							var _p25 = _p24._0;
 							return {
 								ctor: '::',
 								_0: _elm_lang$core$Native_Utils.update(
-									_p26,
+									_p25,
 									{
-										info: A2(_kantega$voog$Voog_Action$updateInfo, _p26.info, _p27.info),
-										classes: _p27.classes,
-										label: _p27.label,
-										width: _p27.width,
-										speed: _p27.speed
+										info: A2(_kantega$voog$Voog_Action$updateInfo, _p25.info, _p26.info),
+										classes: _p26.classes,
+										label: _p26.label,
+										width: _p26.width,
+										speed: _p26.speed
 									}),
 								_1: oldEdges
 							};
@@ -13746,7 +13867,7 @@ var _kantega$voog$Voog_Action$setEdges = F3(
 							return model.edges;
 						}
 					}();
-					var _v20 = _p28,
+					var _v20 = _p27,
 						_v21 = recalculate,
 						_v22 = _elm_lang$core$Native_Utils.update(
 						model,
@@ -13770,15 +13891,15 @@ var _kantega$voog$Voog_Action$setEdges = F3(
 		}
 	});
 var _kantega$voog$Voog_Action$updateWindow = F2(
-	function (_p29, model) {
-		var _p30 = _p29;
-		var _p33 = _p30.width;
-		var _p32 = _p30.height;
+	function (_p28, model) {
+		var _p29 = _p28;
+		var _p32 = _p29.width;
+		var _p31 = _p29.height;
 		var newPosition = function () {
-			var _p31 = model.windowSize;
-			if (_p31.ctor === 'Just') {
-				var dh = _elm_lang$core$Basics$toFloat(_p32 - _p31._0._1) / 2;
-				var dw = _elm_lang$core$Basics$toFloat(_p33 - _p31._0._0) / 2;
+			var _p30 = model.windowSize;
+			if (_p30.ctor === 'Just') {
+				var dh = _elm_lang$core$Basics$toFloat(_p31 - _p30._0._1) / 2;
+				var dw = _elm_lang$core$Basics$toFloat(_p32 - _p30._0._0) / 2;
 				return {x: model.position.x + dw, y: model.position.y + dh};
 			} else {
 				return model.position;
@@ -13789,7 +13910,7 @@ var _kantega$voog$Voog_Action$updateWindow = F2(
 			{
 				position: newPosition,
 				windowSize: _elm_lang$core$Maybe$Just(
-					{ctor: '_Tuple2', _0: _p33, _1: _p32})
+					{ctor: '_Tuple2', _0: _p32, _1: _p31})
 			});
 	});
 
@@ -14022,54 +14143,53 @@ var _kantega$voog$Voog_Input$handleInput = F2(
 	function (model, inputString) {
 		var _p2 = A2(_elm_lang$core$Json_Decode$decodeString, _kantega$voog$Voog_Input$input, inputString);
 		if (_p2.ctor === 'Ok') {
-			var _p4 = _p2._0;
-			return function (model) {
-				var _p3 = _p4.center;
-				if ((_p3.ctor === 'Just') && (_p3._0 === true)) {
-					return _kantega$voog$Voog_Action$centerGraph(model);
-				} else {
-					return model;
-				}
-			}(
-				A2(
-					_kantega$voog$Voog_Action$setNodesWithEdges,
-					_p4.setEdges,
+			var _p3 = _p2._0;
+			return A2(
+				_kantega$voog$Voog_Action$setNodesWithEdges,
+				_p3.setEdges,
+				A3(
+					_kantega$voog$Voog_Action$setEdges,
+					_p3.setEdges,
+					false,
 					A3(
-						_kantega$voog$Voog_Action$setEdges,
-						_p4.setEdges,
+						_kantega$voog$Voog_Action$setNodes,
+						_p3.setNodes,
 						false,
-						A3(
-							_kantega$voog$Voog_Action$setNodes,
-							_p4.setNodes,
-							false,
+						A2(
+							_kantega$voog$Voog_Action$removeEdges,
+							_p3.removeEdges,
 							A2(
-								_kantega$voog$Voog_Action$removeEdges,
-								_p4.removeEdges,
+								_kantega$voog$Voog_Action$removeNodes,
+								_p3.removeNodes,
 								A2(
-									_kantega$voog$Voog_Action$removeNodes,
-									_p4.removeNodes,
+									_kantega$voog$Voog_Action$addMovement,
+									_p3.addMovement,
 									A2(
-										_kantega$voog$Voog_Action$addMovement,
-										_p4.addMovement,
+										_kantega$voog$Voog_Input$handlePosition,
+										_p3.position,
 										A2(
-											_kantega$voog$Voog_Input$handlePosition,
-											_p4.position,
-											A2(
-												_kantega$voog$Voog_Input$handleSize,
-												_p4.size,
+											_kantega$voog$Voog_Input$handleSize,
+											_p3.size,
+											function (m) {
+												return _elm_lang$core$Native_Utils.update(
+													m,
+													{
+														name: _p3.name,
+														layout: _p3.layout,
+														nodeDistance: _p3.nodeDistance,
+														attraction: _p3.attraction,
+														repulsion: _p3.repulsion,
+														center: A2(_elm_lang$core$Maybe$withDefault, false, _p3.center)
+													});
+											}(
 												function (m) {
-													return _elm_lang$core$Native_Utils.update(
+													return _p3.clear ? _elm_lang$core$Native_Utils.update(
 														m,
-														{name: _p4.name, layout: _p4.layout, nodeDistance: _p4.nodeDistance, attraction: _p4.attraction, repulsion: _p4.repulsion});
-												}(
-													function (m) {
-														return _p4.clear ? _elm_lang$core$Native_Utils.update(
-															m,
-															{
-																nodes: {ctor: '[]'},
-																edges: {ctor: '[]'}
-															}) : m;
-													}(model)))))))))));
+														{
+															nodes: {ctor: '[]'},
+															edges: {ctor: '[]'}
+														}) : m;
+												}(model))))))))));
 		} else {
 			return model;
 		}
@@ -14259,7 +14379,8 @@ var _kantega$voog$Voog_Update$force = function (model) {
 		A2(
 			_elm_lang$core$String$split,
 			'.',
-			A2(_elm_lang$core$Maybe$withDefault, '', model.layout))) ? _kantega$voog$Voog_Layouts_Forced$forceTick(model) : model;
+			A2(_elm_lang$core$Maybe$withDefault, '', model.layout))) ? ((model.center && model.doForce) ? _kantega$voog$Voog_Action$centerGraph(
+		_kantega$voog$Voog_Layouts_Forced$forceTick(model)) : _kantega$voog$Voog_Layouts_Forced$forceTick(model)) : model;
 };
 var _kantega$voog$Voog_Update$moveEdges = F2(
 	function (diff, model) {
@@ -14441,7 +14562,8 @@ var _kantega$voog$Main$init = function (flags) {
 		attraction: _elm_lang$core$Maybe$Nothing,
 		repulsion: _elm_lang$core$Maybe$Nothing,
 		doForce: false,
-		initiallyCentered: false
+		initiallyCentered: false,
+		center: false
 	};
 	return {
 		ctor: '_Tuple2',
