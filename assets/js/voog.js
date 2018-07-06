@@ -13557,6 +13557,25 @@ var _kantega$voog$Voog_Layouts_Sugiyama$sugiyamaLayout = F2(
 			{nodes: scaledNodes, edges: scaledEdges});
 	});
 
+var _kantega$voog$Voog_Layouts_Zero$zeroLayout = function (_p0) {
+	var _p1 = _p0;
+	var zero = {x: 0, y: 0};
+	var newNodes = A2(
+		_elm_lang$core$List$map,
+		function (n) {
+			return _elm_lang$core$Native_Utils.update(
+				n,
+				{
+					position: _elm_lang$core$Maybe$Just(
+						A2(_elm_lang$core$Maybe$withDefault, zero, n.position))
+				});
+		},
+		_p1.nodes);
+	return _elm_lang$core$Native_Utils.update(
+		_p1,
+		{nodes: newNodes});
+};
+
 var _kantega$voog$Voog_Action$layout = function (_p0) {
 	var _p1 = _p0;
 	var _p3 = _p1;
@@ -13564,7 +13583,7 @@ var _kantega$voog$Voog_Action$layout = function (_p0) {
 		_elm_lang$core$String$split,
 		'.',
 		A2(_elm_lang$core$Maybe$withDefault, '', _p3.layout));
-	_v1_2:
+	_v1_3:
 	do {
 		if (_p2.ctor === '::') {
 			switch (_p2._0) {
@@ -13572,11 +13591,13 @@ var _kantega$voog$Voog_Action$layout = function (_p0) {
 					return A2(_kantega$voog$Voog_Layouts_Sugiyama$sugiyamaLayout, _p2._1, _p3);
 				case 'manual':
 					return A2(_kantega$voog$Voog_Layouts_Manual$manualLayout, _p2._1, _p3);
+				case 'zero':
+					return _kantega$voog$Voog_Layouts_Zero$zeroLayout(_p3);
 				default:
-					break _v1_2;
+					break _v1_3;
 			}
 		} else {
-			break _v1_2;
+			break _v1_3;
 		}
 	} while(false);
 	return A2(
