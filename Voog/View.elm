@@ -46,9 +46,41 @@ view model =
                     , (List.foldr List.append [] (List.filterMap viewLabel model.edges))
                     , (List.map (viewMovement edgeDict) model.movements)
                     , (List.foldr List.append [] (List.filterMap (viewNode model.name) model.nodes))
+                    , invalidInput model
                     ]
                 )
             ]
+
+
+invalidInput : Model -> List (Svg Msg)
+invalidInput model =
+    if model.invalidInput then
+        let
+            ( windowWidth, windowHeight ) =
+                Maybe.withDefault ( 0, 0 ) model.windowSize
+        in
+            [ rect
+                [ onClick AcceptInvalidInput
+                , fill "rgba(255, 0, 0, 0.5)"
+                , x <| toString <| -model.position.x / model.zoom
+                , y <| toString <| -model.position.y / model.zoom
+                , width <| toString <| toFloat windowWidth / model.zoom
+                , height <| toString <| toFloat windowHeight / model.zoom
+                ]
+                []
+            , Svg.text_
+                [ x <| toString <| -model.position.x / model.zoom + toFloat windowWidth / model.zoom / 2
+                , y <| toString <| -model.position.y / model.zoom + toFloat windowHeight / model.zoom / 2
+                , fill "rgba(255, 0, 0, 0.4)"
+                , textAnchor "middle"
+                , alignmentBaseline "middle"
+                , fontWeight "700"
+                , fontSize <| toString <| 50 / model.zoom
+                ]
+                [ Svg.text "Invalid input" ]
+            ]
+    else
+        []
 
 
 viewTooltip : Model -> Html Msg

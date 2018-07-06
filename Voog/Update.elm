@@ -23,6 +23,9 @@ update msg model =
         InputMsg msg ->
             handleInput model msg
 
+        AcceptInvalidInput ->
+            { model | invalidInput = False }
+
         Tick diff ->
             model
                 |> center

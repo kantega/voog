@@ -18,6 +18,7 @@ type Msg
     | MouseUp ( Int, Int, Int )
     | MouseDown ( Int, Int, Int )
     | MouseWheel Int
+    | AcceptInvalidInput
 
 
 onMouseWheel : (Int -> msg) -> Html.Attribute msg

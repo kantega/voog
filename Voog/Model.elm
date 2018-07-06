@@ -20,6 +20,7 @@ type alias Model =
     , initiallyCentered : Bool
     , movements : List (Movement InputMovement)
     , center : Bool
+    , invalidInput : Bool
     }
 
 

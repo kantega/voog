@@ -107,7 +107,7 @@ handleInput model inputString =
                 |> setNodesWithEdges input.setEdges
 
         _ ->
-            model
+            { model | invalidInput = True }
 
 
 handleSize : Maybe ( Int, Int ) -> Model -> Model

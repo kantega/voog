@@ -44,6 +44,7 @@ init flags =
             , doForce = False
             , initiallyCentered = False
             , center = False
+            , invalidInput = False
             }
     in
         ( model, Task.perform WindowSize Window.size )
