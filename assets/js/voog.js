@@ -9906,7 +9906,9 @@ var _kantega$voog$Voog_Model$Model = function (a) {
 															return function (p) {
 																return function (q) {
 																	return function (r) {
-																		return {flags: a, name: b, nodes: c, edges: d, elementPosition: e, position: f, mouse: g, drag: h, windowSize: i, zoom: j, layout: k, nodeDistance: l, attraction: m, repulsion: n, doForce: o, initiallyCentered: p, movements: q, center: r};
+																		return function (s) {
+																			return {flags: a, name: b, nodes: c, edges: d, elementPosition: e, position: f, mouse: g, drag: h, windowSize: i, zoom: j, layout: k, nodeDistance: l, attraction: m, repulsion: n, doForce: o, initiallyCentered: p, movements: q, center: r, invalidInput: s};
+																		};
 																	};
 																};
 															};
@@ -10107,6 +10109,7 @@ var _kantega$voog$Voog_Messages$onMouseWheel = function (tagger) {
 				},
 				_elm_lang$core$Json_Decode$int)));
 };
+var _kantega$voog$Voog_Messages$AcceptInvalidInput = {ctor: 'AcceptInvalidInput'};
 var _kantega$voog$Voog_Messages$MouseWheel = function (a) {
 	return {ctor: 'MouseWheel', _0: a};
 };
@@ -11110,6 +11113,100 @@ var _kantega$voog$Voog_View$viewTooltip = function (model) {
 		}
 	}
 };
+var _kantega$voog$Voog_View$invalidInput = function (model) {
+	if (model.invalidInput) {
+		var _p25 = A2(
+			_elm_lang$core$Maybe$withDefault,
+			{ctor: '_Tuple2', _0: 0, _1: 0},
+			model.windowSize);
+		var windowWidth = _p25._0;
+		var windowHeight = _p25._1;
+		return {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$svg$Svg$rect,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onClick(_kantega$voog$Voog_Messages$AcceptInvalidInput),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$fill('rgba(255, 0, 0, 0.5)'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$x(
+								_elm_lang$core$Basics$toString((0 - model.position.x) / model.zoom)),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$y(
+									_elm_lang$core$Basics$toString((0 - model.position.y) / model.zoom)),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$width(
+										_elm_lang$core$Basics$toString(
+											_elm_lang$core$Basics$toFloat(windowWidth) / model.zoom)),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$height(
+											_elm_lang$core$Basics$toString(
+												_elm_lang$core$Basics$toFloat(windowHeight) / model.zoom)),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					}
+				},
+				{ctor: '[]'}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$text_,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$x(
+							_elm_lang$core$Basics$toString(
+								((0 - model.position.x) / model.zoom) + ((_elm_lang$core$Basics$toFloat(windowWidth) / model.zoom) / 2))),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$y(
+								_elm_lang$core$Basics$toString(
+									((0 - model.position.y) / model.zoom) + ((_elm_lang$core$Basics$toFloat(windowHeight) / model.zoom) / 2))),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$fill('rgba(255, 0, 0, 0.4)'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$svg$Svg_Attributes$textAnchor('middle'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$svg$Svg_Attributes$alignmentBaseline('middle'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$svg$Svg_Attributes$fontWeight('700'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$svg$Svg_Attributes$fontSize(
+													_elm_lang$core$Basics$toString(50 / model.zoom)),
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg$text('Invalid input'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
+		};
+	} else {
+		return {ctor: '[]'};
+	}
+};
 var _kantega$voog$Voog_View$view = function (model) {
 	var edgeDict = _elm_lang$core$Dict$fromList(
 		A2(
@@ -11118,12 +11215,12 @@ var _kantega$voog$Voog_View$view = function (model) {
 				return {ctor: '_Tuple2', _0: e.id, _1: e};
 			},
 			model.edges));
-	var _p25 = A2(
+	var _p26 = A2(
 		_elm_lang$core$Maybe$withDefault,
 		{ctor: '_Tuple2', _0: 0, _1: 0},
 		model.windowSize);
-	var windowWidth = _p25._0;
-	var windowHeight = _p25._1;
+	var windowWidth = _p26._0;
+	var windowHeight = _p26._1;
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -11228,7 +11325,11 @@ var _kantega$voog$Voog_View$view = function (model) {
 													_elm_lang$core$List$filterMap,
 													_kantega$voog$Voog_View$viewNode(model.name),
 													model.nodes)),
-											_1: {ctor: '[]'}
+											_1: {
+												ctor: '::',
+												_0: _kantega$voog$Voog_View$invalidInput(model),
+												_1: {ctor: '[]'}
+											}
 										}
 									}
 								}
@@ -14191,7 +14292,9 @@ var _kantega$voog$Voog_Input$handleInput = F2(
 														}) : m;
 												}(model))))))))));
 		} else {
-			return model;
+			return _elm_lang$core$Native_Utils.update(
+				model,
+				{invalidInput: true});
 		}
 	});
 
@@ -14418,6 +14521,10 @@ var _kantega$voog$Voog_Update$update = F2(
 				return _kantega$voog$Voog_Action$closeInfo(model);
 			case 'InputMsg':
 				return A2(_kantega$voog$Voog_Input$handleInput, model, _p3._0);
+			case 'AcceptInvalidInput':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{invalidInput: false});
 			case 'Tick':
 				var _p4 = _p3._0;
 				return A2(
@@ -14563,7 +14670,8 @@ var _kantega$voog$Main$init = function (flags) {
 		repulsion: _elm_lang$core$Maybe$Nothing,
 		doForce: false,
 		initiallyCentered: false,
-		center: false
+		center: false,
+		invalidInput: false
 	};
 	return {
 		ctor: '_Tuple2',
