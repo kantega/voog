@@ -5,6 +5,7 @@ import Voog.Model exposing (..)
 import Voog.View exposing (defaultDistance, nodeRadius)
 import Voog.Place exposing (placeSingleLineEdge)
 
+
 forceTick : Model -> Model
 forceTick ({ nodes, edges } as model) =
     if model.force > 0 then
@@ -40,7 +41,7 @@ forceTick ({ nodes, edges } as model) =
                     |> List.sum
 
             force =
-                if movement > 10 then
+                if movement > toFloat (List.length nodes) then
                     model.force * model.forceDampFactor
                 else
                     0
@@ -65,7 +66,7 @@ moveNodes ({ nodes, edges } as model) nodePositions node =
                     List.map (attraction model.attraction nodeDistance nodePositions node) connections
 
                 repulsions =
-                    List.map (repulsion model.repulsion nodePositions node) nodes
+                    List.map (repulsion model.repulsion (nodeDistance^2) nodePositions node) nodes
 
                 forces =
                     List.append attractions repulsions
@@ -149,8 +150,8 @@ attraction coefficient nodeDistance nodePositions node edge =
                 ( 0, 0 )
 
 
-repulsion : Float -> Dict Int (Maybe Point) -> Node -> Node -> ( Float, Float )
-repulsion coefficient nodePositions nodeA nodeB =
+repulsion : Float -> Float -> Dict Int (Maybe Point) -> Node -> Node -> ( Float, Float )
+repulsion coefficient nodeDistanceSquared nodePositions nodeA nodeB =
     let
         posA =
             Dict.get nodeA.id nodePositions
@@ -166,12 +167,13 @@ repulsion coefficient nodePositions nodeA nodeB =
 
                     distanceSquared =
                         (b.y - a.y) ^ 2 + (b.x - a.x) ^ 2
-
-                    force =
-                        coefficient / distanceSquared
                 in
-                    if distanceSquared > 0 then
-                        ( force * cos angle, force * sin angle )
+                    if distanceSquared > 0 && distanceSquared < 3 * nodeDistanceSquared then
+                        let
+                            force =
+                                coefficient / distanceSquared
+                        in
+                            ( force * cos angle, force * sin angle )
                     else
                         ( 0, 0 )
 
