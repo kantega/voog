@@ -10118,10 +10118,27 @@ var _kantega$voog$Voog_Model$Input = function (a) {
 		};
 	};
 };
-var _kantega$voog$Voog_Model$InputNode = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {id: a, info: b, classes: c, name: d, shape: e, image: f, size: g, x: h, y: i};
-	});
+var _kantega$voog$Voog_Model$InputNode = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return {id: a, info: b, classes: c, name: d, shape: e, image: f, width: g, height: h, x: i, y: j};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 var _kantega$voog$Voog_Model$InputEdge = F7(
 	function (a, b, c, d, e, f, g) {
 		return {from: a, to: b, info: c, classes: d, label: e, width: f, speed: g};
@@ -10790,8 +10807,8 @@ var _kantega$voog$Voog_View$viewTooltip = function (model) {
 			_p18.name,
 			{
 				ctor: '_Tuple2',
-				_0: A2(_elm_lang$core$Maybe$withDefault, _kantega$voog$Voog_View$nodeRadius, _p18.size),
-				_1: _kantega$voog$Voog_View$nodeRadius - A2(_elm_lang$core$Maybe$withDefault, _kantega$voog$Voog_View$nodeRadius, _p18.size)
+				_0: A2(_elm_lang$core$Maybe$withDefault, _kantega$voog$Voog_View$nodeRadius, _p18.width),
+				_1: _kantega$voog$Voog_View$nodeRadius - A2(_elm_lang$core$Maybe$withDefault, _kantega$voog$Voog_View$nodeRadius, _p18.height)
 			});
 	} else {
 		var _p19 = _elm_lang$core$List$head(
@@ -10830,13 +10847,14 @@ var _kantega$voog$Voog_View$viewNode = F2(
 		if (_p22.ctor === 'Just') {
 			var _p25 = _p22._0.y;
 			var _p24 = _p22._0.x;
+			var nodeHeight = A2(_elm_lang$core$Maybe$withDefault, _kantega$voog$Voog_View$nodeRadius, node.height);
+			var nodeWidth = A2(_elm_lang$core$Maybe$withDefault, _kantega$voog$Voog_View$nodeRadius, node.width);
 			return _elm_lang$core$Maybe$Just(
 				{
 					ctor: '::',
 					_0: function () {
 						var _p23 = node.shape;
 						if ((_p23.ctor === 'Just') && (_p23._0 === 'rect')) {
-							var radius = A2(_elm_lang$core$Maybe$withDefault, _kantega$voog$Voog_View$nodeRadius, node.size);
 							return _elm_lang$svg$Svg$rect(
 								{
 									ctor: '::',
@@ -10852,19 +10870,19 @@ var _kantega$voog$Voog_View$viewNode = F2(
 										_1: {
 											ctor: '::',
 											_0: _elm_lang$svg$Svg_Attributes$x(
-												_elm_lang$core$Basics$toString(_p24 - radius)),
+												_elm_lang$core$Basics$toString(_p24 - nodeWidth)),
 											_1: {
 												ctor: '::',
 												_0: _elm_lang$svg$Svg_Attributes$y(
-													_elm_lang$core$Basics$toString(_p25 - radius)),
+													_elm_lang$core$Basics$toString(_p25 - nodeHeight)),
 												_1: {
 													ctor: '::',
 													_0: _elm_lang$svg$Svg_Attributes$width(
-														_elm_lang$core$Basics$toString(2 * radius)),
+														_elm_lang$core$Basics$toString(2 * nodeWidth)),
 													_1: {
 														ctor: '::',
 														_0: _elm_lang$svg$Svg_Attributes$height(
-															_elm_lang$core$Basics$toString(2 * radius)),
+															_elm_lang$core$Basics$toString(2 * nodeHeight)),
 														_1: {ctor: '[]'}
 													}
 												}
@@ -10873,7 +10891,7 @@ var _kantega$voog$Voog_View$viewNode = F2(
 									}
 								});
 						} else {
-							return _elm_lang$svg$Svg$circle(
+							return _elm_lang$svg$Svg$ellipse(
 								{
 									ctor: '::',
 									_0: _elm_lang$html$Html_Events$onClick(
@@ -10895,10 +10913,14 @@ var _kantega$voog$Voog_View$viewNode = F2(
 													_elm_lang$core$Basics$toString(_p25)),
 												_1: {
 													ctor: '::',
-													_0: _elm_lang$svg$Svg_Attributes$r(
-														_elm_lang$core$Basics$toString(
-															A2(_elm_lang$core$Maybe$withDefault, _kantega$voog$Voog_View$nodeRadius, node.size))),
-													_1: {ctor: '[]'}
+													_0: _elm_lang$svg$Svg_Attributes$rx(
+														_elm_lang$core$Basics$toString(nodeWidth)),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$svg$Svg_Attributes$ry(
+															_elm_lang$core$Basics$toString(nodeHeight)),
+														_1: {ctor: '[]'}
+													}
 												}
 											}
 										}
@@ -13816,7 +13838,7 @@ var _kantega$voog$Voog_Action$setNodes = F3(
 					model.nodes)) {
 					var newNodes = {
 						ctor: '::',
-						_0: {selected: false, position: _elm_lang$core$Maybe$Nothing, viewNode: _elm_lang$core$Maybe$Nothing, id: _p20.id, info: _p20.info, classes: _p20.classes, name: _p20.name, shape: _p20.shape, image: _p20.image, size: _p20.size, x: _p20.x, y: _p20.y},
+						_0: {selected: false, position: _elm_lang$core$Maybe$Nothing, viewNode: _elm_lang$core$Maybe$Nothing, id: _p20.id, info: _p20.info, classes: _p20.classes, name: _p20.name, shape: _p20.shape, image: _p20.image, width: _p20.width, height: _p20.height, x: _p20.x, y: _p20.y},
 						_1: model.nodes
 					};
 					var _v8 = _p21,
@@ -13852,7 +13874,8 @@ var _kantega$voog$Voog_Action$setNodes = F3(
 										name: _p20.name,
 										shape: _p20.shape,
 										image: _p20.image,
-										size: _p20.size,
+										width: _p20.width,
+										height: _p20.height,
 										x: _p20.x,
 										y: _p20.y
 									}),
@@ -13896,7 +13919,8 @@ var _kantega$voog$Voog_Action$setNodesWithEdges = F2(
 					name: _elm_lang$core$Maybe$Nothing,
 					shape: _elm_lang$core$Maybe$Nothing,
 					image: _elm_lang$core$Maybe$Nothing,
-					size: _elm_lang$core$Maybe$Nothing,
+					width: _elm_lang$core$Maybe$Nothing,
+					height: _elm_lang$core$Maybe$Nothing,
 					x: _elm_lang$core$Maybe$Nothing,
 					y: _elm_lang$core$Maybe$Nothing
 				};
@@ -14124,39 +14148,44 @@ var _kantega$voog$Voog_Input$node = A4(
 		_elm_lang$core$Maybe$Nothing,
 		A4(
 			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-			'size',
+			'height',
 			_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$float),
 			_elm_lang$core$Maybe$Nothing,
 			A4(
 				_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-				'image',
-				_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$string),
+				'width',
+				_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$float),
 				_elm_lang$core$Maybe$Nothing,
 				A4(
 					_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-					'shape',
+					'image',
 					_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$string),
 					_elm_lang$core$Maybe$Nothing,
 					A4(
 						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-						'name',
+						'shape',
 						_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$string),
 						_elm_lang$core$Maybe$Nothing,
 						A4(
 							_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-							'classes',
-							_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string),
-							{ctor: '[]'},
+							'name',
+							_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$string),
+							_elm_lang$core$Maybe$Nothing,
 							A4(
 								_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-								'info',
-								_elm_lang$core$Json_Decode$list(_kantega$voog$Voog_Input$stringStringTuple),
+								'classes',
+								_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string),
 								{ctor: '[]'},
-								A3(
-									_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-									'id',
-									_elm_lang$core$Json_Decode$int,
-									_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_kantega$voog$Voog_Model$InputNode))))))))));
+								A4(
+									_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
+									'info',
+									_elm_lang$core$Json_Decode$list(_kantega$voog$Voog_Input$stringStringTuple),
+									{ctor: '[]'},
+									A3(
+										_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+										'id',
+										_elm_lang$core$Json_Decode$int,
+										_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_kantega$voog$Voog_Model$InputNode)))))))))));
 var _kantega$voog$Voog_Input$edge = A4(
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
 	'speed',
