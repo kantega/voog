@@ -7,7 +7,11 @@ class Test {
     }
 
     update() {
-        this.app.ports.input.send(JSON.stringify(Object.assign({}, this.defaults(), this.lastInput)));
+        this.app.ports.input.send(
+            JSON.stringify(
+                Object.assign({}, this.defaults(), this.lastInput, {'addMovement': []})
+            )
+        );
     }
 
     send(input) {
@@ -20,7 +24,7 @@ class Test {
             "name": this.name,
             "size": [this.node.offsetWidth, this.node.offsetHeight],
             "position": [this.node.offsetLeft - (window.pageXOffset || document.documentElement.scrollLeft)
-                        , this.node.offsetTop - (window.pageYOffset || document.documentElement.scrollTop)]
+                , this.node.offsetTop - (window.pageYOffset || document.documentElement.scrollTop)]
         };
     }
 }
