@@ -10061,7 +10061,9 @@ var _kantega$voog$Voog_Model$Model = function (a) {
 																return function (q) {
 																	return function (r) {
 																		return function (s) {
-																			return {flags: a, name: b, nodes: c, edges: d, elementPosition: e, position: f, mouse: g, drag: h, windowSize: i, zoom: j, layout: k, nodeDistance: l, attraction: m, repulsion: n, doForce: o, initiallyCentered: p, movements: q, center: r, invalidInput: s};
+																			return function (t) {
+																				return {flags: a, name: b, nodes: c, edges: d, elementPosition: e, position: f, mouse: g, drag: h, windowSize: i, zoom: j, layout: k, nodeDistance: l, attraction: m, repulsion: n, forceDampFactor: o, force: p, initiallyCentered: q, movements: r, center: s, invalidInput: t};
+																			};
 																		};
 																	};
 																};
@@ -10099,7 +10101,9 @@ var _kantega$voog$Voog_Model$Input = function (a) {
 											return function (l) {
 												return function (m) {
 													return function (n) {
-														return {name: a, clear: b, size: c, position: d, layout: e, nodeDistance: f, attraction: g, repulsion: h, center: i, addMovement: j, setNodes: k, setEdges: l, removeNodes: m, removeEdges: n};
+														return function (o) {
+															return {name: a, clear: b, size: c, position: d, layout: e, nodeDistance: f, attraction: g, repulsion: h, forceDampFactor: i, center: j, addMovement: k, setNodes: l, setEdges: m, removeNodes: n, removeEdges: o};
+														};
 													};
 												};
 											};
@@ -13754,7 +13758,7 @@ var _kantega$voog$Voog_Action$recalculated = function (model) {
 			function (m) {
 				return _elm_lang$core$Native_Utils.update(
 					m,
-					{doForce: true});
+					{force: 1});
 			}(model)));
 };
 var _kantega$voog$Voog_Action$addMovement = F2(
@@ -14219,45 +14223,50 @@ var _kantega$voog$Voog_Input$input = A4(
 						_elm_lang$core$Maybe$Nothing,
 						A4(
 							_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-							'repulsion',
-							_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$float),
-							_elm_lang$core$Maybe$Nothing,
+							'forceDampFactor',
+							_elm_lang$core$Json_Decode$float,
+							0.99,
 							A4(
 								_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-								'attraction',
-								_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$float),
-								_elm_lang$core$Maybe$Nothing,
+								'repulsion',
+								_elm_lang$core$Json_Decode$float,
+								300000,
 								A4(
 									_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-									'nodeDistance',
-									_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$float),
-									_elm_lang$core$Maybe$Nothing,
+									'attraction',
+									_elm_lang$core$Json_Decode$float,
+									0.1,
 									A4(
 										_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-										'layout',
-										_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$string),
+										'nodeDistance',
+										_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$float),
 										_elm_lang$core$Maybe$Nothing,
 										A4(
 											_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-											'position',
-											_elm_lang$core$Json_Decode$maybe(_kantega$voog$Voog_Input$intIntTuple),
+											'layout',
+											_elm_lang$core$Json_Decode$maybe(_elm_lang$core$Json_Decode$string),
 											_elm_lang$core$Maybe$Nothing,
 											A4(
 												_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-												'size',
+												'position',
 												_elm_lang$core$Json_Decode$maybe(_kantega$voog$Voog_Input$intIntTuple),
 												_elm_lang$core$Maybe$Nothing,
 												A4(
 													_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-													'clear',
-													_elm_lang$core$Json_Decode$bool,
-													false,
+													'size',
+													_elm_lang$core$Json_Decode$maybe(_kantega$voog$Voog_Input$intIntTuple),
+													_elm_lang$core$Maybe$Nothing,
 													A4(
 														_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
-														'name',
-														_elm_lang$core$Json_Decode$string,
-														'',
-														_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_kantega$voog$Voog_Model$Input)))))))))))))));
+														'clear',
+														_elm_lang$core$Json_Decode$bool,
+														false,
+														A4(
+															_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
+															'name',
+															_elm_lang$core$Json_Decode$string,
+															'',
+															_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_kantega$voog$Voog_Model$Input))))))))))))))));
 var _kantega$voog$Voog_Input$handleInput = F2(
 	function (model, inputString) {
 		var _p2 = A2(_elm_lang$core$Json_Decode$decodeString, _kantega$voog$Voog_Input$input, inputString);
@@ -14298,6 +14307,7 @@ var _kantega$voog$Voog_Input$handleInput = F2(
 														nodeDistance: _p3.nodeDistance,
 														attraction: _p3.attraction,
 														repulsion: _p3.repulsion,
+														forceDampFactor: _p3.forceDampFactor,
 														center: A2(_elm_lang$core$Maybe$withDefault, false, _p3.center)
 													});
 											}(
@@ -14394,12 +14404,10 @@ var _kantega$voog$Voog_Layouts_Forced$moveNodes = F3(
 		var _p9 = node.position;
 		if (_p9.ctor === 'Just') {
 			var _p10 = _p9._0;
-			var repulsionCoeff = A2(_elm_lang$core$Maybe$withDefault, 300000, _p11.repulsion);
 			var repulsions = A2(
 				_elm_lang$core$List$map,
-				A3(_kantega$voog$Voog_Layouts_Forced$repulsion, repulsionCoeff, nodePositions, node),
+				A3(_kantega$voog$Voog_Layouts_Forced$repulsion, _p11.repulsion, nodePositions, node),
 				_p8.nodes);
-			var attractionCoeff = A2(_elm_lang$core$Maybe$withDefault, 0.1, _p11.attraction);
 			var connections = A2(
 				_elm_lang$core$List$filter,
 				function (e) {
@@ -14409,13 +14417,25 @@ var _kantega$voog$Voog_Layouts_Forced$moveNodes = F3(
 			var nodeDistance = A2(_elm_lang$core$Maybe$withDefault, _kantega$voog$Voog_View$defaultDistance, _p11.nodeDistance);
 			var attractions = A2(
 				_elm_lang$core$List$map,
-				A4(_kantega$voog$Voog_Layouts_Forced$attraction, attractionCoeff, nodeDistance, nodePositions, node),
+				A4(_kantega$voog$Voog_Layouts_Forced$attraction, _p11.attraction, nodeDistance, nodePositions, node),
 				connections);
 			var forces = A2(_elm_lang$core$List$append, attractions, repulsions);
-			var dx = _elm_lang$core$List$sum(
-				A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$first, forces));
-			var dy = _elm_lang$core$List$sum(
-				A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$second, forces));
+			var dx = A2(
+				F2(
+					function (x, y) {
+						return x * y;
+					}),
+				_p11.force,
+				_elm_lang$core$List$sum(
+					A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$first, forces)));
+			var dy = A2(
+				F2(
+					function (x, y) {
+						return x * y;
+					}),
+				_p11.force,
+				_elm_lang$core$List$sum(
+					A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$second, forces)));
 			var newPos = _elm_lang$core$Maybe$Just(
 				{x: _p10.x + dx, y: _p10.y + dy});
 			return _elm_lang$core$Native_Utils.update(
@@ -14429,7 +14449,7 @@ var _kantega$voog$Voog_Layouts_Forced$forceTick = function (_p12) {
 	var _p13 = _p12;
 	var _p22 = _p13.nodes;
 	var _p21 = _p13;
-	if (_p21.doForce) {
+	if (_elm_lang$core$Native_Utils.cmp(_p21.force, 0) > 0) {
 		var newEdges = _kantega$voog$Voog_Layouts_Forced$moveEdges(_p21);
 		var nodePositions = _elm_lang$core$Dict$fromList(
 			A2(
@@ -14467,10 +14487,10 @@ var _kantega$voog$Voog_Layouts_Forced$forceTick = function (_p12) {
 					}),
 				_elm_lang$core$Dict$toList(newNodePositions),
 				_elm_lang$core$Dict$toList(nodePositions)));
-		var doForce = (_elm_lang$core$Native_Utils.cmp(movement, 1) > 0) ? true : false;
+		var force = (_elm_lang$core$Native_Utils.cmp(movement, 10) > 0) ? (_p21.force * _p21.forceDampFactor) : 0;
 		return _elm_lang$core$Native_Utils.update(
 			_p21,
-			{nodes: newNodes, edges: newEdges, doForce: doForce});
+			{nodes: newNodes, edges: newEdges, force: force});
 	} else {
 		return _p21;
 	}
@@ -14500,7 +14520,7 @@ var _kantega$voog$Voog_Update$force = function (model) {
 		A2(
 			_elm_lang$core$String$split,
 			'.',
-			A2(_elm_lang$core$Maybe$withDefault, '', model.layout))) ? ((model.center && model.doForce) ? _kantega$voog$Voog_Action$centerGraph(
+			A2(_elm_lang$core$Maybe$withDefault, '', model.layout))) ? ((model.center && (_elm_lang$core$Native_Utils.cmp(model.force, 0) > 0)) ? _kantega$voog$Voog_Action$centerGraph(
 		_kantega$voog$Voog_Layouts_Forced$forceTick(model)) : _kantega$voog$Voog_Layouts_Forced$forceTick(model)) : model;
 };
 var _kantega$voog$Voog_Update$moveEdges = F2(
@@ -14684,9 +14704,10 @@ var _kantega$voog$Main$init = function (flags) {
 		zoom: 1,
 		layout: _elm_lang$core$Maybe$Nothing,
 		nodeDistance: _elm_lang$core$Maybe$Nothing,
-		attraction: _elm_lang$core$Maybe$Nothing,
-		repulsion: _elm_lang$core$Maybe$Nothing,
-		doForce: false,
+		attraction: 0,
+		repulsion: 0,
+		force: 0,
+		forceDampFactor: 0,
 		initiallyCentered: false,
 		center: false,
 		invalidInput: false
