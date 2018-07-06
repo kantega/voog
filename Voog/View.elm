@@ -110,7 +110,7 @@ viewTooltip model =
                 node.info
                 node.position
                 node.name
-                ( (Maybe.withDefault nodeRadius node.size), nodeRadius - (Maybe.withDefault nodeRadius node.size) )
+                ( (Maybe.withDefault nodeRadius node.width), nodeRadius - (Maybe.withDefault nodeRadius node.height) )
 
         _ ->
             case List.head (List.filter (\e -> e.selected) model.edges) of
@@ -240,48 +240,51 @@ viewNode : String -> Node -> Maybe (List (Svg Msg))
 viewNode modelName node =
     case node.position of
         Just { x, y } ->
-            Just
-                [ (case node.shape of
-                    Just "rect" ->
-                        let
-                            radius =
-                                (Maybe.withDefault nodeRadius node.size)
-                        in
+            let
+                nodeWidth =
+                    Maybe.withDefault nodeRadius node.width
+                nodeHeight =
+                    Maybe.withDefault nodeRadius node.height
+            in
+                Just
+                    [ (case node.shape of
+                        Just "rect" ->
                             rect
                                 [ onClick (ClickNode node.id)
                                 , class <| String.join " " <| "node rect" :: node.classes
-                                , Svg.Attributes.x (toString <| x - radius)
-                                , Svg.Attributes.y (toString <| y - radius)
-                                , width <| toString <| 2 * radius
-                                , height <| toString <| 2 * radius
+                                , Svg.Attributes.x (toString <| x - nodeWidth)
+                                , Svg.Attributes.y (toString <| y - nodeHeight)
+                                , width <| toString <| 2 * nodeWidth
+                                , height <| toString <| 2 * nodeHeight
                                 ]
 
-                    _ ->
-                        circle
-                            [ onClick (ClickNode node.id)
-                            , class <| String.join " " <| "node circle" :: node.classes
-                            , cx (toString x)
-                            , cy (toString y)
-                            , r (toString (Maybe.withDefault nodeRadius node.size))
-                            ]
-                  )
-                    []
-                , circle
-                    [ onClick (ClickNode node.id)
-                    , class <| String.join " " <| "node-image" :: node.classes
-                    , cx (toString (x))
-                    , cy (toString (y - nodeRadius + 30))
-                    , fill ("url(#" ++ modelName ++ "_img" ++ (toString node.id) ++ ")")
+                        _ ->
+                            ellipse
+                                [ onClick (ClickNode node.id)
+                                , class <| String.join " " <| "node circle" :: node.classes
+                                , cx (toString x)
+                                , cy (toString y)
+                                , rx (toString (nodeWidth))
+                                , ry (toString (nodeHeight))
+                                ]
+                      )
+                        []
+                    , circle
+                        [ onClick (ClickNode node.id)
+                        , class <| String.join " " <| "node-image" :: node.classes
+                        , cx (toString (x))
+                        , cy (toString (y - nodeRadius + 30))
+                        , fill ("url(#" ++ modelName ++ "_img" ++ (toString node.id) ++ ")")
+                        ]
+                        []
+                    , Svg.text_
+                        [ onClick (ClickNode node.id)
+                        , class <| String.join " " <| "node-text" :: node.classes
+                        , Svg.Attributes.x (toString x)
+                        , Svg.Attributes.y <| textPosition y node.image
+                        ]
+                        [ Svg.text (Maybe.withDefault "" node.name) ]
                     ]
-                    []
-                , Svg.text_
-                    [ onClick (ClickNode node.id)
-                    , class <| String.join " " <| "node-text" :: node.classes
-                    , Svg.Attributes.x (toString x)
-                    , Svg.Attributes.y <| textPosition y node.image
-                    ]
-                    [ Svg.text (Maybe.withDefault "" node.name) ]
-                ]
 
         _ ->
             Nothing

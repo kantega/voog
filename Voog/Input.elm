@@ -60,7 +60,8 @@ node =
         |> optional "name" (maybe string) Nothing
         |> optional "shape" (maybe string) Nothing
         |> optional "image" (maybe string) Nothing
-        |> optional "size" (maybe float) Nothing
+        |> optional "width" (maybe float) Nothing
+        |> optional "height" (maybe float) Nothing
         |> optional "x" (maybe float) Nothing
         |> optional "y" (maybe float) Nothing
 

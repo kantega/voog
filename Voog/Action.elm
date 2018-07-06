@@ -100,7 +100,8 @@ setNodes nodes recalculate model =
                         , name = node.name
                         , shape = node.shape
                         , image = node.image
-                        , size = node.size
+                        , width = node.width
+                        , height = node.height
                         , x = node.x
                         , y = node.y
                         }
@@ -122,7 +123,8 @@ setNodes nodes recalculate model =
                                     , name = node.name
                                     , shape = node.shape
                                     , image = node.image
-                                    , size = node.size
+                                    , width = node.width
+                                    , height = node.height
                                     , x = node.x
                                     , y = node.y
                                 }
@@ -245,7 +247,8 @@ setNodesWithEdges edges model =
                         , name = Nothing
                         , shape = Nothing
                         , image = Nothing
-                        , size = Nothing
+                        , width = Nothing
+                        , height = Nothing
                         , x = Nothing
                         , y = Nothing
                         }
