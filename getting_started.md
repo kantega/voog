@@ -1,11 +1,11 @@
 ---
 layout: page
-title: Get Started
-permalink: /get_started/
+title: Getting Started
+permalink: /getting_started/
 feature-img: "assets/img/circles.jpg"
 ---
 
-## Get Started
+## Getting Started
 
 ### Basic Node
 `setNodes` adds a list of node objects to the graph.
