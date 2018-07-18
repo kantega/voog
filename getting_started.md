@@ -9,7 +9,8 @@ feature-img: "assets/img/circles.jpg"
 
 ### Basic Node
 `setNodes` adds a list of node objects to the graph.
-The minimum requirements for a node is an identifying integer: `{"id": 0}`, but here we also provide a name.
+The minimum requirements for a node is an identifying integer: `{"id": 0}`, but
+here we also provide a name.
 
 ![Hello](/voog/assets/img/hello.png)
 ```
@@ -22,8 +23,9 @@ The minimum requirements for a node is an identifying integer: `{"id": 0}`, but 
 ---
 
 ### Basic Edge
-Nodes are connected with directed edges. The edge object only has two required fields, `from` and `to`. If the
-corresponding nodes doesn't exist, they will be created automatically.
+Nodes are connected with directed edges. An edge object has only two required
+fields, `from` and `to`. If the referenced nodes doesn't exist, they are
+created automatically.
 
 ![Hello World](/voog/assets/img/hello_world.png)
 ```
@@ -39,8 +41,9 @@ corresponding nodes doesn't exist, they will be created automatically.
 ---
 
 ### Remove
-The remove object is quite simple, it only contains the ids of the objects to remove. For nodes that is a list of
-integers and for edges a list of integer pairs. When a node is removed all connected edges are also removed.
+The remove object is quite simple, it only contains the identifiers of the
+objects to remove. For nodes that is a list of integers and for edges a list of
+pairs of integer. When a node is removed all connected edges are also removed.
 
 ```
 {
@@ -55,10 +58,11 @@ integers and for edges a list of integer pairs. When a node is removed all conne
 ---
 
 ### Edge flow
-Voog supports two types of information flow along edges. Either a constant flow of dashes or a single object. To
-initate a constant flow set the `speed` property. Add a moving object with with `addMovement` command. Voog supports
-the following icons by default: 'dot', 'message' and 'plane'. The duration, in seconds, is the time spent moving from
-node A to B.
+Voog supports two types of information flow along edges: a constant flow of
+dashes or a single object. To initate a constant flow, set the `speed`
+property.  To add a moving object, use the `addMovement` command. Voog supports
+the following icons by default: 'dot', 'message' and 'plane'. The duration, in
+seconds, is the time spent moving from node A to B.
 ```
 {
     "setEdges": [
@@ -76,10 +80,11 @@ node A to B.
 ![Movement](/voog/assets/img/message.png)
 
 ### Layout
-There are 3 main layout algorithms: `layered`, `manual` and `zero`. Additional options can be specified by a dot.
-With the `forced` specification the graph will initially be laid out by the main layout. Then forces will move nodes
-away from other nodes, and edges pull the connected nodes together. The `forceDampFactor` adjusts how fast the motion
-converges to a fixed state.
+Voog has three primary layout algorithms: `layered`, `manual`, and `zero`.
+Additional options can be specified by a dot.  With the `forced` specification
+the graph will initially be laid out by the main layout. Then forces will move
+nodes away from other nodes, and edges pull the connected nodes together. The
+`forceDampFactor` adjusts how fast the motion converges to a fixed state.
 
 ```
 {

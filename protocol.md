@@ -5,13 +5,17 @@ permalink: /protocol/
 feature-img: "assets/img/protocol.jpg"
 ---
 
-The nodes and edges are based on delta messages. The `setNodes` and `setEdges` commands are used when adding or updating
-elements. To remove a node or edge the `removeNodes` and `removeEdges` commands are used. Node and edge objects are the
-only ones based on updates. All properties for both the general model, nodes and edges will be totally overwritten by new
-messages. All properties will be cleared and only the new properties will be assigned to the object. If you want a manual
-layout you will have to send this in every message. If you want a node to have a specific class, the class has to be
-present in the nodes class list every time an object with the node id is present in the `setNodes` command. If the
-properties are not present anymore they will be reset to their default values.
+The nodes and edges are based on delta messages. The `setNodes` and `setEdges`
+commands are used when adding or updating elements. To remove a node or edge
+the `removeNodes` and `removeEdges` commands are used. Node and edge objects
+are the only ones based on updates. All properties for both the general model,
+nodes and edges will be totally overwritten by new messages. All properties
+will be cleared and only the new properties will be assigned to the object. If
+you want a manual layout you will have to send this in every message. If you
+want a node to have a specific class, the class has to be present in the nodes
+class list every time an object with the node id is present in the `setNodes`
+command. If the properties are not present anymore they will be reset to their
+default values.
 
 ## Flags
 All flag properties must be included when initializing the voog module.
@@ -27,11 +31,11 @@ All flag properties must be included when initializing the voog module.
     "type": "object",
     "properties": {
         "webSocket": {
-            "description": "Listen to inputs from a websocket, null if disabled",
+            "description": "Listen to input from a websocket, null if disabled",
             "type": "string"
         },
         "disableWindowResize": {
-            "description": "Disable voogs built in resize detection",
+            "description": "If true, disable Voog's built-in resize detection",
             "type": "bool"
         }
     }
@@ -52,7 +56,7 @@ All flag properties must be included when initializing the voog module.
             "type": "string"
         },
         "clear": {
-            "description": "Clear nodes and edges then apply current message",
+            "description": "If true, remove all nodes and edges before applying remainder of current message",
             "type": "bool"
         },
         "size": {
