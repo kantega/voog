@@ -165,8 +165,12 @@ All flag properties must be included when initializing the voog module.
                         "description": "Image url",
                         "type": "string"
                     }
-                    "size": {
+                    "width": {
                         "description": "Radius for circle and width/2 for rect"
+                        "type": "integer"
+                    },
+                    "height": {
+                        "description": "Radius for circle and height/2 for rect"
                         "type": "integer"
                     },
                     "x": {
