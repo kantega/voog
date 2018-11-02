@@ -277,13 +277,19 @@ viewNode modelName node =
                         , fill ("url(#" ++ modelName ++ "_img" ++ (toString node.id) ++ ")")
                         ]
                         []
-                    , Svg.text_
+                    , Svg.foreignObject
                         [ onClick (ClickNode node.id)
-                        , class <| String.join " " <| "node-text" :: node.classes
-                        , Svg.Attributes.x (toString x)
-                        , Svg.Attributes.y <| textPosition y node.image
+                        , class <| String.join " " <| "node-text-wrapper" :: node.classes
+                        , Svg.Attributes.x (toString (x - nodeWidth*0.8))
+                        , Svg.Attributes.y (toString (y - nodeHeight*0.8))
+                        , Svg.Attributes.width (toString (1.6*nodeWidth))
+                        , Svg.Attributes.height (toString (1.6*nodeHeight))
                         ]
-                        [ Svg.text (Maybe.withDefault "" node.name) ]
+                        [
+                            Html.span
+                            [ class "node-text" ]
+                            [ Html.text (Maybe.withDefault "" node.name) ]
+                        ]
                     ]
 
         _ ->

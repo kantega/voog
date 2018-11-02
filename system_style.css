@@ -92,8 +92,18 @@ body {
     r: 25;
 }
 
+.node-text-wrapper {
+    position: relative;
+    text-align: center;
+}
+
 .node-text {
-    fill: #b0b0b0;
-    text-anchor: middle;
-    alignment-baseline: middle;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #212121;
+    margin: 0;
+    padding: 0;
+    width: 100%;
 }
