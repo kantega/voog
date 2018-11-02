@@ -2,6 +2,7 @@ module Voog.Layouts.Sugiyama exposing (..)
 
 import Sugiyama.CycleRemoval exposing (removeCycles)
 import Sugiyama.CycleRemovalSimple exposing (removeCyclesSimple)
+import Sugiyama.Placement exposing (flipAxis)
 import Sugiyama.Sugiyama exposing (sugiyama, sugiyamaCustom)
 import Sugiyama.Model
 import Voog.Model exposing (..)
@@ -25,8 +26,14 @@ sugiyamaLayout layout ({ nodes, edges } as model) =
                         removeCyclesSimple
                     else
                         removeCycles
+                flipAxisAction =
+                    if List.member "horizontal" layout then
+                        flipAxis
+                    else
+                        \a -> a
             in
                 sugiyamaCustom { nodes = basicNodes, edges = basicEdges } cycleRemoval
+                    |> flipAxisAction
 
         sortedSugiyama =
             List.sortWith (\a b -> compare a.id b.id) graph.nodes

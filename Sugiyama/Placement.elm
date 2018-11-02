@@ -292,3 +292,15 @@ getOffset xPos xPosOther edge =
 
             _ ->
                 0
+
+{-| Flip x and y
+-}
+flipAxis : Graph -> Graph
+flipAxis ({ nodes } as graph) =
+    let
+        newNodes =
+            List.map
+                (\n -> { n | x = n.y, y = n.x })
+                nodes
+    in
+        { graph | nodes = newNodes }
