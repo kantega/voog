@@ -4,6 +4,7 @@ import Dict exposing (Dict)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Html exposing (..)
+import Html.Attributes exposing (href)
 import Html.Events exposing (..)
 import Voog.Model exposing (..)
 import Voog.Messages exposing (..)
@@ -233,8 +234,24 @@ getViewNode modelName node =
             Just vn
 
         Nothing ->
-            viewNode modelName node
+            viewNodeWithHref modelName node
 
+
+viewNodeWithHref : String -> Node -> Maybe (List (Svg Msg))
+viewNodeWithHref modelName node =
+    case node.href of
+        Just href ->
+            case viewNode modelName node of
+                Nothing ->
+                    Nothing
+                Just renderedNode ->
+                    Just [
+                        Svg.a
+                        [Svg.Attributes.xlinkHref href, Svg.Attributes.target "blank"]
+                        renderedNode
+                    ]
+        _ ->
+            viewNode modelName node
 
 viewNode : String -> Node -> Maybe (List (Svg Msg))
 viewNode modelName node =
@@ -250,8 +267,8 @@ viewNode modelName node =
                     [ (case node.shape of
                         Just "rect" ->
                             rect
-                                [ onClick (ClickNode node.id)
-                                , class <| String.join " " <| "node rect" :: node.classes
+                                [ --onClick (ClickNode node.id)
+                                class <| String.join " " <| "node rect" :: node.classes
                                 , Svg.Attributes.x (toString <| x - nodeWidth)
                                 , Svg.Attributes.y (toString <| y - nodeHeight)
                                 , width <| toString <| 2 * nodeWidth
@@ -260,8 +277,8 @@ viewNode modelName node =
 
                         _ ->
                             ellipse
-                                [ onClick (ClickNode node.id)
-                                , class <| String.join " " <| "node circle" :: node.classes
+                                [ --onClick (ClickNode node.id)
+                                class <| String.join " " <| "node circle" :: node.classes
                                 , cx (toString x)
                                 , cy (toString y)
                                 , rx (toString (nodeWidth))
@@ -270,16 +287,16 @@ viewNode modelName node =
                       )
                         []
                     , circle
-                        [ onClick (ClickNode node.id)
-                        , class <| String.join " " <| "node-image" :: node.classes
+                        [ --onClick (ClickNode node.id)
+                        class <| String.join " " <| "node-image" :: node.classes
                         , cx (toString (x))
                         , cy (toString (y - nodeRadius + 30))
                         , fill ("url(#" ++ modelName ++ "_img" ++ (toString node.id) ++ ")")
                         ]
                         []
                     , Svg.foreignObject
-                        [ onClick (ClickNode node.id)
-                        , class <| String.join " " <| "node-text-wrapper" :: node.classes
+                        [ --onClick (ClickNode node.id)
+                        class <| String.join " " <| "node-text-wrapper" :: node.classes
                         , Svg.Attributes.x (toString (x - nodeWidth*0.8))
                         , Svg.Attributes.y (toString (y - nodeHeight*0.8))
                         , Svg.Attributes.width (toString (1.6*nodeWidth))

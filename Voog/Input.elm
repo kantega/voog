@@ -58,6 +58,7 @@ node =
         |> optional "info" (list stringStringTuple) []
         |> optional "classes" (list string) []
         |> optional "name" (maybe string) Nothing
+        |> optional "href" (maybe string) Nothing
         |> optional "shape" (maybe string) Nothing
         |> optional "image" (maybe string) Nothing
         |> optional "width" (maybe float) Nothing

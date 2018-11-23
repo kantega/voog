@@ -91,6 +91,7 @@ type alias InputNode =
     , info : Info
     , classes : List String
     , name : Maybe String
+    , href : Maybe String
     , shape : Maybe String
     , image : Maybe String
     , width : Maybe Float

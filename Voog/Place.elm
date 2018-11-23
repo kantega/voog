@@ -21,7 +21,7 @@ place ({ nodes, edges } as model) =
 
         newNodes =
             List.map
-                (\n -> { n | viewNode = viewNode model.name n })
+                (\n -> { n | viewNode = viewNodeWithHref model.name n })
                 nodes
     in
         { model | edges = List.map (placeEdge nodeDict edgeDict) model.edges, nodes = newNodes }
