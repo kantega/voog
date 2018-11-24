@@ -247,7 +247,7 @@ viewNodeWithHref modelName node =
                 Just renderedNode ->
                     Just [
                         Svg.a
-                        [Svg.Attributes.xlinkHref href, Svg.Attributes.target "blank"]
+                        [Svg.Attributes.xlinkHref href, Svg.Attributes.target "_blank"]
                         renderedNode
                     ]
         _ ->
