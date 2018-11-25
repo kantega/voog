@@ -21,7 +21,11 @@ setInitialPosition ({ nodes, edges } as graph) =
 
         sortedNodes =
             nodes
-                |> List.sortWith (\a b -> compare (outEdges edges a.id) (outEdges edges b.id))
+                |> List.sortWith (\a b ->
+                        compare
+                        (outEdges edges a.id + parentsOfChildren edges a.id)
+                        (outEdges edges b.id + parentsOfChildren edges b.id)
+                    )
                 |> List.reverse
     in
         setInitialPositionForLayer layers { graph | nodes = sortedNodes }
@@ -30,7 +34,7 @@ setInitialPosition ({ nodes, edges } as graph) =
 {-| Place all nodes in this layer
 -}
 setInitialPositionForLayer : List Int -> Graph -> Graph
-setInitialPositionForLayer layers ({ nodes } as graph) =
+setInitialPositionForLayer layers ({ nodes, edges } as graph) =
     case layers of
         layer :: rest ->
             let
@@ -38,9 +42,17 @@ setInitialPositionForLayer layers ({ nodes } as graph) =
                     graph.nodes
                         |> List.filter (\n -> n.y == Just layer)
                         |> List.map (\n -> n.id)
+                newNodes =
+                    if layer > 0 then
+                        List.sortWith (\a b ->
+                            compare
+                            (minParentX nodes edges a.id)
+                            (minParentX nodes edges b.id)
+                        ) nodes
+                    else
+                        nodes
             in
-                setInitialPositionForLayer rest { graph | nodes = setInitialPositionIteration 0 ids nodes }
-
+                setInitialPositionForLayer rest { graph | nodes = setInitialPositionIteration 0 ids newNodes }
         _ ->
             graph
 
@@ -59,3 +71,65 @@ setInitialPositionIteration x ids nodes =
 
         [] ->
             []
+
+{-| Find id of (one of the) parent(s)
+-}
+indexOf : List Int -> Int -> Int
+indexOf elements target =
+    let
+        indexOfInner : List Int -> Int -> Int -> Int
+        indexOfInner elements target index =
+            case elements of
+                element :: rest ->
+                    if element == target then
+                        index
+                    else
+                        indexOfInner rest target (index + 1)
+                [] ->
+                    -1
+    in
+        indexOfInner elements target 0
+
+{-| Get x pos of node
+-}
+getNodeX : Nodes -> Int -> Int
+getNodeX nodes id =
+    case nodes of
+        node :: rest ->
+            if node.id == id then
+                Maybe.withDefault 0 node.x
+            else
+                getNodeX rest id
+        [] ->
+            0
+
+{-| Find min x of all parents
+-}
+minParentX : Nodes -> Edges -> Int -> Int
+minParentX nodes edges id =
+    let
+        ret = edges
+            |> List.filter (\e -> e.to == id)
+            |> List.map (\e -> e.from)
+            |> List.map (getNodeX nodes)
+            |> List.maximum
+            |> Maybe.withDefault -1
+    in
+        ret
+
+{-| Find sum [number of parents of child] for each child
+-}
+parentsOfChildren : Edges -> Int -> Int
+parentsOfChildren edges id =
+    let
+        ret = edges
+            |> List.filter (\e -> e.from == id)
+            |> List.map (\e -> e.to)
+            |> List.map (\childId ->
+                edges
+                |> List.filter (\e -> e.to == childId)
+                |> List.length
+            )
+            |> List.sum
+    in
+        ret
