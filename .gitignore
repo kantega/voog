@@ -4,3 +4,5 @@ elm-stuff
 repl-temp-*
 .idea/
 main.js
+dist/
+node_modules/

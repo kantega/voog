@@ -34,7 +34,7 @@ function createTest(name) {
     var node = document.createElement('div');
     node.id = codename;
 
-    var app = Elm.Main.init({node: node, flags: {'node': node, 'webSocket': null, 'disableWindowResize': true}});
+    var app = Elm.Main.init({node: node, flags: {'webSocket': null, 'disableWindowResize': true}});
     node.classList.add('test');
     var test = new Test(node, app, codename);
 
