@@ -4,8 +4,8 @@ module Sugiyama.CycleRemoval exposing (removeCycles)
 GreedyFAS as described in <http://www.vldb.org/pvldb/vol10/p133-simpson.pdf>
 -}
 
-import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)
+import Sugiyama.Model exposing (..)
 
 
 {-| Identify minimal set of edges that needs to be flipped and flip them
@@ -22,12 +22,13 @@ removeCycles ({ edges } as graph) =
                 (\e ->
                     if List.member e.id flipEdges then
                         reverse e
+
                     else
                         e
                 )
                 edges
     in
-        { graph | edges = newEdges }
+    { graph | edges = newEdges }
 
 
 {-| Modified GreedyFAS
@@ -36,6 +37,7 @@ findFlipEdges : Graph -> List ( Int, Int )
 findFlipEdges ({ nodes, edges } as graph) =
     if List.length nodes <= 1 then
         []
+
     else
         let
             sinks =
@@ -51,38 +53,39 @@ findFlipEdges ({ nodes, edges } as graph) =
             removeNodes =
                 List.append sinks sources
         in
-            if List.length removeNodes > 0 then
-                let
-                    newNodes =
-                        List.filter
-                            (\n -> not (List.member n.id removeNodes))
-                            nodes
-                in
-                    findFlipEdges { graph | nodes = newNodes }
-            else
-                let
-                    max =
+        if List.length removeNodes > 0 then
+            let
+                newNodes =
+                    List.filter
+                        (\n -> not (List.member n.id removeNodes))
                         nodes
-                            |> List.map (\n -> ( n.id, List.length (getChildren graph n.id), List.length (getParents graph n.id) ))
-                            |> List.sortWith (\( n1, c1, p1 ) ( n2, c2, p2 ) -> compare (c1 - p1) (c2 - p2))
-                            |> List.reverse
-                            |> List.head
-                in
-                    case max of
-                        Just ( nodeId, c, p ) ->
-                            let
-                                flipEdges =
-                                    edges
-                                        |> List.filter (\e -> e.to == nodeId)
-                                        |> List.map .id
+            in
+            findFlipEdges { graph | nodes = newNodes }
 
-                                newNodes =
-                                    List.filter (\n -> n.id /= nodeId) nodes
+        else
+            let
+                max =
+                    nodes
+                        |> List.map (\n -> ( n.id, List.length (getChildren graph n.id), List.length (getParents graph n.id) ))
+                        |> List.sortWith (\( n1, c1, p1 ) ( n2, c2, p2 ) -> compare (c1 - p1) (c2 - p2))
+                        |> List.reverse
+                        |> List.head
+            in
+            case max of
+                Just ( nodeId, c, p ) ->
+                    let
+                        flipEdges =
+                            edges
+                                |> List.filter (\e -> e.to == nodeId)
+                                |> List.map .id
 
-                                newEdges =
-                                    List.filter (\e -> e.from /= nodeId && e.to /= nodeId) edges
-                            in
-                                List.append flipEdges (findFlipEdges { graph | nodes = newNodes, edges = newEdges })
+                        newNodes =
+                            List.filter (\n -> n.id /= nodeId) nodes
 
-                        _ ->
-                            []
+                        newEdges =
+                            List.filter (\e -> e.from /= nodeId && e.to /= nodeId) edges
+                    in
+                    List.append flipEdges (findFlipEdges { graph | nodes = newNodes, edges = newEdges })
+
+                _ ->
+                    []

@@ -1,10 +1,10 @@
-module Sugiyama.DummyNodes exposing (..)
+module Sugiyama.DummyNodes exposing (addDummies, addDummiesIteration, addDummy, createDummyEdges, createDummyNodes)
 
 {-| Whenever an edge is spanning multiple layers, create dummy nodes and edges between each layer instead
 -}
 
-import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)
+import Sugiyama.Model exposing (..)
 
 
 {-| Call with all edges
@@ -24,7 +24,7 @@ addDummiesIteration graph iterationEdges =
                 newGraph =
                     addDummy graph edge
             in
-                addDummiesIteration newGraph rest
+            addDummiesIteration newGraph rest
 
         _ ->
             graph
@@ -33,68 +33,70 @@ addDummiesIteration graph iterationEdges =
 {-| Find missing layers between start end end point of edge and fill them with dummies
 -}
 addDummy : Graph -> Edge -> Graph
-addDummy ({ nodes, edges } as graph) ({ from, to, reversed } as edge) =
+addDummy ({ nodes, edges } as graph) ({ reversed } as edge) =
     let
         fromNode =
-            getNode graph from
+            getNode graph edge.from
 
         toNode =
-            getNode graph to
+            getNode graph edge.to
     in
-        case ( fromNode, toNode ) of
-            ( Just fromNode, Just toNode ) ->
-                case ( fromNode.y, toNode.y ) of
-                    ( Just y1, Just y2 ) ->
-                        let
-                            ( p1, p2 ) =
-                                if y1 > y2 then
-                                    ( y2, y1 )
-                                else
-                                    ( y1, y2 )
+    case ( fromNode, toNode ) of
+        ( Just fromNodeInner, Just toNodeInner ) ->
+            case ( fromNodeInner.y, toNodeInner.y ) of
+                ( Just y1, Just y2 ) ->
+                    let
+                        ( p1, p2 ) =
+                            if y1 > y2 then
+                                ( y2, y1 )
 
-                            missingLayers =
-                                List.range (p1 + 1) (p2 - 1)
-                        in
-                            if List.length missingLayers > 0 then
-                                let
-                                    id =
-                                        nodes
-                                            |> List.map .id
-                                            |> List.maximum
-                                            |> Maybe.withDefault 0
-                                            |> \n -> n + 1
-
-                                    dummyNodes =
-                                        createDummyNodes id missingLayers
-
-                                    ids =
-                                        List.append
-                                            (fromNode.id :: (List.range id (id + List.length missingLayers - 1)))
-                                            [ toNode.id ]
-
-                                    dummyEdges =
-                                        createDummyEdges edge.id 0 ids reversed
-
-                                    newNodes =
-                                        List.append nodes dummyNodes
-
-                                    newEdges =
-                                        edges
-                                            |> List.filter (\{ from, to } -> ( from, to ) /= ( fromNode.id, toNode.id ))
-                                            |> List.append dummyEdges
-                                in
-                                    { graph
-                                        | nodes = newNodes
-                                        , edges = newEdges
-                                    }
                             else
-                                graph
+                                ( y1, y2 )
 
-                    _ ->
+                        missingLayers =
+                            List.range (p1 + 1) (p2 - 1)
+                    in
+                    if List.length missingLayers > 0 then
+                        let
+                            id =
+                                nodes
+                                    |> List.map .id
+                                    |> List.maximum
+                                    |> Maybe.withDefault 0
+                                    |> (\n -> n + 1)
+
+                            dummyNodes =
+                                createDummyNodes id missingLayers
+
+                            ids =
+                                List.append
+                                    (fromNodeInner.id :: List.range id (id + List.length missingLayers - 1))
+                                    [ toNodeInner.id ]
+
+                            dummyEdges =
+                                createDummyEdges edge.id 0 ids reversed
+
+                            newNodes =
+                                List.append nodes dummyNodes
+
+                            newEdges =
+                                edges
+                                    |> List.filter (\{ from, to } -> ( from, to ) /= ( fromNodeInner.id, toNodeInner.id ))
+                                    |> List.append dummyEdges
+                        in
+                        { graph
+                            | nodes = newNodes
+                            , edges = newEdges
+                        }
+
+                    else
                         graph
 
-            _ ->
-                graph
+                _ ->
+                    graph
+
+        _ ->
+            graph
 
 
 {-| Create dummy nodes in the missing layers between the edge start and end layer
@@ -111,7 +113,7 @@ createDummyNodes id missingLayers =
                     , dummy = True
                     }
             in
-                node :: createDummyNodes (id + 1) rest
+            node :: createDummyNodes (id + 1) rest
 
         _ ->
             []
@@ -132,7 +134,7 @@ createDummyEdges originalId num ids reversed =
                     , reversed = reversed
                     }
             in
-                edge :: createDummyEdges originalId (num + 1) (to :: rest) reversed
+            edge :: createDummyEdges originalId (num + 1) (to :: rest) reversed
 
         _ ->
             []

@@ -1,4 +1,4 @@
-module Sugiyama.Helpers exposing (..)
+module Sugiyama.Helpers exposing (childrenChainLength, childrenChainLengthInner, getChildren, getLayerPos, getNode, getParents, getXPos, inEdges, outEdges, reverse, reverseAll, setNodeDepth, toBasic)
 
 import Dict exposing (..)
 import Sugiyama.Model exposing (..)
@@ -52,7 +52,7 @@ getChildren graph nodeId =
                 |> List.filter (\{ from, to } -> from == nodeId)
                 |> List.map (\{ from, to } -> to)
     in
-        List.filter (\n -> List.member n.id ids) graph.nodes
+    List.filter (\n -> List.member n.id ids) graph.nodes
 
 
 getParents : Graph -> Int -> Nodes
@@ -63,7 +63,7 @@ getParents graph nodeId =
                 |> List.filter (\{ from, to } -> to == nodeId)
                 |> List.map (\{ from, to } -> from)
     in
-        List.filter (\n -> List.member n.id ids) graph.nodes
+    List.filter (\n -> List.member n.id ids) graph.nodes
 
 
 childrenChainLength : Graph -> Node -> Int
@@ -81,7 +81,7 @@ childrenChainLengthInner graph node visited =
             getChildren graph node.id
                 |> List.filter (\n -> not (List.member n.id newVisited))
     in
-        1 + (Maybe.withDefault -1 (List.maximum (List.map (\c -> childrenChainLengthInner graph c newVisited) children)))
+    1 + Maybe.withDefault -1 (List.maximum (List.map (\c -> childrenChainLengthInner graph c newVisited) children))
 
 
 setNodeDepth : Graph -> Int -> Int -> Graph
@@ -92,6 +92,7 @@ setNodeDepth graph id depth =
                 (\n ->
                     if n.id == id then
                         { n | y = Just depth }
+
                     else
                         n
                 )

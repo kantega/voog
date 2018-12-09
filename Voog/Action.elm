@@ -1,15 +1,15 @@
-module Voog.Action exposing (..)
+module Voog.Action exposing (Movement, addMovement, centerGraph, closeInfo, layout, recalculated, removeEdges, removeNodes, setEdges, setNodes, setNodesWithEdges, toggleEdge, toggleNode, updateInfo, updateWindow)
 
 import Dict
-import Window
-import Voog.Model exposing (..)
-import Voog.Place exposing (..)
 import Voog.Layouts.Manual exposing (manualLayout)
 import Voog.Layouts.Sugiyama exposing (sugiyamaLayout)
 import Voog.Layouts.Zero exposing (zeroLayout)
+import Voog.Model exposing (..)
+import Voog.Place exposing (..)
+import Browser.Events as Window
 
 
-updateWindow : Window.Size -> Model -> Model
+updateWindow : { height : Int, width : Int } -> Model -> Model
 updateWindow { width, height } model =
     let
         newPosition =
@@ -22,12 +22,12 @@ updateWindow { width, height } model =
                         dh =
                             toFloat (height - oldHeight) / 2
                     in
-                        { x = model.position.x + dw, y = model.position.y + dh }
+                    { x = model.position.x + dw, y = model.position.y + dh }
 
                 Nothing ->
                     model.position
     in
-        { model | position = newPosition, windowSize = Just ( width, height ) }
+    { model | position = newPosition, windowSize = Just ( width, height ) }
 
 
 updateInfo : Info -> Info -> Info
@@ -54,7 +54,7 @@ updateInfo old new =
         appended =
             List.filter (\( k, v ) -> not (List.member k oldKeys)) new
     in
-        List.append updated appended
+    List.append updated appended
 
 
 addMovement : List InputMovement -> Model -> Model
@@ -76,7 +76,7 @@ addMovement inputMovements model =
         newMovements =
             List.append model.movements movements
     in
-        { model | movements = newMovements }
+    { model | movements = newMovements }
 
 
 type alias Movement a =
@@ -109,7 +109,8 @@ setNodes nodes recalculate model =
                         }
                             :: model.nodes
                 in
-                    setNodes rest True { model | nodes = newNodes }
+                setNodes rest True { model | nodes = newNodes }
+
             else
                 let
                     ( oldNode, oldNodes ) =
@@ -117,9 +118,9 @@ setNodes nodes recalculate model =
 
                     newNodes =
                         case List.head oldNode of
-                            Just oldNode ->
-                                { oldNode
-                                    | info = updateInfo oldNode.info node.info
+                            Just oldNodeInner ->
+                                { oldNodeInner
+                                    | info = updateInfo oldNodeInner.info node.info
                                     , viewNode = Nothing
                                     , classes = node.classes
                                     , name = node.name
@@ -136,13 +137,14 @@ setNodes nodes recalculate model =
                             _ ->
                                 model.nodes
                 in
-                    setNodes rest recalculate { model | nodes = newNodes }
+                setNodes rest recalculate { model | nodes = newNodes }
 
         _ ->
             if recalculate then
                 model
                     |> recalculated
                     |> place
+
             else
                 model
 
@@ -155,6 +157,7 @@ recalculated model =
         |> (\m ->
                 if m.center then
                     centerGraph m
+
                 else
                     m
            )
@@ -164,18 +167,19 @@ removeNodes : List Int -> Model -> Model
 removeNodes nodes model =
     if List.isEmpty nodes then
         model
+
     else
         let
             newNodes =
                 List.filter (\n -> not (List.member n.id nodes)) model.nodes
 
             newEdges =
-                List.filter (\e -> (not (List.member e.from nodes)) && (not (List.member e.to nodes))) model.edges
+                List.filter (\e -> not (List.member e.from nodes) && not (List.member e.to nodes)) model.edges
 
             newModel =
                 layout { model | nodes = newNodes, edges = newEdges }
         in
-            place newModel
+        place newModel
 
 
 setEdges : List InputEdge -> Bool -> Model -> Model
@@ -200,7 +204,8 @@ setEdges edges recalculate model =
                         }
                             :: model.edges
                 in
-                    setEdges rest True { model | edges = newEdges }
+                setEdges rest True { model | edges = newEdges }
+
             else
                 let
                     ( oldEdge, oldEdges ) =
@@ -208,9 +213,9 @@ setEdges edges recalculate model =
 
                     newEdges =
                         case List.head oldEdge of
-                            Just oldEdge ->
-                                { oldEdge
-                                    | info = updateInfo oldEdge.info edge.info
+                            Just oldEdgeInner ->
+                                { oldEdgeInner
+                                    | info = updateInfo oldEdgeInner.info edge.info
                                     , classes = edge.classes
                                     , label = edge.label
                                     , width = edge.width
@@ -221,13 +226,14 @@ setEdges edges recalculate model =
                             _ ->
                                 model.edges
                 in
-                    setEdges rest recalculate { model | edges = newEdges }
+                setEdges rest recalculate { model | edges = newEdges }
 
         _ ->
             if recalculate then
                 model
                     |> recalculated
                     |> place
+
             else
                 model
 
@@ -258,7 +264,7 @@ setNodesWithEdges edges model =
                         }
                     )
     in
-        setNodes nodes False model
+    setNodes nodes False model
 
 
 centerGraph : Model -> Model
@@ -316,14 +322,14 @@ centerGraph ({ nodes } as model) =
                 extraHeight =
                     (toFloat windowHeight - (zoom * height)) / 2
             in
-                { model
-                    | zoom = zoom
-                    , position =
-                        { x = zoom * (100 - minX) + extraWidth
-                        , y = zoom * (100 - minY) + extraHeight
-                        }
-                    , initiallyCentered = True
-                }
+            { model
+                | zoom = zoom
+                , position =
+                    { x = zoom * (100 - minX) + extraWidth
+                    , y = zoom * (100 - minY) + extraHeight
+                    }
+                , initiallyCentered = True
+            }
 
         _ ->
             model
@@ -333,6 +339,7 @@ removeEdges : List ( Int, Int ) -> Model -> Model
 removeEdges edges model =
     if List.isEmpty edges then
         model
+
     else
         let
             newEdges =
@@ -341,7 +348,7 @@ removeEdges edges model =
             newModel =
                 layout { model | edges = newEdges }
         in
-            place newModel
+        place newModel
 
 
 toggleNode : Model -> Int -> Model
@@ -352,6 +359,7 @@ toggleNode model id =
                 (\n ->
                     if n.id == id then
                         { n | selected = not n.selected }
+
                     else
                         { n | selected = False }
                 )
@@ -368,6 +376,7 @@ toggleEdge model id =
                 (\e ->
                     if e.id == id then
                         { e | selected = not e.selected }
+
                     else
                         { e | selected = False }
                 )

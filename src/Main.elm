@@ -1,20 +1,22 @@
-module Main exposing (..)
+module Main exposing (init, main, subscriptions, update)
 
-import AnimationFrame
+import Browser.Events exposing (..)
 import Html
-import WebSocket
-import Window
-import Task
 import Ports exposing (..)
-import Voog.Model exposing (..)
+import Task
 import Voog.Messages exposing (..)
-import Voog.View
+import Voog.Model exposing (..)
 import Voog.Update
+import Voog.View
+import PortFunnel.WebSocket as WebSocket
+import Browser.Events as Window
+import Browser.Dom exposing (getViewport)
+import Browser
 
 
 main : Program Flags Model Msg
 main =
-    Html.programWithFlags
+    Browser.element
         { init = init
         , update = update
         , view = Voog.View.view
@@ -48,7 +50,7 @@ init flags =
             , invalidInput = False
             }
     in
-        ( model, Task.perform WindowSize Window.size )
+    ( model, Task.perform WindowSize getViewport )
 
 
 subscriptions : Model -> Sub Msg
@@ -65,16 +67,17 @@ subscriptions model =
         resize =
             if model.flags.disableWindowResize then
                 []
+
             else
                 [ Window.resizes WindowSize ]
     in
-        Sub.batch <|
-            ([ Ports.input InputMsg
-             , AnimationFrame.diffs Tick
-             ]
-                |> List.append ws
-                |> List.append resize
-            )
+    Sub.batch <|
+        ([ Ports.input InputMsg
+         , diffs Tick
+         ]
+            |> List.append ws
+            |> List.append resize
+        )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

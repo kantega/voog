@@ -1,15 +1,15 @@
-module Sugiyama.Benchmark exposing (..)
+module Sugiyama.Benchmark exposing (main, suite)
 
 import Benchmark exposing (..)
 import Benchmark.Runner exposing (..)
-import Sugiyama.Sugiyama exposing (..)
 import Sugiyama.CrossReduction exposing (..)
 import Sugiyama.CycleRemoval exposing (..)
 import Sugiyama.DummyNodes exposing (..)
 import Sugiyama.InitialPlacement exposing (..)
 import Sugiyama.Layering exposing (..)
-import Sugiyama.Placement exposing (..)
 import Sugiyama.Model exposing (..)
+import Sugiyama.Placement exposing (..)
+import Sugiyama.Sugiyama exposing (..)
 
 
 suite : Benchmark
@@ -41,15 +41,15 @@ suite =
         positioned =
             setPosition reducedCrossing
     in
-        Benchmark.describe "Sugiyama"
-            [ Benchmark.benchmark "initialize" (\_ -> initialize graph)
-            , Benchmark.benchmark "removeCycles" (\_ -> removeCycles initilized)
-            , Benchmark.benchmark "layer" (\_ -> layer cyclesRemoved)
-            , Benchmark.benchmark "addDummies" (\_ -> addDummies layered)
-            , Benchmark.benchmark "setInitialPosition" (\_ -> setInitialPosition dummiesAdded)
-            , Benchmark.benchmark "reduceCrossing" (\_ -> reduceCrossing initialPositioned)
-            , Benchmark.benchmark "setPosition" (\_ -> setPosition reducedCrossing)
-            ]
+    Benchmark.describe "Sugiyama"
+        [ Benchmark.benchmark "initialize" (\_ -> initialize graph)
+        , Benchmark.benchmark "removeCycles" (\_ -> removeCycles initilized)
+        , Benchmark.benchmark "layer" (\_ -> layer cyclesRemoved)
+        , Benchmark.benchmark "addDummies" (\_ -> addDummies layered)
+        , Benchmark.benchmark "setInitialPosition" (\_ -> setInitialPosition dummiesAdded)
+        , Benchmark.benchmark "reduceCrossing" (\_ -> reduceCrossing initialPositioned)
+        , Benchmark.benchmark "setPosition" (\_ -> setPosition reducedCrossing)
+        ]
 
 
 main : BenchmarkProgram

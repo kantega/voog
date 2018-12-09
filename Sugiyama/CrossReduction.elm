@@ -1,4 +1,4 @@
-module Sugiyama.CrossReduction exposing (..)
+module Sugiyama.CrossReduction exposing (createCrossEdgeDict, dirInt, foldUpdate, getCrossEdges, getUpdates, reduceCrossing, reduceCrossingAtLayer, reduceCrossingsWithEdges, reduceCrossingsWithEdgesUpDown, reverseUpdate, tryFlip, tryFlipAllInLayer)
 
 {- | Reduce crossings in each layer
    The data structure used in this algorithm is Dict.Dict ( Int, Int, Int ) (Dict.Dict Int Int),
@@ -62,7 +62,7 @@ reduceCrossing ({ nodes } as graph) =
                 )
                 nodes
     in
-        { graph | nodes = newNodes }
+    { graph | nodes = newNodes }
 
 
 {-| Alternate between up and down reduction until no further improvements
@@ -75,10 +75,11 @@ reduceCrossingsWithEdgesUpDown crossEdges =
                 |> reduceCrossingsWithEdges Up
                 |> reduceCrossingsWithEdges Down
     in
-        if newCrossEdges == crossEdges then
-            crossEdges
-        else
-            reduceCrossingsWithEdgesUpDown newCrossEdges
+    if newCrossEdges == crossEdges then
+        crossEdges
+
+    else
+        reduceCrossingsWithEdgesUpDown newCrossEdges
 
 
 {-| Run one iteration of either up or down cross reduction
@@ -99,7 +100,7 @@ reduceCrossingsWithEdges direction crossEdges =
                         |> Maybe.withDefault 0
                         |> (+) -1
     in
-        reduceCrossingAtLayer direction startLayer crossEdges
+    reduceCrossingAtLayer direction startLayer crossEdges
 
 
 {-| Iterate down or upwards reducing crossings in each layer
@@ -116,10 +117,11 @@ reduceCrossingAtLayer direction layer crossEdges =
                 |> Maybe.withDefault Dict.empty
                 |> Dict.size
     in
-        if size > 0 then
-            reduceCrossingAtLayer direction (layer + dirInt direction) (tryFlipAllInLayer crossEdges layer direction)
-        else
-            crossEdges
+    if size > 0 then
+        reduceCrossingAtLayer direction (layer + dirInt direction) (tryFlipAllInLayer crossEdges layer direction)
+
+    else
+        crossEdges
 
 
 {-| Repeatedly try to flip all pairs in layer until no further improvements
@@ -130,10 +132,11 @@ tryFlipAllInLayer crossEdges y direction =
         newCrossEdges =
             tryFlip crossEdges 0 y direction
     in
-        if newCrossEdges == crossEdges then
-            crossEdges
-        else
-            tryFlipAllInLayer newCrossEdges y direction
+    if newCrossEdges == crossEdges then
+        crossEdges
+
+    else
+        tryFlipAllInLayer newCrossEdges y direction
 
 
 {-| Try to flip a single pair of nodes at x and x+1 in layer y
@@ -143,16 +146,16 @@ tryFlip : CrossEdges -> Int -> Int -> Direction -> CrossEdges
 tryFlip crossEdges x y direction =
     let
         keyDownA =
-            ( x, y, -1 * (dirInt direction) )
+            ( x, y, -1 * dirInt direction )
 
         keyDownB =
-            ( x + 1, y, -1 * (dirInt direction) )
+            ( x + 1, y, -1 * dirInt direction )
 
         keyUpA =
-            ( x, y, (dirInt direction) )
+            ( x, y, dirInt direction )
 
         keyUpB =
-            ( x + 1, y, (dirInt direction) )
+            ( x + 1, y, dirInt direction )
 
         downFromA =
             crossEdges
@@ -174,84 +177,85 @@ tryFlip crossEdges x y direction =
                 |> Dict.get keyUpB
                 |> Maybe.withDefault Dict.empty
     in
-        if (Dict.size upFromA + Dict.size downFromA > 0 && Dict.size upFromB + Dict.size downFromB > 0) then
-            let
-                childrenA =
-                    downFromA
-                        |> Dict.toList
-                        |> List.map (\( x, id ) -> x)
+    if Dict.size upFromA + Dict.size downFromA > 0 && Dict.size upFromB + Dict.size downFromB > 0 then
+        let
+            childrenA =
+                downFromA
+                    |> Dict.toList
+                    |> List.map (\( xInner, id ) -> xInner)
 
-                childrenB =
-                    downFromB
-                        |> Dict.toList
-                        |> List.map (\( x, id ) -> x)
+            childrenB =
+                downFromB
+                    |> Dict.toList
+                    |> List.map (\( xInner, id ) -> xInner)
 
-                diff =
-                    childrenB
-                        |> List.map
-                            (\xB ->
-                                ((childrenA
-                                    |> List.filter (\xA -> xB > xA)
-                                    |> List.length
-                                 )
-                                    - (childrenA
-                                        |> List.filter (\xA -> xB < xA)
-                                        |> List.length
-                                      )
-                                )
+            diff =
+                childrenB
+                    |> List.map
+                        (\xB ->
+                            (childrenA
+                                |> List.filter (\xA -> xB > xA)
+                                |> List.length
                             )
-                        |> List.sum
-            in
-                if diff < 0 then
-                    tryFlip
-                        (crossEdges
-                            |> Dict.insert keyDownA downFromB
-                            |> Dict.insert keyDownB downFromA
-                            |> Dict.insert keyUpA upFromB
-                            |> Dict.insert keyUpB upFromA
-                            |> reverseUpdate
-                                (getUpdates keyDownB -1 downFromB []
-                                    |> getUpdates keyDownA 1 downFromA
-                                    |> getUpdates keyUpB -1 upFromB
-                                    |> getUpdates keyUpA 1 upFromA
-                                )
+                                - (childrenA
+                                    |> List.filter (\xA -> xB < xA)
+                                    |> List.length
+                                  )
                         )
-                        (x + 1)
-                        y
-                        direction
-                else
-                    tryFlip crossEdges (x + 1) y direction
+                    |> List.sum
+        in
+        if diff < 0 then
+            tryFlip
+                (crossEdges
+                    |> Dict.insert keyDownA downFromB
+                    |> Dict.insert keyDownB downFromA
+                    |> Dict.insert keyUpA upFromB
+                    |> Dict.insert keyUpB upFromA
+                    |> reverseUpdate
+                        (getUpdates keyDownB -1 downFromB []
+                            |> getUpdates keyDownA 1 downFromA
+                            |> getUpdates keyUpB -1 upFromB
+                            |> getUpdates keyUpA 1 upFromA
+                        )
+                )
+                (x + 1)
+                y
+                direction
+
         else
-            crossEdges
+            tryFlip crossEdges (x + 1) y direction
+
+    else
+        crossEdges
 
 
 {-| Collect all the required reverse-updates required when swapping to points
 -}
-getUpdates : ( Int, Int, Int ) -> Int -> Dict Int Int -> List ( ( Int, Int, Int ), Int, Int, Int ) -> List ( ( Int, Int, Int ), Int, Int, Int )
+getUpdates : TrippleInt -> Int -> Dict Int Int -> List DoubleTrippleInt -> List DoubleTrippleInt
 getUpdates ( x, y, dir ) move updateDict otherUpdates =
     List.append
         otherUpdates
         (updateDict
             |> Dict.toList
             |> List.map
-                (\( x2, id ) -> ( ( x2, y + dir, -1 * dir ), x, (x + move), id ))
+                (\( x2, id ) -> ( ( x2, y + dir, -1 * dir ), (x, x + move, id) ))
         )
 
 
 {-| Update all the points this point is pointing at
 First remove all old values then insert all the new in order to avoid collisions
 -}
-reverseUpdate : List ( ( Int, Int, Int ), Int, Int, Int ) -> CrossEdges -> CrossEdges
+reverseUpdate : List DoubleTrippleInt -> CrossEdges -> CrossEdges
 reverseUpdate updates crossEdges =
     crossEdges
         |> foldUpdate updates True
         |> foldUpdate updates False
 
 
-foldUpdate : List ( ( Int, Int, Int ), Int, Int, Int ) -> Bool -> CrossEdges -> CrossEdges
+foldUpdate : List DoubleTrippleInt -> Bool -> CrossEdges -> CrossEdges
 foldUpdate updates remove crossEdges =
     case updates of
-        ( k, x, x2, id ) :: rest ->
+        ( k, (x, x2, id) ) :: rest ->
             let
                 current =
                     crossEdges
@@ -261,10 +265,11 @@ foldUpdate updates remove crossEdges =
                 new =
                     if remove then
                         Dict.remove x current
+
                     else
                         Dict.insert x2 id current
             in
-                foldUpdate rest remove (Dict.insert k new crossEdges)
+            foldUpdate rest remove (Dict.insert k new crossEdges)
 
         _ ->
             crossEdges
@@ -292,7 +297,7 @@ getCrossEdges ({ nodes, edges } as graph) =
         crossEdges =
             createCrossEdgeDict Dict.empty xPos yPos oldEdges
     in
-        ( Dict.fromList oldEdges, crossEdges )
+    ( Dict.fromList oldEdges, crossEdges )
 
 
 {-| Iterate over all edges and insert them into CrossEdges
@@ -311,36 +316,36 @@ createCrossEdgeDict crossEdges xPos yPos oldEdges =
                 y =
                     Dict.get e.from yPos
             in
-                case ( x1, x2, y ) of
-                    ( Just (Just x1), Just (Just x2), Just (Just y) ) ->
-                        let
-                            keyDown =
-                                ( x1, y, dirInt Down )
+            case ( x1, x2, y ) of
+                ( Just (Just x1Inner), Just (Just x2Inner), Just (Just yInner) ) ->
+                    let
+                        keyDown =
+                            ( x1Inner, yInner, dirInt Down )
 
-                            keyUp =
-                                ( x2, y + 1, dirInt Up )
+                        keyUp =
+                            ( x2Inner, yInner + 1, dirInt Up )
 
-                            currentDictDown =
-                                Maybe.withDefault Dict.empty (Dict.get keyDown crossEdges)
+                        currentDictDown =
+                            Maybe.withDefault Dict.empty (Dict.get keyDown crossEdges)
 
-                            currentDictUp =
-                                Maybe.withDefault Dict.empty (Dict.get keyUp crossEdges)
+                        currentDictUp =
+                            Maybe.withDefault Dict.empty (Dict.get keyUp crossEdges)
 
-                            updatedInnerDown =
-                                Dict.insert x2 id currentDictDown
+                        updatedInnerDown =
+                            Dict.insert x2Inner id currentDictDown
 
-                            updatedInnerUp =
-                                Dict.insert x1 id currentDictUp
+                        updatedInnerUp =
+                            Dict.insert x1Inner id currentDictUp
 
-                            newDict =
-                                crossEdges
-                                    |> Dict.insert keyDown updatedInnerDown
-                                    |> Dict.insert keyUp updatedInnerUp
-                        in
-                            createCrossEdgeDict newDict xPos yPos rest
+                        newDict =
+                            crossEdges
+                                |> Dict.insert keyDown updatedInnerDown
+                                |> Dict.insert keyUp updatedInnerUp
+                    in
+                    createCrossEdgeDict newDict xPos yPos rest
 
-                    _ ->
-                        createCrossEdgeDict crossEdges xPos yPos rest
+                _ ->
+                    createCrossEdgeDict crossEdges xPos yPos rest
 
         _ ->
             crossEdges

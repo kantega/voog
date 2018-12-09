@@ -1,29 +1,29 @@
-module Voog.Input exposing (..)
+module Voog.Input exposing (edge, floatFloatTuple, handleInput, handlePosition, handleSize, input, intIntTuple, movement, node, stringStringTuple)
 
-import Json.Decode exposing (..)
+import Json.Decode as Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
-import Voog.Model exposing (..)
 import Voog.Action exposing (..)
+import Voog.Model exposing (..)
 
 
 stringStringTuple : Decoder ( String, String )
 stringStringTuple =
-    map2 (,) (index 0 string) (index 1 string)
+    map2 (\a b -> ( a, b )) (index 0 string) (index 1 string)
 
 
 intIntTuple : Decoder ( Int, Int )
 intIntTuple =
-    map2 (,) (index 0 int) (index 1 int)
+    map2 (\a b -> ( a, b )) (index 0 int) (index 1 int)
 
 
 floatFloatTuple : Decoder ( Float, Float )
 floatFloatTuple =
-    map2 (,) (index 0 float) (index 1 float)
+    map2 (\a b -> ( a, b )) (index 0 float) (index 1 float)
 
 
 input : Decoder Input
 input =
-    decode Input
+    Decode.succeed Input
         |> optional "name" string ""
         |> optional "clear" bool False
         |> optional "size" (maybe intIntTuple) Nothing
@@ -38,12 +38,12 @@ input =
         |> optional "setNodes" (list node) []
         |> optional "setEdges" (list edge) []
         |> optional "removeNodes" (list int) []
-        |> optional "removeEdges" (list (intIntTuple)) []
+        |> optional "removeEdges" (list intIntTuple) []
 
 
 movement : Decoder InputMovement
 movement =
-    decode InputMovement
+    Decode.succeed InputMovement
         |> required "from" int
         |> required "to" int
         |> required "duration" float
@@ -53,7 +53,7 @@ movement =
 
 node : Decoder InputNode
 node =
-    decode InputNode
+    Decode.succeed InputNode
         |> required "id" int
         |> optional "info" (list stringStringTuple) []
         |> optional "classes" (list string) []
@@ -69,7 +69,7 @@ node =
 
 edge : Decoder InputEdge
 edge =
-    decode InputEdge
+    Decode.succeed InputEdge
         |> required "from" int
         |> required "to" int
         |> optional "info" (list stringStringTuple) []
@@ -82,33 +82,34 @@ edge =
 handleInput : Model -> String -> Model
 handleInput model inputString =
     case decodeString input inputString of
-        Ok input ->
+        Ok inputMsg ->
             model
                 |> (\m ->
-                        if input.clear then
+                        if inputMsg.clear then
                             { m | nodes = [], edges = [] }
+
                         else
                             m
                    )
                 |> (\m ->
                         { m
-                            | name = input.name
-                            , layout = input.layout
-                            , nodeDistance = input.nodeDistance
-                            , attraction = input.attraction
-                            , repulsion = input.repulsion
-                            , forceDampFactor = input.forceDampFactor
-                            , center = Maybe.withDefault False input.center
+                            | name = inputMsg.name
+                            , layout = inputMsg.layout
+                            , nodeDistance = inputMsg.nodeDistance
+                            , attraction = inputMsg.attraction
+                            , repulsion = inputMsg.repulsion
+                            , forceDampFactor = inputMsg.forceDampFactor
+                            , center = Maybe.withDefault False inputMsg.center
                         }
                    )
-                |> handleSize input.size
-                |> handlePosition input.position
-                |> addMovement input.addMovement
-                |> removeNodes input.removeNodes
-                |> removeEdges input.removeEdges
-                |> setNodes input.setNodes False
-                |> setEdges input.setEdges False
-                |> setNodesWithEdges input.setEdges
+                |> handleSize inputMsg.size
+                |> handlePosition inputMsg.position
+                |> addMovement inputMsg.addMovement
+                |> removeNodes inputMsg.removeNodes
+                |> removeEdges inputMsg.removeEdges
+                |> setNodes inputMsg.setNodes False
+                |> setEdges inputMsg.setEdges False
+                |> setNodesWithEdges inputMsg.setEdges
 
         _ ->
             { model | invalidInput = True }

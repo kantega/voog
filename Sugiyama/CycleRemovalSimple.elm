@@ -3,8 +3,8 @@ module Sugiyama.CycleRemovalSimple exposing (removeCyclesSimple)
 {-| A DFS search, reversing all edges opposite of the traversal direction
 -}
 
-import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)
+import Sugiyama.Model exposing (..)
 
 
 {-| Initialize with no visited nodes
@@ -27,16 +27,16 @@ removeCyclesIteration graph visited =
                 |> List.reverse
                 |> List.head
     in
-        case root of
-            Just root ->
-                let
-                    ( newVisited, newGraph ) =
-                        removeCyclesInConnectedGraph graph [ root ] visited
-                in
-                    removeCyclesIteration newGraph newVisited
+    case root of
+        Just rootInner ->
+            let
+                ( newVisited, newGraph ) =
+                    removeCyclesInConnectedGraph graph [ rootInner ] visited
+            in
+            removeCyclesIteration newGraph newVisited
 
-            Nothing ->
-                graph
+        Nothing ->
+            graph
 
 
 {-| Traverse graph
@@ -48,6 +48,7 @@ removeCyclesInConnectedGraph graph nodes visited =
         head :: rest ->
             if List.member head.id visited then
                 removeCyclesInConnectedGraph graph rest visited
+
             else
                 let
                     newVisited =
@@ -70,6 +71,7 @@ removeCyclesInConnectedGraph graph nodes visited =
                                 (\e ->
                                     if e.to == head.id && List.member e.from parentIds then
                                         reverse e
+
                                     else
                                         e
                                 )
@@ -83,7 +85,7 @@ removeCyclesInConnectedGraph graph nodes visited =
                     newNodes =
                         List.append newChildren rest
                 in
-                    removeCyclesInConnectedGraph newGraph newNodes newVisited
+                removeCyclesInConnectedGraph newGraph newNodes newVisited
 
         _ ->
             ( visited, graph )

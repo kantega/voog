@@ -1,22 +1,26 @@
-module Voog.Messages exposing (..)
+module Voog.Messages exposing (Msg(..), onMouseDown, onMouseMove, onMouseUp, onMouseWheel)
 
-import Html.Events exposing (on)
 import Html
-import Json.Decode exposing (map, map2, map3, at, int)
-import Window
+import Html.Events exposing (on)
+import Json.Decode exposing (at, int, map, map2, map3)
 import Time
+import Browser.Events as Window
+import Browser
 
+
+type alias TrippleInt =
+    ( Int, Int, Int )
 
 type Msg
     = ClickNode Int
     | ClickEdge ( Int, Int )
-    | CloseInfo ( Int, Int, Int )
+    | CloseInfo TrippleInt
     | InputMsg String
-    | Tick Time.Time
-    | WindowSize Window.Size
+    | Tick Time.Posix
+    | WindowSize { height : Int, width : Int }
     | MouseMove ( Int, Int )
-    | MouseUp ( Int, Int, Int )
-    | MouseDown ( Int, Int, Int )
+    | MouseUp TrippleInt
+    | MouseDown TrippleInt
     | MouseWheel Int
     | AcceptInvalidInput
 
@@ -28,14 +32,14 @@ onMouseWheel tagger =
 
 onMouseMove : (( Int, Int ) -> msg) -> Html.Attribute msg
 onMouseMove tagger =
-    on "mousemove" (map tagger (map2 (,) (at [ "clientX" ] int) (at [ "clientY" ] int)))
+    on "mousemove" (map tagger (map2 (\a b -> ( a, b )) (at [ "clientX" ] int) (at [ "clientY" ] int)))
 
 
-onMouseDown : (( Int, Int, Int ) -> msg) -> Html.Attribute msg
+onMouseDown : (TrippleInt -> msg) -> Html.Attribute msg
 onMouseDown tagger =
-    on "mousedown" (map tagger (map3 (,,) (at [ "which" ] int) (at [ "clientX" ] int) (at [ "clientY" ] int)))
+    on "mousedown" (map tagger (map3 (\a b c -> ( a, b, c )) (at [ "which" ] int) (at [ "clientX" ] int) (at [ "clientY" ] int)))
 
 
-onMouseUp : (( Int, Int, Int ) -> msg) -> Html.Attribute msg
+onMouseUp : (TrippleInt -> msg) -> Html.Attribute msg
 onMouseUp tagger =
-    on "mouseup" (map tagger (map3 (,,) (at [ "which" ] int) (at [ "clientX" ] int) (at [ "clientY" ] int)))
+    on "mouseup" (map tagger (map3 (\a b c -> ( a, b, c )) (at [ "which" ] int) (at [ "clientX" ] int) (at [ "clientY" ] int)))

@@ -1,12 +1,12 @@
-module Voog.Layouts.Sugiyama exposing (..)
+module Voog.Layouts.Sugiyama exposing (getNodePosition, getParts, mergeEdge, scaleEdge, scaleNode, sugiyamaLayout)
 
 import Sugiyama.CycleRemoval exposing (removeCycles)
 import Sugiyama.CycleRemovalSimple exposing (removeCyclesSimple)
+import Sugiyama.Model
 import Sugiyama.Placement exposing (flipAxis)
 import Sugiyama.Sugiyama exposing (sugiyama, sugiyamaCustom)
-import Sugiyama.Model
-import Voog.Model exposing (..)
 import Voog.Helpers exposing (reverseId)
+import Voog.Model exposing (..)
 import Voog.View exposing (..)
 
 
@@ -24,16 +24,19 @@ sugiyamaLayout layout ({ nodes, edges } as model) =
                 cycleRemoval =
                     if List.member "simpleCycles" layout then
                         removeCyclesSimple
+
                     else
                         removeCycles
+
                 flipAxisAction =
                     if List.member "horizontal" layout then
                         flipAxis
+
                     else
                         \a -> a
             in
-                sugiyamaCustom { nodes = basicNodes, edges = basicEdges } cycleRemoval
-                    |> flipAxisAction
+            sugiyamaCustom { nodes = basicNodes, edges = basicEdges } cycleRemoval
+                |> flipAxisAction
 
         sortedSugiyama =
             List.sortWith (\a b -> compare a.id b.id) graph.nodes
@@ -48,7 +51,7 @@ sugiyamaLayout layout ({ nodes, edges } as model) =
                         position =
                             Just { x = toFloat <| Maybe.withDefault 0 x, y = toFloat <| Maybe.withDefault 0 y }
                     in
-                        { n | position = position }
+                    { n | position = position }
                 )
                 sortedSugiyama
                 sortedNodes
@@ -57,7 +60,7 @@ sugiyamaLayout layout ({ nodes, edges } as model) =
             List.map (mergeEdge graph) edges
 
         distance =
-            4 * (Maybe.withDefault nodeRadius model.nodeDistance)
+            4 * Maybe.withDefault nodeRadius model.nodeDistance
 
         scaledNodes =
             List.map (scaleNode distance) mergedNodes
@@ -65,7 +68,7 @@ sugiyamaLayout layout ({ nodes, edges } as model) =
         scaledEdges =
             List.map (scaleEdge distance) mergedEdges
     in
-        { model | nodes = scaledNodes, edges = scaledEdges }
+    { model | nodes = scaledNodes, edges = scaledEdges }
 
 
 getParts : Edge -> ( Int, Int ) -> Sugiyama.Model.Edges -> List { from : Int, to : Int, id : ( Int, Int ), num : Int }
@@ -98,39 +101,41 @@ mergeEdge { nodes, edges } edge =
         parts =
             List.append partsA partsB
     in
-        if List.length parts < 2 then
-            { edge | position = Nothing }
-        else
-            let
-                endNodeIds =
-                    List.map .to parts
+    if List.length parts < 2 then
+        { edge | position = Nothing }
 
-                nodeIds =
-                    parts
-                        |> List.map .from
-                        |> List.head
-                        |> List.singleton
-                        |> List.filterMap identity
-                        |> (\a -> List.append a endNodeIds)
+    else
+        let
+            endNodeIds =
+                List.map .to parts
 
-                points =
-                    List.map (getNodePosition nodes) nodeIds
+            nodeIds =
+                parts
+                    |> List.map .from
+                    |> List.head
+                    |> List.singleton
+                    |> List.filterMap identity
+                    |> (\a -> List.append a endNodeIds)
 
-                reversed =
-                    edges
-                        |> List.filter (\e -> e.id == edge.id)
-                        |> List.map (\e -> { reversed = e.reversed })
-                        |> List.head
-                        |> Maybe.withDefault { reversed = False }
-                        |> .reversed
+            points =
+                List.map (getNodePosition nodes) nodeIds
 
-                correctPoints =
-                    if reversed then
-                        List.reverse points
-                    else
-                        points
-            in
-                { edge | position = Just (Multi correctPoints) }
+            reversed =
+                edges
+                    |> List.filter (\e -> e.id == edge.id)
+                    |> List.map (\e -> { reversed = e.reversed })
+                    |> List.head
+                    |> Maybe.withDefault { reversed = False }
+                    |> .reversed
+
+            correctPoints =
+                if reversed then
+                    List.reverse points
+
+                else
+                    points
+        in
+        { edge | position = Just (Multi correctPoints) }
 
 
 getNodePosition : Sugiyama.Model.Nodes -> Int -> Point
@@ -141,17 +146,17 @@ getNodePosition nodes id =
                 |> List.filter (\n -> n.id == id)
                 |> List.head
     in
-        case node of
-            Just node ->
-                case ( node.x, node.y ) of
-                    ( Just x, Just y ) ->
-                        { x = toFloat x, y = toFloat y }
+    case node of
+        Just nodeInner ->
+            case ( nodeInner.x, nodeInner.y ) of
+                ( Just x, Just y ) ->
+                    { x = toFloat x, y = toFloat y }
 
-                    _ ->
-                        { x = -1, y = -1 }
+                _ ->
+                    { x = -1, y = -1 }
 
-            Nothing ->
-                { x = -1, y = -1 }
+        Nothing ->
+            { x = -1, y = -1 }
 
 
 scaleNode : Float -> Node -> Node
@@ -159,18 +164,18 @@ scaleNode distance ({ position } as node) =
     let
         p =
             case position of
-                Just position ->
+                Just positionInner ->
                     Just
-                        { x = position.x * distance
-                        , y = position.y * distance
+                        { x = positionInner.x * distance
+                        , y = positionInner.y * distance
                         }
 
                 Nothing ->
                     position
     in
-        { node
-            | position = p
-        }
+    { node
+        | position = p
+    }
 
 
 scaleEdge : Float -> Edge -> Edge
@@ -186,7 +191,7 @@ scaleEdge distance ({ position } as edge) =
                         t =
                             { x = to.x * distance, y = to.y * distance }
                     in
-                        Just <| Straight { from = f, to = t }
+                    Just <| Straight { from = f, to = t }
 
                 Just (Multi points) ->
                     Just <| Multi <| List.map (\{ x, y } -> { x = x * distance, y = y * distance }) points
@@ -194,6 +199,6 @@ scaleEdge distance ({ position } as edge) =
                 _ ->
                     position
     in
-        { edge
-            | position = p
-        }
+    { edge
+        | position = p
+    }

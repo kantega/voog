@@ -1,4 +1,4 @@
-module Voog.Helpers exposing (..)
+module Voog.Helpers exposing (reverseId, sign)
 
 
 reverseId : ( Int, Int ) -> ( Int, Int )
@@ -10,7 +10,9 @@ sign : Float -> Float
 sign a =
     if a < 0 then
         -1
+
     else if a > 0 then
         1
+
     else
         0

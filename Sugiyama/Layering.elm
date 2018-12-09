@@ -1,11 +1,11 @@
-module Sugiyama.Layering exposing (..)
+module Sugiyama.Layering exposing (layer, layerDown, layerDownInner, layerDownIteration, layerUp, layerUpIteration, updateChild, updateParent)
 
 {-| Assign a layer to each node
 -}
 
 import Set
-import Sugiyama.Model exposing (..)
 import Sugiyama.Helpers exposing (..)
+import Sugiyama.Model exposing (..)
 
 
 {-| Iterate down placing each child under its parent
@@ -32,7 +32,7 @@ layerDown graph =
             graph.nodes
                 |> List.filter (\n -> not <| Set.member n.id edges)
     in
-        layerDownInner [] graph layerZeros
+    layerDownInner [] graph layerZeros
 
 
 {-| Start iteration from each of the layerZero nodes
@@ -48,7 +48,7 @@ layerDownInner visited graph layerZeros =
                 ( newVisited, new2Graph ) =
                     layerDownIteration newGraph [ { head | y = Just 0 } ] visited
             in
-                layerDownInner newVisited new2Graph rest
+            layerDownInner newVisited new2Graph rest
 
         _ ->
             graph
@@ -84,7 +84,7 @@ layerDownIteration graph iterationNodes visited =
                 newGraph =
                     { graph | nodes = newNodes }
             in
-                layerDownIteration newGraph nextNodes newVisited
+            layerDownIteration newGraph nextNodes newVisited
 
         _ ->
             ( visited, graph )
@@ -102,10 +102,12 @@ updateChild parent children node =
             parentY =
                 Maybe.withDefault -1 parent.y
         in
-            if y < parentY + 1 then
-                ( True, { node | y = Just (parentY + 1) } )
-            else
-                ( False, node )
+        if y < parentY + 1 then
+            ( True, { node | y = Just (parentY + 1) } )
+
+        else
+            ( False, node )
+
     else
         ( False, node )
 
@@ -122,28 +124,29 @@ layerUp graph =
                 |> List.maximum
                 |> Maybe.withDefault 0
     in
-        layerUpIteration (layers - 1) graph
+    layerUpIteration (layers - 1) graph
 
 
 {-| Update all parents of this layer then call next layer
 -}
 layerUpIteration : Int -> Graph -> Graph
-layerUpIteration layer ({ nodes } as graph) =
-    if layer < 0 then
+layerUpIteration currentLayer ({ nodes } as graph) =
+    if currentLayer < 0 then
         graph
+
     else
         let
             newGraph =
-                { graph | nodes = List.map (updateParent graph layer) nodes }
+                { graph | nodes = List.map (updateParent graph currentLayer) nodes }
         in
-            layerUpIteration (layer - 1) newGraph
+        layerUpIteration (currentLayer - 1) newGraph
 
 
 {-| Place parent just above children
 -}
 updateParent : Graph -> Int -> Node -> Node
-updateParent graph layer node =
-    if node.y == Just layer then
+updateParent graph currentLayer node =
+    if node.y == Just currentLayer then
         let
             children =
                 getChildren graph node.id
@@ -154,9 +157,11 @@ updateParent graph layer node =
                     |> List.minimum
                     |> Maybe.withDefault 1
         in
-            if Maybe.withDefault -1 node.y < minChildLayer - 1 then
-                { node | y = Just (minChildLayer - 1) }
-            else
-                node
+        if Maybe.withDefault -1 node.y < minChildLayer - 1 then
+            { node | y = Just (minChildLayer - 1) }
+
+        else
+            node
+
     else
         node

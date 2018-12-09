@@ -1,13 +1,13 @@
-module Voog.View exposing (..)
+module Voog.View exposing (defaultDistance, defs, getViewNode, invalidInput, labelHeight, labelWidth, lineToString, nodeRadius, path, textPosition, view, viewEdge, viewInfoList, viewLabel, viewMovement, viewNode, viewNodeWithHref, viewTooltip)
 
 import Dict exposing (Dict)
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (href)
 import Html.Events exposing (..)
-import Voog.Model exposing (..)
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
 import Voog.Messages exposing (..)
+import Voog.Model exposing (..)
 
 
 nodeRadius : Float
@@ -41,35 +41,35 @@ view model =
                 |> List.map (\e -> ( e.id, e ))
                 |> Dict.fromList
     in
-        div [ class "voog" ]
-            [ viewTooltip model
-            , svg
-                [ Voog.Messages.onMouseWheel MouseWheel
-                , Voog.Messages.onMouseMove MouseMove
-                , Voog.Messages.onMouseUp MouseUp
-                , Voog.Messages.onMouseDown MouseDown
-                , width (toString windowWidth)
-                , height (toString windowHeight)
-                , viewBox
-                    ((toString <| -model.position.x / model.zoom)
-                        ++ " "
-                        ++ (toString <| -model.position.y / model.zoom)
-                        ++ " "
-                        ++ (toString <| toFloat windowWidth / model.zoom)
-                        ++ " "
-                        ++ (toString <| toFloat windowHeight / model.zoom)
-                    )
-                ]
-                (List.concat
-                    [ [ defs model ]
-                    , (List.foldr List.append [] (List.filterMap viewEdge model.edges))
-                    , (List.foldr List.append [] (List.filterMap viewLabel model.edges))
-                    , (List.map (viewMovement edgeDict) model.movements)
-                    , (List.foldr List.append [] (List.filterMap (getViewNode model.name) model.nodes))
-                    , invalidInput model
-                    ]
+    div [ class "voog" ]
+        [ viewTooltip model
+        , svg
+            [ Voog.Messages.onMouseWheel MouseWheel
+            , Voog.Messages.onMouseMove MouseMove
+            , Voog.Messages.onMouseUp MouseUp
+            , Voog.Messages.onMouseDown MouseDown
+            , width (String.fromInt windowWidth)
+            , height (String.fromInt windowHeight)
+            , viewBox
+                ((String.fromFloat <| -model.position.x / model.zoom)
+                    ++ " "
+                    ++ (String.fromFloat <| -model.position.y / model.zoom)
+                    ++ " "
+                    ++ (String.fromFloat <| toFloat windowWidth / model.zoom)
+                    ++ " "
+                    ++ (String.fromFloat <| toFloat windowHeight / model.zoom)
                 )
             ]
+            (List.concat
+                [ [ defs model ]
+                , List.foldr List.append [] (List.filterMap viewEdge model.edges)
+                , List.foldr List.append [] (List.filterMap viewLabel model.edges)
+                , List.map (viewMovement edgeDict) model.movements
+                , List.foldr List.append [] (List.filterMap (getViewNode model.name) model.nodes)
+                , invalidInput model
+                ]
+            )
+        ]
 
 
 invalidInput : Model -> List (Svg Msg)
@@ -79,26 +79,27 @@ invalidInput model =
             ( windowWidth, windowHeight ) =
                 Maybe.withDefault ( 0, 0 ) model.windowSize
         in
-            [ rect
-                [ onClick AcceptInvalidInput
-                , fill "rgba(255, 0, 0, 0.5)"
-                , x <| toString <| -model.position.x / model.zoom
-                , y <| toString <| -model.position.y / model.zoom
-                , width <| toString <| toFloat windowWidth / model.zoom
-                , height <| toString <| toFloat windowHeight / model.zoom
-                ]
-                []
-            , Svg.text_
-                [ x <| toString <| -model.position.x / model.zoom + toFloat windowWidth / model.zoom / 2
-                , y <| toString <| -model.position.y / model.zoom + toFloat windowHeight / model.zoom / 2
-                , fill "rgba(255, 0, 0, 0.4)"
-                , textAnchor "middle"
-                , alignmentBaseline "middle"
-                , fontWeight "700"
-                , fontSize <| toString <| 50 / model.zoom
-                ]
-                [ Svg.text "Invalid input" ]
+        [ rect
+            [ onClick AcceptInvalidInput
+            , fill "rgba(255, 0, 0, 0.5)"
+            , x <| String.fromFloat <| -model.position.x / model.zoom
+            , y <| String.fromFloat <| -model.position.y / model.zoom
+            , width <| String.fromFloat <| toFloat windowWidth / model.zoom
+            , height <| String.fromFloat <| toFloat windowHeight / model.zoom
             ]
+            []
+        , Svg.text_
+            [ x <| String.fromFloat <| -model.position.x / model.zoom + toFloat windowWidth / model.zoom / 2
+            , y <| String.fromFloat <| -model.position.y / model.zoom + toFloat windowHeight / model.zoom / 2
+            , fill "rgba(255, 0, 0, 0.4)"
+            , textAnchor "middle"
+            , alignmentBaseline "middle"
+            , fontWeight "700"
+            , fontSize <| String.fromFloat <| 50 / model.zoom
+            ]
+            [ Svg.text "Invalid input" ]
+        ]
+
     else
         []
 
@@ -111,7 +112,7 @@ viewTooltip model =
                 node.info
                 node.position
                 node.name
-                ( (Maybe.withDefault nodeRadius node.width), nodeRadius - (Maybe.withDefault nodeRadius node.height) )
+                ( Maybe.withDefault nodeRadius node.width, nodeRadius - Maybe.withDefault nodeRadius node.height )
 
         _ ->
             case List.head (List.filter (\e -> e.selected) model.edges) of
@@ -133,28 +134,28 @@ viewInfoList model info maybeElementPos name ( offsetX, offsetY ) =
             , y = model.position.y + (offsetY + elementPos.y) * model.zoom
             }
     in
-        div
-            [ class "info-popup"
-            , Svg.Attributes.style <| "left: " ++ (toString pos.x) ++ "; top: " ++ (toString pos.y) ++ ";"
-            ]
-            [ div [ class "info-top" ]
-                [ h3 [ class "info-header" ] [ Html.text <| Maybe.withDefault "Info" name ]
-                , h3
-                    [ Voog.Messages.onMouseDown CloseInfo
-                    , class "info-close"
-                    ]
-                    [ Html.text "✖" ]
+    div
+        [ class "info-popup"
+        , Svg.Attributes.style <| "left: " ++ String.fromFloat pos.x ++ "; top: " ++ String.fromFloat pos.y ++ ";"
+        ]
+        [ div [ class "info-top" ]
+            [ h3 [ class "info-header" ] [ Html.text <| Maybe.withDefault "Info" name ]
+            , h3
+                [ Voog.Messages.onMouseDown CloseInfo
+                , class "info-close"
                 ]
-            , div [ class "info-list" ]
-                (List.concatMap
-                    (\( k, v ) ->
-                        [ p [] [ Html.text k ]
-                        , p [] [ Html.text v ]
-                        ]
-                    )
-                    info
-                )
+                [ Html.text "✖" ]
             ]
+        , div [ class "info-list" ]
+            (List.concatMap
+                (\( k, v ) ->
+                    [ p [] [ Html.text k ]
+                    , p [] [ Html.text v ]
+                    ]
+                )
+                info
+            )
+        ]
 
 
 defs : Model -> Html Msg
@@ -169,35 +170,35 @@ defs model =
         placedImageNodes =
             List.filter (\n -> List.member n.id imageIds) model.nodes
     in
-        Svg.defs []
-            (List.filterMap
-                (\node ->
-                    case node.position of
-                        Just { x, y } ->
-                            Just
-                                (Svg.pattern
-                                    [ id (model.name ++ "_img" ++ (toString node.id))
-                                    , class "image-pattern"
-                                    , height "100%"
-                                    , width "100%"
-                                    , patternContentUnits "objectBoundingBox"
+    Svg.defs []
+        (List.filterMap
+            (\node ->
+                case node.position of
+                    Just { x, y } ->
+                        Just
+                            (Svg.pattern
+                                [ id (model.name ++ "_img" ++ String.fromInt node.id)
+                                , class "image-pattern"
+                                , height "100%"
+                                , width "100%"
+                                , patternContentUnits "objectBoundingBox"
+                                ]
+                                [ Svg.image
+                                    [ class "image-pattern-image"
+                                    , xlinkHref (Maybe.withDefault "" node.image)
+                                    , preserveAspectRatio "xMidYMid slice"
+                                    , width "1"
+                                    , height "1"
                                     ]
-                                    [ Svg.image
-                                        [ class "image-pattern-image"
-                                        , xlinkHref (Maybe.withDefault "" node.image)
-                                        , preserveAspectRatio "xMidYMid slice"
-                                        , width "1"
-                                        , height "1"
-                                        ]
-                                        []
-                                    ]
-                                )
+                                    []
+                                ]
+                            )
 
-                        Nothing ->
-                            Nothing
-                )
-                imageNodes
+                    Nothing ->
+                        Nothing
             )
+            imageNodes
+        )
 
 
 viewMovement : Dict ( Int, Int ) Edge -> Movement InputMovement -> Svg Msg
@@ -217,14 +218,14 @@ viewMovement edges movement =
                     ""
 
         distance =
-            toString <| movement.runningTime / movement.duration * 100
+            String.fromFloat <| movement.runningTime / movement.duration * 100
     in
-        g
-            [ class <| String.join " " <| "movement" :: movement.classes
-            , Svg.Attributes.style <| "offset-path: path(\"" ++ pathString ++ "\"); offset-distance: " ++ distance ++ "%;"
-            ]
-            [ use [ xlinkHref <| "#" ++ movement.icon ] []
-            ]
+    g
+        [ class <| String.join " " <| "movement" :: movement.classes
+        , Svg.Attributes.style <| "offset-path: path(\"" ++ pathString ++ "\"); offset-distance: " ++ distance ++ "%;"
+        ]
+        [ use [ xlinkHref <| "#" ++ movement.icon ] []
+        ]
 
 
 getViewNode : String -> Node -> Maybe (List (Svg Msg))
@@ -244,14 +245,17 @@ viewNodeWithHref modelName node =
             case viewNode modelName node of
                 Nothing ->
                     Nothing
+
                 Just renderedNode ->
-                    Just [
-                        Svg.a
-                        [Svg.Attributes.xlinkHref href, Svg.Attributes.target "_blank"]
-                        renderedNode
-                    ]
+                    Just
+                        [ Svg.a
+                            [ Svg.Attributes.xlinkHref href, Svg.Attributes.target "_blank" ]
+                            renderedNode
+                        ]
+
         _ ->
             viewNode modelName node
+
 
 viewNode : String -> Node -> Maybe (List (Svg Msg))
 viewNode modelName node =
@@ -260,54 +264,54 @@ viewNode modelName node =
             let
                 nodeWidth =
                     Maybe.withDefault nodeRadius node.width
+
                 nodeHeight =
                     Maybe.withDefault nodeRadius node.height
             in
-                Just
-                    [ (case node.shape of
-                        Just "rect" ->
-                            rect
-                                [ --onClick (ClickNode node.id)
-                                class <| String.join " " <| "node rect" :: node.classes
-                                , Svg.Attributes.x (toString <| x - nodeWidth)
-                                , Svg.Attributes.y (toString <| y - nodeHeight)
-                                , width <| toString <| 2 * nodeWidth
-                                , height <| toString <| 2 * nodeHeight
-                                ]
+            Just
+                [ (case node.shape of
+                    Just "rect" ->
+                        rect
+                            [ --onClick (ClickNode node.id)
+                              class <| String.join " " <| "node rect" :: node.classes
+                            , Svg.Attributes.x (String.fromFloat <| x - nodeWidth)
+                            , Svg.Attributes.y (String.fromFloat <| y - nodeHeight)
+                            , width <| String.fromFloat <| 2 * nodeWidth
+                            , height <| String.fromFloat <| 2 * nodeHeight
+                            ]
 
-                        _ ->
-                            ellipse
-                                [ --onClick (ClickNode node.id)
-                                class <| String.join " " <| "node circle" :: node.classes
-                                , cx (toString x)
-                                , cy (toString y)
-                                , rx (toString (nodeWidth))
-                                , ry (toString (nodeHeight))
-                                ]
-                      )
-                        []
-                    , circle
-                        [ --onClick (ClickNode node.id)
-                        class <| String.join " " <| "node-image" :: node.classes
-                        , cx (toString (x))
-                        , cy (toString (y - nodeRadius + 30))
-                        , fill ("url(#" ++ modelName ++ "_img" ++ (toString node.id) ++ ")")
-                        ]
-                        []
-                    , Svg.foreignObject
-                        [ --onClick (ClickNode node.id)
-                        class <| String.join " " <| "node-text-wrapper" :: node.classes
-                        , Svg.Attributes.x (toString (x - nodeWidth*0.8))
-                        , Svg.Attributes.y (toString (y - nodeHeight*0.8))
-                        , Svg.Attributes.width (toString (1.6*nodeWidth))
-                        , Svg.Attributes.height (toString (1.6*nodeHeight))
-                        ]
-                        [
-                            Html.span
-                            [ class "node-text" ]
-                            [ Html.text (Maybe.withDefault "" node.name) ]
-                        ]
+                    _ ->
+                        ellipse
+                            [ --onClick (ClickNode node.id)
+                              class <| String.join " " <| "node circle" :: node.classes
+                            , cx (String.fromFloat x)
+                            , cy (String.fromFloat y)
+                            , rx (String.fromFloat nodeWidth)
+                            , ry (String.fromFloat nodeHeight)
+                            ]
+                  )
+                    []
+                , circle
+                    [ --onClick (ClickNode node.id)
+                      class <| String.join " " <| "node-image" :: node.classes
+                    , cx (String.fromFloat x)
+                    , cy (String.fromFloat (y - nodeRadius + 30))
+                    , fill ("url(#" ++ modelName ++ "_img" ++ String.fromInt node.id ++ ")")
                     ]
+                    []
+                , Svg.foreignObject
+                    [ --onClick (ClickNode node.id)
+                      class <| String.join " " <| "node-text-wrapper" :: node.classes
+                    , Svg.Attributes.x (String.fromFloat (x - nodeWidth * 0.8))
+                    , Svg.Attributes.y (String.fromFloat (y - nodeHeight * 0.8))
+                    , Svg.Attributes.width (String.fromFloat (1.6 * nodeWidth))
+                    , Svg.Attributes.height (String.fromFloat (1.6 * nodeHeight))
+                    ]
+                    [ Html.span
+                        [ class "node-text" ]
+                        [ Html.text (Maybe.withDefault "" node.name) ]
+                    ]
+                ]
 
         _ ->
             Nothing
@@ -317,10 +321,10 @@ textPosition : Float -> Maybe String -> String
 textPosition y image =
     case image of
         Just _ ->
-            (toString (y + nodeRadius * 1 / 2))
+            String.fromFloat (y + nodeRadius * 1 / 2)
 
         Nothing ->
-            (toString y)
+            String.fromFloat y
 
 
 path : Line -> String
@@ -328,13 +332,13 @@ path position =
     case position of
         Straight line ->
             "M"
-                ++ (toString line.from.x)
+                ++ String.fromFloat line.from.x
                 ++ " "
-                ++ (toString line.from.y)
+                ++ String.fromFloat line.from.y
                 ++ " "
-                ++ (toString line.to.x)
+                ++ String.fromFloat line.to.x
                 ++ " "
-                ++ (toString line.to.y)
+                ++ String.fromFloat line.to.y
 
         Multi line ->
             lineToString line True
@@ -346,21 +350,22 @@ lineToString line first =
         char =
             if first then
                 "M"
+
             else
                 "L"
     in
-        case line of
-            head :: rest ->
-                char
-                    ++ " "
-                    ++ (toString head.x)
-                    ++ " "
-                    ++ (toString head.y)
-                    ++ " "
-                    ++ lineToString rest False
+    case line of
+        head :: rest ->
+            char
+                ++ " "
+                ++ String.fromFloat head.x
+                ++ " "
+                ++ String.fromFloat head.y
+                ++ " "
+                ++ lineToString rest False
 
-            _ ->
-                ""
+        _ ->
+            ""
 
 
 viewEdge : Edge -> Maybe (List (Html Msg))
@@ -371,18 +376,18 @@ viewEdge edge =
                 [ Svg.path
                     [ onClick (ClickEdge edge.id)
                     , class <| String.join " " <| "edge" :: edge.classes
-                    , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                    , strokeWidth (toString (Maybe.withDefault 8 edge.width))
+                    , id (String.fromInt (Tuple.first edge.id) ++ "_" ++ String.fromInt (Tuple.second edge.id))
+                    , strokeWidth (String.fromFloat (Maybe.withDefault 8 edge.width))
                     , d (path position)
                     ]
                     []
                 , Svg.path
                     [ onClick (ClickEdge edge.id)
                     , class <| String.join " " <| "edge-dash" :: edge.classes
-                    , id ((toString (Tuple.first edge.id)) ++ "_" ++ (toString (Tuple.second edge.id)))
-                    , strokeWidth (toString (0.75 * (Maybe.withDefault 8 edge.width)))
-                    , strokeDasharray (toString (2 * (Maybe.withDefault 8 edge.width)))
-                    , strokeDashoffset (toString edge.dashOffset)
+                    , id (String.fromInt (Tuple.first edge.id) ++ "_" ++ String.fromInt (Tuple.second edge.id))
+                    , strokeWidth (String.fromFloat (0.75 * Maybe.withDefault 8 edge.width))
+                    , strokeDasharray (String.fromFloat (2 * Maybe.withDefault 8 edge.width))
+                    , strokeDashoffset (String.fromFloat edge.dashOffset)
                     , d (path position)
                     ]
                     []
@@ -395,24 +400,24 @@ viewEdge edge =
 viewLabel : Edge -> Maybe (List (Html Msg))
 viewLabel edge =
     case edge.position of
-        Just position ->
+        Just _ ->
             Just
                 (case ( edge.labelPosition, edge.label ) of
                     ( Just position, Just label ) ->
                         [ rect
                             [ onClick (ClickEdge edge.id)
                             , class <| String.join " " <| "label" :: edge.classes
-                            , x (toString (position.x - labelWidth / 2))
-                            , y (toString (position.y - labelHeight / 2))
-                            , width (toString labelWidth)
-                            , height (toString labelHeight)
+                            , x (String.fromFloat (position.x - labelWidth / 2))
+                            , y (String.fromFloat (position.y - labelHeight / 2))
+                            , width (String.fromFloat labelWidth)
+                            , height (String.fromFloat labelHeight)
                             ]
                             []
                         , Svg.text_
                             [ onClick (ClickEdge edge.id)
                             , class <| String.join " " <| "label-text" :: edge.classes
-                            , x (toString position.x)
-                            , y (toString (position.y + 2))
+                            , x (String.fromFloat position.x)
+                            , y (String.fromFloat (position.y + 2))
                             ]
                             [ Svg.text label
                             ]

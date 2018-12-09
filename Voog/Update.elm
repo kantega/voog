@@ -1,11 +1,11 @@
-module Voog.Update exposing (..)
+module Voog.Update exposing (center, force, moveEdges, movement, update)
 
 import Time
-import Voog.Model exposing (..)
-import Voog.Messages exposing (..)
 import Voog.Action exposing (..)
 import Voog.Input exposing (..)
 import Voog.Layouts.Forced exposing (forceTick)
+import Voog.Messages exposing (..)
+import Voog.Model exposing (..)
 
 
 update : Msg -> Model -> Model
@@ -20,8 +20,8 @@ update msg model =
         CloseInfo _ ->
             closeInfo model
 
-        InputMsg msg ->
-            handleInput model msg
+        InputMsg msgInner ->
+            handleInput model msgInner
 
         AcceptInvalidInput ->
             { model | invalidInput = False }
@@ -44,22 +44,22 @@ update msg model =
                 pos =
                     model.position
             in
-                case ( model.drag, model.mouse ) of
-                    ( True, Just mouse ) ->
-                        let
-                            dx =
-                                x - mouse.x
+            case ( model.drag, model.mouse ) of
+                ( True, Just mouse ) ->
+                    let
+                        dx =
+                            x - mouse.x
 
-                            dy =
-                                y - mouse.y
+                        dy =
+                            y - mouse.y
 
-                            newPos =
-                                { pos | x = pos.x + dx, y = pos.y + dy }
-                        in
-                            { model | position = newPos, mouse = Just { x = x, y = y } }
+                        newPos =
+                            { pos | x = pos.x + dx, y = pos.y + dy }
+                    in
+                    { model | position = newPos, mouse = Just { x = x, y = y } }
 
-                    _ ->
-                        { model | mouse = Just { x = x, y = y } }
+                _ ->
+                    { model | mouse = Just { x = x, y = y } }
 
         MouseUp ( btn, x, y ) ->
             { model | drag = False }
@@ -69,15 +69,16 @@ update msg model =
                 drag =
                     if btn == 1 || btn == 2 then
                         True
+
                     else
                         False
             in
-                { model | drag = drag }
+            { model | drag = drag }
 
         MouseWheel wheelDelta ->
             let
                 zoomFactor =
-                    1 - (toFloat wheelDelta) / 3000
+                    1 - toFloat wheelDelta / 3000
 
                 newZoom =
                     model.zoom * zoomFactor
@@ -85,8 +86,10 @@ update msg model =
                 clampedZoom =
                     if newZoom > 10 then
                         10
+
                     else if newZoom < 0.1 then
                         0.1
+
                     else
                         newZoom
 
@@ -107,7 +110,7 @@ update msg model =
                         _ ->
                             pos
             in
-                { model | zoom = clampedZoom, position = newPosition }
+            { model | zoom = clampedZoom, position = newPosition }
 
 
 center : Model -> Model
@@ -118,11 +121,12 @@ center model =
             && (model.windowSize /= Nothing)
     then
         centerGraph model
+
     else
         model
 
 
-moveEdges : Time.Time -> Model -> Model
+moveEdges : Time.Posix -> Model -> Model
 moveEdges diff model =
     let
         newEdges =
@@ -130,14 +134,14 @@ moveEdges diff model =
                 (\e ->
                     case e.speed of
                         Just speed ->
-                            { e | dashOffset = e.dashOffset - speed * (Time.inSeconds diff) }
+                            { e | dashOffset = e.dashOffset - speed * (toFloat (Time.posixToMillis diff)) / 1000.0 }
 
                         Nothing ->
                             e
                 )
                 model.edges
     in
-        { model | edges = newEdges }
+    { model | edges = newEdges }
 
 
 force : Model -> Model
@@ -145,13 +149,15 @@ force model =
     if List.member "forced" (String.split "." <| Maybe.withDefault "" model.layout) then
         if model.center && model.force > 0 then
             centerGraph <| forceTick model
+
         else
             forceTick model
+
     else
         model
 
 
-movement : Time.Time -> Model -> Model
+movement : Time.Posix -> Model -> Model
 movement diff ({ movements } as model) =
     let
         newMovements =
@@ -159,13 +165,14 @@ movement diff ({ movements } as model) =
                 (\m ->
                     let
                         newRunning =
-                            m.runningTime + (Time.inSeconds diff)
+                            m.runningTime + (toFloat (Time.posixToMillis diff)) / 1000.0
                     in
-                        if newRunning > m.duration then
-                            Nothing
-                        else
-                            Just { m | runningTime = newRunning }
+                    if newRunning > m.duration then
+                        Nothing
+
+                    else
+                        Just { m | runningTime = newRunning }
                 )
                 movements
     in
-        { model | movements = newMovements }
+    { model | movements = newMovements }

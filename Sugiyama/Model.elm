@@ -1,4 +1,4 @@
-module Sugiyama.Model exposing (..)
+module Sugiyama.Model exposing (BasicEdge, BasicEdges, BasicGraph, BasicNode, BasicNodes, CrossEdges, Direction(..), DoubleTrippleInt, Edge, Edges, Graph, IdPos, Node, Nodes, TrippleInt)
 
 import Dict
 
@@ -23,6 +23,14 @@ type alias BasicNode =
 
 type alias BasicEdge =
     ( Int, Int )
+
+
+type alias TrippleInt =
+    ( Int, Int, Int )
+
+
+type alias DoubleTrippleInt =
+    ( TrippleInt, TrippleInt )
 
 
 type alias Graph =
@@ -57,10 +65,12 @@ type alias Edge =
 
 
 type alias CrossEdges =
-    Dict.Dict ( Int, Int, Int ) (Dict.Dict Int Int)
+    Dict.Dict TrippleInt (Dict.Dict Int Int)
+
 
 type alias IdPos =
     Dict.Dict Int Int
+
 
 type Direction
     = Down

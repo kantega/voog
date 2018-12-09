@@ -1,7 +1,8 @@
-module Voog.Model exposing (..)
+module Voog.Model exposing (Edge, Edges, Flags, Info, InfoElement, Input, InputEdge, InputMovement, InputNode, Line(..), Model, Movement, MultiLine, Node, Nodes, Point, StraightLine, SystemEdge, SystemNode)
 
 import Svg exposing (Svg)
 import Voog.Messages exposing (..)
+
 
 type alias Model =
     { flags : Flags

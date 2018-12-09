@@ -1,4 +1,4 @@
-module Sugiyama.Sugiyama exposing (..)
+module Sugiyama.Sugiyama exposing (initialize, mergeBidirectional, sugiyama, sugiyamaCustom)
 
 {-| SUGIYAMA
 
@@ -37,11 +37,11 @@ The Sugiyama method is a general layout method for layered graphs. It consists o
 
 import Set
 import Sugiyama.CrossReduction exposing (..)
-import Sugiyama.InitialPlacement exposing (..)
+import Sugiyama.CycleRemoval exposing (..)
 import Sugiyama.DummyNodes exposing (..)
+import Sugiyama.InitialPlacement exposing (..)
 import Sugiyama.Layering exposing (..)
 import Sugiyama.Model exposing (..)
-import Sugiyama.CycleRemoval exposing (..)
 import Sugiyama.Placement exposing (..)
 
 
@@ -82,14 +82,16 @@ mergeBidirectional ({ edges } as graph) =
                 (\( from, to ) ->
                     if from < to && Set.member ( to, from ) edgeSet then
                         Nothing
+
                     else if from == to then
                         Nothing
+
                     else
                         Just ( from, to )
                 )
                 edges
     in
-        { graph | edges = newEdges }
+    { graph | edges = newEdges }
 
 
 initialize : BasicGraph -> Graph
@@ -101,4 +103,4 @@ initialize { nodes, edges } =
         newEdges =
             List.map (\( from, to ) -> { from = from, to = to, reversed = False, num = Nothing, id = ( from, to ) }) edges
     in
-        { nodes = newNodes, edges = newEdges }
+    { nodes = newNodes, edges = newEdges }

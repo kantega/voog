@@ -1,4 +1,4 @@
-module Voog.Layouts.Zero exposing (..)
+module Voog.Layouts.Zero exposing (zeroLayout)
 
 import Voog.Model exposing (..)
 
@@ -12,4 +12,4 @@ zeroLayout ({ nodes } as model) =
         newNodes =
             List.map (\n -> { n | position = Just (Maybe.withDefault zero n.position) }) nodes
     in
-        { model | nodes = newNodes }
+    { model | nodes = newNodes }

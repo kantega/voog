@@ -1,9 +1,9 @@
-module Voog.Layouts.Forced exposing (..)
+module Voog.Layouts.Forced exposing (attraction, forceTick, moveEdges, moveNodes, placeEdge, repulsion)
 
 import Dict exposing (Dict)
 import Voog.Model exposing (..)
-import Voog.View exposing (defaultDistance, nodeRadius)
 import Voog.Place exposing (placeSingleLineEdge)
+import Voog.View exposing (defaultDistance, nodeRadius)
 
 
 forceTick : Model -> Model
@@ -30,8 +30,8 @@ forceTick ({ nodes, edges } as model) =
                 List.map2
                     (\( _, a ) ( _, b ) ->
                         case ( a, b ) of
-                            ( Just a, Just b ) ->
-                                abs (b.x - a.x) + abs (b.y - a.y)
+                            ( Just aInner, Just bInner ) ->
+                                abs (bInner.x - aInner.x) + abs (bInner.y - aInner.y)
 
                             _ ->
                                 0
@@ -43,10 +43,12 @@ forceTick ({ nodes, edges } as model) =
             force =
                 if movement > toFloat (List.length nodes) then
                     model.force * model.forceDampFactor
+
                 else
                     0
         in
-            { model | nodes = newNodes, edges = newEdges, force = force }
+        { model | nodes = newNodes, edges = newEdges, force = force }
+
     else
         model
 
@@ -57,7 +59,7 @@ moveNodes ({ nodes, edges } as model) nodePositions node =
         Just pos ->
             let
                 nodeDistance =
-                    (Maybe.withDefault defaultDistance model.nodeDistance)
+                    Maybe.withDefault defaultDistance model.nodeDistance
 
                 connections =
                     List.filter (\e -> e.from == node.id || e.to == node.id) edges
@@ -66,7 +68,7 @@ moveNodes ({ nodes, edges } as model) nodePositions node =
                     List.map (attraction model.attraction nodeDistance nodePositions node) connections
 
                 repulsions =
-                    List.map (repulsion model.repulsion (nodeDistance^2) nodePositions node) nodes
+                    List.map (repulsion model.repulsion (nodeDistance ^ 2) nodePositions node) nodes
 
                 forces =
                     List.append attractions repulsions
@@ -86,7 +88,7 @@ moveNodes ({ nodes, edges } as model) nodePositions node =
                 newPos =
                     Just { x = pos.x + dx, y = pos.y + dy }
             in
-                { node | viewNode = Nothing, position = newPos }
+            { node | viewNode = Nothing, position = newPos }
 
         _ ->
             node
@@ -105,7 +107,7 @@ moveEdges model =
                 |> List.map (\e -> ( e.id, e ))
                 |> Dict.fromList
     in
-        List.map (placeEdge nodes edges) model.edges
+    List.map (placeEdge nodes edges) model.edges
 
 
 placeEdge : Dict Int Node -> Dict ( Int, Int ) Edge -> Edge -> Edge
@@ -114,7 +116,7 @@ placeEdge nodes edges edge =
         ( position, labelPosition ) =
             placeSingleLineEdge nodes edges edge
     in
-        { edge | position = position, labelPosition = labelPosition }
+    { edge | position = position, labelPosition = labelPosition }
 
 
 attraction : Float -> Float -> Dict Int (Maybe Point) -> Node -> Edge -> ( Float, Float )
@@ -123,6 +125,7 @@ attraction coefficient nodeDistance nodePositions node edge =
         nodeBId =
             if edge.from /= node.id then
                 edge.from
+
             else
                 edge.to
 
@@ -132,22 +135,22 @@ attraction coefficient nodeDistance nodePositions node edge =
         posB =
             Dict.get nodeBId nodePositions
     in
-        case ( posA, posB ) of
-            ( Just (Just a), Just (Just b) ) ->
-                let
-                    angle =
-                        atan2 (a.y - b.y) (a.x - b.x)
+    case ( posA, posB ) of
+        ( Just (Just a), Just (Just b) ) ->
+            let
+                angle =
+                    atan2 (a.y - b.y) (a.x - b.x)
 
-                    distance =
-                        sqrt <| (b.y - a.y) ^ 2 + (b.x - a.x) ^ 2
+                distance =
+                    sqrt <| (b.y - a.y) ^ 2 + (b.x - a.x) ^ 2
 
-                    force =
-                        coefficient * (nodeDistance - distance)
-                in
-                    ( force * cos angle, force * sin angle )
+                force =
+                    coefficient * (nodeDistance - distance)
+            in
+            ( force * cos angle, force * sin angle )
 
-            _ ->
-                ( 0, 0 )
+        _ ->
+            ( 0, 0 )
 
 
 repulsion : Float -> Float -> Dict Int (Maybe Point) -> Node -> Node -> ( Float, Float )
@@ -159,23 +162,24 @@ repulsion coefficient nodeDistanceSquared nodePositions nodeA nodeB =
         posB =
             Dict.get nodeB.id nodePositions
     in
-        case ( posA, posB ) of
-            ( Just (Just a), Just (Just b) ) ->
+    case ( posA, posB ) of
+        ( Just (Just a), Just (Just b) ) ->
+            let
+                angle =
+                    atan2 (a.y - b.y) (a.x - b.x)
+
+                distanceSquared =
+                    (b.y - a.y) ^ 2 + (b.x - a.x) ^ 2
+            in
+            if distanceSquared > 0 && distanceSquared < 3 * nodeDistanceSquared then
                 let
-                    angle =
-                        atan2 (a.y - b.y) (a.x - b.x)
-
-                    distanceSquared =
-                        (b.y - a.y) ^ 2 + (b.x - a.x) ^ 2
+                    force =
+                        coefficient / distanceSquared
                 in
-                    if distanceSquared > 0 && distanceSquared < 3 * nodeDistanceSquared then
-                        let
-                            force =
-                                coefficient / distanceSquared
-                        in
-                            ( force * cos angle, force * sin angle )
-                    else
-                        ( 0, 0 )
+                ( force * cos angle, force * sin angle )
 
-            _ ->
+            else
                 ( 0, 0 )
+
+        _ ->
+            ( 0, 0 )

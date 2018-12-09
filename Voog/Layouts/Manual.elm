@@ -1,4 +1,4 @@
-module Voog.Layouts.Manual exposing (..)
+module Voog.Layouts.Manual exposing (manualLayout)
 
 import Voog.Model exposing (..)
 import Voog.View exposing (..)
@@ -8,7 +8,7 @@ manualLayout : List String -> Model -> Model
 manualLayout layout ({ nodes, edges } as model) =
     let
         distance =
-            4 * (Maybe.withDefault nodeRadius model.nodeDistance)
+            4 * Maybe.withDefault nodeRadius model.nodeDistance
 
         minX =
             nodes
@@ -45,6 +45,7 @@ manualLayout layout ({ nodes, edges } as model) =
                             (\( x2, y2 ) ->
                                 if x1 == x2 && y1 == y2 then
                                     Nothing
+
                                 else
                                     Just <| (x2 - x1) ^ 2 + (y2 - y1) ^ 2
                             )
@@ -72,4 +73,4 @@ manualLayout layout ({ nodes, edges } as model) =
                 )
                 nodes
     in
-        { model | nodes = newNodes }
+    { model | nodes = newNodes }
