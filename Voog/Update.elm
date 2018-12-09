@@ -33,7 +33,7 @@ update msg model =
                 |> force
                 |> movement diff
 
-        WindowSize size ->
+        UpdateWindowSize size ->
             updateWindow size model
 
         MouseMove ( xx, yy ) ->
@@ -126,7 +126,7 @@ center model =
         model
 
 
-moveEdges : Time.Posix -> Model -> Model
+moveEdges : Float -> Model -> Model
 moveEdges diff model =
     let
         newEdges =
@@ -134,7 +134,7 @@ moveEdges diff model =
                 (\e ->
                     case e.speed of
                         Just speed ->
-                            { e | dashOffset = e.dashOffset - speed * (toFloat (Time.posixToMillis diff)) / 1000.0 }
+                            { e | dashOffset = e.dashOffset - speed * diff / 1000.0 }
 
                         Nothing ->
                             e
@@ -157,7 +157,7 @@ force model =
         model
 
 
-movement : Time.Posix -> Model -> Model
+movement : Float -> Model -> Model
 movement diff ({ movements } as model) =
     let
         newMovements =
@@ -165,7 +165,7 @@ movement diff ({ movements } as model) =
                 (\m ->
                     let
                         newRunning =
-                            m.runningTime + (toFloat (Time.posixToMillis diff)) / 1000.0
+                            m.runningTime + diff / 1000.0
                     in
                     if newRunning > m.duration then
                         Nothing

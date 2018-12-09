@@ -8,7 +8,6 @@ import Voog.Messages exposing (..)
 import Voog.Model exposing (..)
 import Voog.Update
 import Voog.View
-import PortFunnel.WebSocket as WebSocket
 import Browser.Events as Window
 import Browser.Dom exposing (getViewport)
 import Browser
@@ -50,7 +49,7 @@ init flags =
             , invalidInput = False
             }
     in
-    ( model, Task.perform WindowSize getViewport )
+    ( model, Task.perform (\a -> UpdateWindowSize (round a.viewport.width, round a.viewport.height)) getViewport )
 
 
 subscriptions : Model -> Sub Msg
@@ -59,7 +58,7 @@ subscriptions model =
         ws =
             case model.flags.webSocket of
                 Just webSocket ->
-                    [ WebSocket.listen webSocket InputMsg ]
+                    []--[ WebSocket.listen webSocket InputMsg ]
 
                 _ ->
                     []
@@ -69,11 +68,11 @@ subscriptions model =
                 []
 
             else
-                [ Window.resizes WindowSize ]
+                [ Window.onResize (\a b -> UpdateWindowSize (a, b)) ]
     in
     Sub.batch <|
         ([ Ports.input InputMsg
-         , diffs Tick
+         , onAnimationFrameDelta Tick
          ]
             |> List.append ws
             |> List.append resize

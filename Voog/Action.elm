@@ -9,8 +9,8 @@ import Voog.Place exposing (..)
 import Browser.Events as Window
 
 
-updateWindow : { height : Int, width : Int } -> Model -> Model
-updateWindow { width, height } model =
+updateWindow : WindowSize -> Model -> Model
+updateWindow ( width, height ) model =
     let
         newPosition =
             case model.windowSize of

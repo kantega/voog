@@ -119,7 +119,7 @@ handleSize : Maybe ( Int, Int ) -> Model -> Model
 handleSize size model =
     case size of
         Just ( x, y ) ->
-            updateWindow { width = x, height = y } model
+            updateWindow ( x, y ) model
 
         _ ->
             model

@@ -35,7 +35,7 @@ function createTest(name) {
     node.classList.add('test');
     node.id = codename;
 
-    var app = Elm.Main.embed(node, {'webSocket': null, 'disableWindowResize': true});
+    var app = Elm.Main.init({node: node, flags: {'node': node, 'webSocket': null, 'disableWindowResize': true}});
     var test = new Test(node, app, codename);
 
     var title = document.createElement('p');

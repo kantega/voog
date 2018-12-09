@@ -11,13 +11,18 @@ import Browser
 type alias TrippleInt =
     ( Int, Int, Int )
 
+
+type alias WindowSize =
+    ( Int, Int )
+
+
 type Msg
     = ClickNode Int
     | ClickEdge ( Int, Int )
     | CloseInfo TrippleInt
     | InputMsg String
-    | Tick Time.Posix
-    | WindowSize { height : Int, width : Int }
+    | Tick Float
+    | UpdateWindowSize WindowSize
     | MouseMove ( Int, Int )
     | MouseUp TrippleInt
     | MouseDown TrippleInt

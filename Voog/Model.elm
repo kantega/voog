@@ -1,4 +1,4 @@
-module Voog.Model exposing (Edge, Edges, Flags, Info, InfoElement, Input, InputEdge, InputMovement, InputNode, Line(..), Model, Movement, MultiLine, Node, Nodes, Point, StraightLine, SystemEdge, SystemNode)
+module Voog.Model exposing (Edge, Edges, Flags, Info, InfoElement, Input, InputEdge, InputMovement, InputNode, Line(..), Model, Movement, MultiLine, Node, Nodes, Point, StraightLine, SystemEdge, SystemNode, WindowSize)
 
 import Svg exposing (Svg)
 import Voog.Messages exposing (..)
@@ -155,3 +155,6 @@ type alias Movement a =
     { a
         | runningTime : Float
     }
+
+type alias WindowSize =
+    ( Int, Int )
