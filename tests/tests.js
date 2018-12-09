@@ -32,10 +32,10 @@ class Test {
 function createTest(name) {
     var codename = name.replace(new RegExp(' ', 'g'), '');
     var node = document.createElement('div');
-    node.classList.add('test');
     node.id = codename;
 
     var app = Elm.Main.init({node: node, flags: {'node': node, 'webSocket': null, 'disableWindowResize': true}});
+    node.classList.add('test');
     var test = new Test(node, app, codename);
 
     var title = document.createElement('p');
