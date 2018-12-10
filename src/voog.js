@@ -1,6 +1,5 @@
 'use strict';
 
-require('./index.html');
 import "./system_style.css";
 import "./default_style.css";
 
@@ -10,6 +9,10 @@ export class Voog {
     constructor(app, node) {
         this.app = app;
         this.node = node;
+
+        node.addEventListener('mousewheel', (e) => e.preventDefault());
+        window.addEventListener('resize',  () => this.sendSizeAndPosition());
+        window.addEventListener('scroll', () => this.sendSizeAndPosition());
     }
 
     static init(elementId) {
@@ -31,5 +34,13 @@ export class Voog {
         this.app.ports.input.send(
             JSON.stringify(message)
         );
+    }
+
+    sendSizeAndPosition() {
+        this.send({
+            "size": [this.node.offsetWidth, this.node.offsetHeight],
+            "position": [this.node.offsetLeft - (window.pageXOffset || document.documentElement.scrollLeft)
+                , this.node.offsetTop - (window.pageYOffset || document.documentElement.scrollTop)]
+        });
     }
 }
