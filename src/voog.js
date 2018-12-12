@@ -20,10 +20,7 @@ export class Voog {
         const app = ElmVoog.Main.init(
             {
                 node: node,
-                flags: {
-                    'webSocket': null,
-                    'disableWindowResize': true,
-                }
+                flags: {},
             }
         );
 

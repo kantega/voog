@@ -56,19 +56,19 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     let
         ws =
-            case model.flags.webSocket of
-                Just webSocket ->
-                    []--[ WebSocket.listen webSocket InputMsg ]
-
-                _ ->
+--            case model.flags.webSocket of
+--                Just webSocket ->
+--                    [ WebSocket.listen webSocket InputMsg ]
+--
+--                _ ->
                     []
 
         resize =
-            if model.flags.disableWindowResize then
+--            if model.flags.disableWindowResize then
                 []
-
-            else
-                [ Window.onResize (\a b -> UpdateWindowSize (a, b)) ]
+--
+--            else
+--                [ Window.onResize (\a b -> UpdateWindowSize (a, b)) ]
     in
     Sub.batch <|
         ([ Ports.input InputMsg

@@ -29,8 +29,8 @@ type alias Model =
 
 
 type alias Flags =
-    { webSocket : Maybe String
-    , disableWindowResize : Bool
+    { --disableWindowResize : Bool
+    --, webSocket : Maybe String
     }
 
 
