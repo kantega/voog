@@ -30,7 +30,7 @@
   "bugs": {
     "url": "https://github.com/kantega/voog/issues"
   },
-  "homepage": "https://github.com/kantega/voog#readme",
+  "homepage": "https://kantega.github.io/voog/",
   "devDependencies": {
     "css-loader": "^2.0.0",
     "elm": "^0.19.0-bugfix2",
