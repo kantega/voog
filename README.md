@@ -15,7 +15,7 @@ Create a div element and bind Voog to the element by its id.
 ```
 
 ### With npm
-`npm install --save @kantega/voog`
+`npm install @kantega/voog`
 ```javascript
 import {Voog} from "@kantega/voog";
 const voog = Voog.init('main');
